@@ -1,7 +1,14 @@
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
-    data: new SlashCommandBuilder().setName('sum').setDescription('Calculates the sum of numbers in a message'),
+    data: new SlashCommandBuilder()
+                .setName('sum')
+                .setDescription('Calculates the sum of numbers in a message')
+                .setDMPermission(true)
+                .addStringOption(option =>
+                    option.setName('input')
+                        .setDescription('The input text to calculate the sum from')
+                        .setRequired(true)),
     async execute(interaction) {
         const input = interaction.options.getString('input');
         const sum = calculateSum(input);
@@ -12,7 +19,6 @@ module.exports = {
 const calculateSum = (input) => {
     let sum = 0;
     const regEx = / [0-9]+k | [0-9]+k| [0-9]+.[0-9]+k| \b[0-9]+ | \b[0-9]+| \b[0-9]+,[0-9]+ |-[0-9]+:/g;
-    console.log(input)
     let match = input.match(regEx);
     if (!match) return null;
     match = match.map((str) => {
