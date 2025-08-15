@@ -1,6 +1,25 @@
 {
+  "name": "discord-app-v2",
+  "version": "1.0.0",
+  "description": "ese culo bota caca",
+  "homepage": "https://github.com/DoiBoi/discord-app-v2#readme",
+  "bugs": {
+    "url": "https://github.com/DoiBoi/discord-app-v2/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DoiBoi/discord-app-v2.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.55.0",
-    "discord.js": "^14.21.0"
+    "discord.js": "^14.21.0",
+    "dotenv": "^17.2.1"
   }
 }
