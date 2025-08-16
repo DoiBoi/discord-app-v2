@@ -24,7 +24,6 @@ const calculateSum = (input) => {
     if (!match) return null;
     match = match.map((str) => {
         str = str.replace(" ", "").replace('-', '').replace(':', '').replace(',', '');
-        console.log(str);
         if (str.includes('k')) {
             str = str.replace('k', '');
             return parseFloat(str.replace(",", ".")) * 1000;
