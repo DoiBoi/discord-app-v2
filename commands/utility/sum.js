@@ -19,7 +19,7 @@ module.exports = {
 
 const calculateSum = (input) => {
     let sum = 0;
-    const regEx = / [0-9]+k | [0-9]+k| [0-9]+.[0-9]+k| \b[0-9]+ | \b[0-9]+| \b[0-9]+,[0-9]+ |-[0-9]+:/g;
+    const regEx = / [0-9]+,[0-9]+ | [0-9]+,[0-9]+| [0-9]+k | [0-9]+k| [0-9]+.[0-9]+k| \b[0-9]+ | \b[0-9]+| \b[0-9]+,[0-9]+ |-[0-9]+:/g;
     let match = input.match(regEx);
     if (!match) return null;
     match = match.map((str) => {

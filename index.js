@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags } = require('discord.js');
 
+// TODO: implement supabase connectivity
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
