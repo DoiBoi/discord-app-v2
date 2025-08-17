@@ -1,7 +1,7 @@
 require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits, MessageFlags } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ActivityType } = require('discord.js');
 
 // TODO: implement supabase connectivity
 
@@ -11,6 +11,7 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.GuildPresences
     ]
 });
 
@@ -43,10 +44,12 @@ client.once('ready', () => {
         client.user.setPresence({
             activities: [{
                 name: 'Debugging',
-                type: 'WATCHING'
+                type: ActivityType.Watching
             }],
             status: 'dnd'
         });
+        client.user.setActivity('Debugging', { type: ActivityType.Watching });
+        client.user.setStatus('dnd');
         console.log('Debug mode enabled - presence set to debugging');
     }
 });

@@ -69,9 +69,30 @@ async function clearBalance(userId) {
     return data[0];
 }
 
+// Define a type for the balance records
+/**
+ * @typedef {Object} BalanceRecord
+ * @property {string} id - The user ID as a string
+ * @property {number} balance_usd - The USD balance
+ * @property {number} balance_rbx - The RBX balance
+ */
+
+async function getPaginatedBalances(page, perPage=10) {
+    const { data, error } = await supabase
+        .from('balances')
+        .select('id::text, balance_usd, balance_rbx')
+        .order('balance_usd', { ascending: false })
+        .range((page - 1) * perPage, page * perPage - 1);
+
+    if (error) throw new Error(`Error fetching paginated balances: ${error.message}`);
+
+    return data;
+}
+
 // Export utility functions for use in other files
 module.exports = {
     getUserBalance,
     editBalance,
-    clearBalance
+    clearBalance,
+    getPaginatedBalances
 };
