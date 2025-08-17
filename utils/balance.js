@@ -13,7 +13,6 @@ async function getUserBalance(userId) {
         .single();
 
     if (error) throw new Error(`Error fetching balance: ${error.message}`);
-    console.log(data);
     return data;
 }
 

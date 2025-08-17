@@ -4,7 +4,7 @@ const { execute } = require('./getbal.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('paybal')
+        .setName('subbal')
         .setDescription("Pays (subtracts) a user's balance")
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
         .addUserOption(option =>
