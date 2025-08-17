@@ -20,25 +20,26 @@ module.exports = {
                     { name: 'USD', value: 'usd' }
                 )
         )
-        .addNumberOption(option =>
+        .addStringOption(option =>
             option.setName('amount')
-                .setDescription('The amount to add to the balance')
+                .setDescription('The amount to add to the balance, separated by spaces for multiple values')
                 .setRequired(true)
         ),
     async execute(interaction) {
         const user = interaction.options.getUser('user');
         const currency = interaction.options.getString('currency');
-        const amount = interaction.options.getNumber('amount');
+        const amount = interaction.options.getString('amount');
 
-        let result = null
+        let result = null;
+
         switch (currency) {
             case 'rbx':
-                result = await editBalance(user.id, amount, 0);
-                await interaction.reply(`Added $${amount} RBX to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
+                result = await editBalance(user.id, amount.split(" ").map(num => parseInt(num)), []);
+                await interaction.reply(`:green_circle: Added $${amount.split(" ").map(num => parseInt(num)).reduce((a, b) => a + b, 0)} RBX to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
                 break;
             case 'usd':
-                result = await editBalance(user.id, 0, amount);
-                await interaction.reply(`Added $${amount} USD to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
+                result = await editBalance(user.id, [], amount.split(" ").map(num => parseFloat(num)));
+                await interaction.reply(`:green_circle: Added $${amount.split(" ").map(num => parseFloat(num)).reduce((a, b) => a + b, 0)} USD to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
                 break;
         }
     }

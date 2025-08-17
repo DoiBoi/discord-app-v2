@@ -16,10 +16,7 @@ async function getUserBalance(userId) {
     return data;
 }
 
-async function editBalance(userId, balance_rbx = 0, balance_usd = 0) {
-    if (!Number.isInteger(balance_rbx)) {
-        throw new Error('balance_rbx must be an integer value');
-    }
+async function editBalance(userId, balance_rbx = [], balance_usd = []) {
     
     const { data, error } = await supabase
         .from('balances')
@@ -30,15 +27,26 @@ async function editBalance(userId, balance_rbx = 0, balance_usd = 0) {
         throw new Error(`Error retrieving balance: ${error.message}`);
     };
 
+    
     let newBalanceRbx = 0;
     let newBalanceUsd = 0;
 
     if (data.length > 0) {
-        newBalanceRbx = data[0].balance_rbx + balance_rbx;
-        newBalanceUsd = data[0].balance_usd + balance_usd;
-    } else {
-        newBalanceRbx = balance_rbx;
-        newBalanceUsd = balance_usd;
+        newBalanceRbx = data[0].balance_rbx;
+        newBalanceUsd = data[0].balance_usd;
+    }
+
+    console.log(balance_rbx)
+
+    for (const num of balance_rbx){
+        if (!Number.isInteger(num)) {
+            throw new Error('balance_rbx must be an integer value');
+        }
+        newBalanceRbx += num;
+    }
+
+    for (const num of balance_usd){
+        newBalanceUsd += num;
     }
 
     const { data: updatedData, error: updateError } = await supabase

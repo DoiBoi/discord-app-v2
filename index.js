@@ -37,6 +37,18 @@ for (const folder of commandFolders) {
 
 client.once('ready', () => {
     console.log('Bot is online!');
+    
+    // Set debug presence if --debug flag is passed
+    if (process.argv.includes('--debug')) {
+        client.user.setPresence({
+            activities: [{
+                name: 'Debugging',
+                type: 'WATCHING'
+            }],
+            status: 'dnd'
+        });
+        console.log('Debug mode enabled - presence set to debugging');
+    }
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
