@@ -27,16 +27,17 @@ async function editBalance(userId, balance_rbx = [], balance_usd = []) {
         throw new Error(`Error retrieving balance: ${error.message}`);
     };
 
-    
-    let newBalanceRbx = 0;
-    let newBalanceUsd = 0;
+
+    let oldBalanceRbx = 0;
+    let oldBalanceUsd = 0;
 
     if (data.length > 0) {
-        newBalanceRbx = data[0].balance_rbx;
-        newBalanceUsd = data[0].balance_usd;
+        oldBalanceRbx = data[0].balance_rbx;
+        oldBalanceUsd = data[0].balance_usd;
     }
 
-    console.log(balance_rbx)
+    let newBalanceRbx = oldBalanceRbx;
+    let newBalanceUsd = oldBalanceUsd;
 
     for (const num of balance_rbx){
         if (!Number.isInteger(num)) {
@@ -55,7 +56,7 @@ async function editBalance(userId, balance_rbx = [], balance_usd = []) {
         .select();
     if (updateError) throw new Error(`Error updating balance: ${updateError.message}`);
 
-    return updatedData[0];
+    return [updatedData[0], oldBalanceRbx, oldBalanceUsd];
 }
 
 async function clearBalance(userId) {

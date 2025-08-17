@@ -36,22 +36,22 @@ module.exports = {
         switch (currency) {
             case 'rbx':
                 for (const num_str of amount.split(' ')) {
-                    const parsedInt = parseInt(num_str);
+                    const parsedInt = parseInt(num_str.replace(",", ''));
                     amount_arr.push(-parsedInt);
                 }
-                result = await editBalance(user.id, amount_arr, []);
-                await interaction.reply(`:red_circle: Subtracted $${amount.split(" ").map(num => parseInt(num)).reduce((a, b) => a + b, 0)} RBX from ${user.username}, \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
+                [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, amount_arr, []);
+                await interaction.reply(`-# :red_circle: Subtracted $${amount.split(" ").map(num => parseInt(num.replace(",", ''))).reduce((a, b) => a + b, 0)} RBX from ${user.username}'s balance ||(**Previous balance: ${oldBalanceRbx} RBX**)|| \n**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
                 break;
             case 'usd':
                 for (const num_str of amount.split(' ')) {
-                    const parsedFloat = parseFloat(num_str);
+                    const parsedFloat = parseFloat(num_str.replace(",", ''));
                     if (isNaN(parsedFloat)) {
                         return interaction.reply('Invalid amount provided. Please provide a valid number.');
                     }
                     amount_arr.push(-parsedFloat);
                 }
-                result = await editBalance(user.id, [], amount_arr);
-                await interaction.reply(`:red_circle: Subtracted $${amount.split(" ").map(num => parseFloat(num)).reduce((a, b) => a + b, 0)} USD from ${user.username}, \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
+                [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, [], amount_arr);
+                await interaction.reply(`-# :red_circle: Subtracted $${amount.split(" ").map(num => parseFloat(num.replace(",", ''))).reduce((a, b) => a + b, 0)} USD from ${user.username}'s balance ||(**Previous balance: ${oldBalanceUsd} USD**)|| \n**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
                 break;
         }
     }

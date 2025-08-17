@@ -34,12 +34,12 @@ module.exports = {
 
         switch (currency) {
             case 'rbx':
-                result = await editBalance(user.id, amount.split(" ").map(num => parseInt(num)), []);
-                await interaction.reply(`:green_circle: Added $${amount.split(" ").map(num => parseInt(num)).reduce((a, b) => a + b, 0)} RBX to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
+                [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, amount.split(" ").map(num => parseInt(num.replace(",", ''))), []);
+                await interaction.reply(`-# :green_circle: Added $${amount.split(" ").map(num => parseInt(num.replace(",", ''))).reduce((a, b) => a + b, 0)} RBX to ${user.username}'s balance ||(**Previous balance: ${oldBalanceRbx} RBX**)|| \n**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
                 break;
             case 'usd':
-                result = await editBalance(user.id, [], amount.split(" ").map(num => parseFloat(num)));
-                await interaction.reply(`:green_circle: Added $${amount.split(" ").map(num => parseFloat(num)).reduce((a, b) => a + b, 0)} USD to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
+                [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, [], amount.split(" ").map(num => parseFloat(num.replace(",", ''))));
+                await interaction.reply(`-# :green_circle: Added $${amount.split(" ").map(num => parseFloat(num.replace(",", ''))).reduce((a, b) => a + b, 0)} USD to ${user.username}'s balance ||(**Previous balance: ${oldBalanceUsd} USD**)|| \n**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
                 break;
         }
     }
