@@ -34,11 +34,11 @@ module.exports = {
         switch (currency) {
             case 'rbx':
                 result = await editBalance(user.id, amount, 0);
-                await interaction.reply(`Added $${amount} RBX to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, $${result.balance_rbx} RBX`);
+                await interaction.reply(`Added $${amount} RBX to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
                 break;
             case 'usd':
                 result = await editBalance(user.id, 0, amount);
-                await interaction.reply(`Added $${amount} USD to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, $${result.balance_rbx} RBX`);
+                await interaction.reply(`Added $${amount} USD to ${user.username}'s balance. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
                 break;
         }
     }

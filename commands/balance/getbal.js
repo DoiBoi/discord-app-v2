@@ -14,6 +14,6 @@ module.exports = {
     async execute(interaction) {
         const user = interaction.options.getUser('user');
         const balance = await getUserBalance(user.id);
-        await interaction.reply(`User ${user.username} has a balance of $${balance.balance_usd} USD and $${balance.balance_rbx} RBX.`);
+        await interaction.reply(`User ${user.username} has a balance of $${balance.balance_usd} USD and ${balance.balance_rbx} RBX.`);
     }
 };

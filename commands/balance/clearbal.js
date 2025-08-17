@@ -14,6 +14,6 @@ module.exports = {
     async execute(interaction) {
         const user = interaction.options.getUser('user');
         const result = await clearBalance(user.id);
-        await interaction.reply(`Cleared balance for ${user.username}. \nNew Balance: $${result.balance_usd} USD, $${result.balance_rbx} RBX`);
+        await interaction.reply(`Cleared balance for ${user.username}. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX`);
     }
 }
