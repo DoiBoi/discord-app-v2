@@ -1,9 +1,5 @@
-const createClient = require('@supabase/supabase-js').createClient;
 const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
-
-const supabaseUrl = 'https://sercxhohulnwvynvhgzf.supabase.co'
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+const { supabase } = require('./supabase/supabase_client.js')
 
 async function getUserBalance(userId) {
     const { data, error } = await supabase
@@ -69,14 +65,6 @@ async function clearBalance(userId) {
     return data[0];
 }
 
-// Define a type for the balance records
-/**
- * @typedef {Object} BalanceRecord
- * @property {string} id - The user ID as a string
- * @property {number} balance_usd - The USD balance
- * @property {number} balance_rbx - The RBX balance
- */
-
 async function getPaginatedBalances(page, perPage=10) {
     const { data, error } = await supabase
         .from('balances')
@@ -98,5 +86,5 @@ module.exports = {
     getUserBalance,
     editBalance,
     clearBalance,
-    getPaginatedBalances
+    getPaginatedBalances,
 };
