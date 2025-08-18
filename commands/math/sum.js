@@ -22,7 +22,7 @@ const calculateSum = (input) => {
     if (input.length > 0 && !isNaN(parseInt(input[0], 10))) {
         input = "a " + input;
     }
-    const regEx = / [0-9]+,[0-9]+ | [0-9]+,[0-9]+| [0-9]+k | [0-9]+k| [0-9]+.[0-9]+k| \b[0-9]+ | \b[0-9]+| \b[0-9]+,[0-9]+ |-[0-9]+:/g;
+    const regEx = / [0-9]+,[0-9]+ | [0-9]+,[0-9]+| [0-9]+k | [0-9]+k| [0-9]+.[0-9]+k| \b[0-9]+ | \b[0-9]+| \b[0-9]+,[0-9]+ |-[0-9]+:|^[0-9]+$|^[0-9]+ |^[0-9]+,[0-9]+/gm;
     let match = input.match(regEx);
     if (!match) return null;
     match = match.map((str) => {
@@ -33,6 +33,6 @@ const calculateSum = (input) => {
         }
         return parseFloat(str.replace(",", "."));
     });
-    for (let i = 0; i < match.length; i++) sum += match[i];
+    match.map((num) => sum += num);
     return sum;
 }

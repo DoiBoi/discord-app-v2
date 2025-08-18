@@ -84,9 +84,13 @@ async function getPaginatedBalances(page, perPage=10) {
         .order('balance_usd', { ascending: false })
         .range((page - 1) * perPage, page * perPage - 1);
 
-    if (error) throw new Error(`Error fetching paginated balances: ${error.message}`);
+    const { count: countdata, error: countError } = await supabase
+        .from('balances')
+        .select('*', { count: 'exact', head: true});
 
-    return data;
+    if (error || countError) throw new Error(`Error fetching paginated balances: ${error.message}`);
+
+    return [data, countdata];
 }
 
 // Export utility functions for use in other files
