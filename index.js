@@ -46,13 +46,24 @@ client.once('ready', () => {
         client.user.setPresence({
             activities: [{
                 name: 'Debugging',
-                type: ActivityType.Watching
+                type: ActivityType.Custom,
+                state: '🛠️ App in Construction',
             }],
             status: 'dnd'
         });
-        client.user.setActivity('Debugging', { type: ActivityType.Watching });
         client.user.setStatus('dnd');
         console.log('Debug mode enabled - presence set to debugging');
+    } else {
+        client.user.setPresence({
+            activities: [{
+                name: 'Watching Mal\'s every action',
+                type: ActivityType.Custom,
+                state: '👀 Watching Mal\'s every action'
+            }],
+            status: 'online'
+        });
+        client.user.setStatus('online');
+        console.log('Debug mode disabled - presence set to normal mode');
     }
 });
 
