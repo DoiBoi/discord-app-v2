@@ -13,8 +13,6 @@ async function if_exist(userId) {
         throw new Error(`There was an error if_exist ${error}`)
     }
 
-    console.log(data)
-
     return (data != null && data?.length >= 1)
 }
 

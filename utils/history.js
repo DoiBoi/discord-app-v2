@@ -4,7 +4,7 @@ async function getUserHistory(userId, currency) {
     const { data, error } = await supabase
         .from('balances')
         .select(`history_${currency}`)
-        .eq('user_id', userId)
+        .eq('id', userId)
 
     if (error) {
         console.error('Error fetching user history:', error)
@@ -18,7 +18,7 @@ async function appendUserHistory(userId, currency, amount) {
     const { data, error } = await supabase
         .from('balances')
         .select(`history_${currency}`)
-        .eq('user_id', userId)
+        .eq('id', userId)
     
     if (error) {
         throw new Error(`Error fetching user history: ${error.message}`)
@@ -26,15 +26,15 @@ async function appendUserHistory(userId, currency, amount) {
 
     let  history = data[0]?.[`history_${currency}`] || []
 
-    const new_history_obj = {
-        amount: amount,
+    const new_history_arr = amount.map((value) => ({
+        amount: value,
         timestamp: new Date().toISOString()
-    }
+    }))
 
     if (history) {
-        history.push(new_history_obj)
+        history = [...history, ...new_history_arr]
     } else {
-        history = [new_history_obj]
+        history = new_history_arr
     }
 
     const { data: updateData, error: updateError } = await supabase
