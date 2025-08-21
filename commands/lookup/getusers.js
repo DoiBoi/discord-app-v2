@@ -13,7 +13,7 @@ module.exports = {
                     { name: "felanov", value: "felanov" },
                     { name: "haohao", value: "haohao" },
                     { name: "knuckles", value: "knuckles"},
-                    { name: "myself", value: "myself"},
+                    { name: "malowie", value: "malowie"},
                     { name: "shehab", value: "shehab"}
                 ))
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel),
