@@ -11,17 +11,18 @@ const ITEM_IN_PAGE = 10;
 let user, currency; 
 
 function formatDateToSeconds(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const pdtOffset = -7 * 60;
+    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    const pdtDate = new Date(utc + (pdtOffset * 60000));
 
-    const tzMatch = /\(([^)]+)\)$/.exec(date.toString());
-    const timezone = tzMatch ? tzMatch[1] : 'UTC';
+    const year = pdtDate.getFullYear();
+    const month = String(pdtDate.getMonth() + 1).padStart(2, '0');
+    const day = String(pdtDate.getDate()).padStart(2, '0');
+    const hours = String(pdtDate.getHours()).padStart(2, '0');
+    const minutes = String(pdtDate.getMinutes()).padStart(2, '0');
+    const seconds = String(pdtDate.getSeconds()).padStart(2, '0');
 
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} ${timezone}`;
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} PDT`;
 }
 
 function buildResponse(data, currentPage, totalPages) {
