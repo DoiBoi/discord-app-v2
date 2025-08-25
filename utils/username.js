@@ -1,17 +1,16 @@
 const {supabase} = require('./supabase/supabase_client.js')
 
-async function getAccounts(userId) {
+async function getAccounts(username) {
     const { data, error } = await supabase
-        .from('balances')
-        .select('accounts_rbx')
-        .eq('id', userId)
+        .from('usernames')
+        .select()
+        .eq('name', username)
         .single();
-
     if (error) {
-        console.log(`Error fetching account for user ID ${userId}: ${error.message}`);
+        console.log(`Error fetching account for user ID ${username}: ${error.message}`);
         return null;
     }
-    return data.accounts_rbx;
+    return data?.usernames;
 }
 
 async function appendAccount(userId, newAccount) {

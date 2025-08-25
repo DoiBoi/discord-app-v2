@@ -5,11 +5,9 @@ async function getUserBalance(userId) {
     const { data, error } = await supabase
         .from('balances')
         .select()
-        .eq('id', userId)
-        .single();
-
+        .eq('id', userId);
     if (error) throw new Error(`Error fetching balance: ${error.message}`);
-    return data;
+    return data[0];
 }
 
 async function editBalance(userId, balance_rbx = [], balance_usd = []) {
