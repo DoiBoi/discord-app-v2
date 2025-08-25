@@ -64,26 +64,27 @@ async function clearBalance(userId) {
 }
 
 async function getPaginatedBalances(page, perPage=10, is_gfs = false) {
-    let data, error;
+    let data, error, countdata, countError;
     if (is_gfs) {
         ({ data, error } = await supabase
             .from('balances')
             .select('id::text, balance_usd, balance_rbx, is_gfs')
             .eq('is_gfs', true)
             .order('balance_usd', { ascending: false }));
+        ({ count: countdata, error: countError } = await supabase
+        .from('balances')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_gfs', true));
     } else {
         ({ data, error } = await supabase
             .from('balances')
             .select('id::text, balance_usd, balance_rbx')
             .order('balance_usd', { ascending: false })
             .range((page - 1) * perPage, page * perPage - 1));
-    }
-
-
-    let { count: countdata, error: countError } = await supabase
+        ({ count: countdata, error: countError } = await supabase
         .from('balances')
-        .select('*', { count: 'exact', head: true});
-
+        .select('*', { count: 'exact', head: true}));
+    }
     if (error || countError) throw new Error(`Error fetching paginated balances: ${error ? error.message : countError.message}`);
 
     return [data, countdata];
