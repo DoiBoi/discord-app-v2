@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
 const { editBalance } = require('../../utils/balance.js');
-const { execute } = require('./getbal.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
