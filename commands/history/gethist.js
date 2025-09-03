@@ -86,7 +86,9 @@ module.exports = {
                 return;
             }
 
-            const hist = await getUserHistory(user.id, currency)
+            let hist = await getUserHistory(user.id, currency)
+            hist.reverse();
+
             if (hist.length < 1) {
                 await interaction.reply({ content: 'No history was found of this user', ephemeral: true })
                 return;
