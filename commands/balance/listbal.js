@@ -9,6 +9,7 @@ const { getPaginatedBalances } = require('../../utils/balance.js');
 const { execute } = require('./getbal.js');
 
 let gfs_toggle = false;
+let owe_toggle = false;
 const PERPAGE = 10;
 
 function buildResponse(data, currentPage, totalPages) {
@@ -33,6 +34,11 @@ function buildResponse(data, currentPage, totalPages) {
         .setCustomId('gfs')
         .setStyle(ButtonStyle.Secondary)
 
+    const OWEButton = new ButtonBuilder()
+        .setLabel('OWE')
+        .setCustomId('owe')
+        .setStyle(ButtonStyle.Secondary)
+
     const rightButton = new ButtonBuilder()
         .setCustomId('right')
         .setStyle(ButtonStyle.Primary)
@@ -41,7 +47,7 @@ function buildResponse(data, currentPage, totalPages) {
 
 
     const actionRow = new ActionRowBuilder()
-        .addComponents(leftButton, GFSButton, rightButton);
+        .addComponents(leftButton, GFSButton, OWEButton, rightButton);
     return [embed, actionRow];
 }
 
@@ -53,7 +59,7 @@ module.exports = {
     async execute(interaction) {
         try {
             let currentPage = 1;
-            let [data, count] = await getPaginatedBalances(currentPage, PERPAGE, gfs_toggle);
+            let [data, count] = await getPaginatedBalances(currentPage, PERPAGE, gfs_toggle, owe_toggle);
             let totalPages = Math.ceil(count / 10);
 
             let [embed, actionRow] = buildResponse(data, currentPage, totalPages);
@@ -61,22 +67,30 @@ module.exports = {
             const response = await interaction.reply({ embeds: [embed], components: [actionRow], withResponse: true });
 
             const filter = i => i.user.id === interaction.user.id && 
-                                (i.customId === 'left' || i.customId === 'right' || i.customId === 'gfs');
+                                (i.customId === 'left' || i.customId === 'right' || i.customId === 'gfs' || i.customId === 'owe');
 
-            const collector = response.resource.message.createMessageComponentCollector({ filter, time: 60_000 });
+            const collector = response.resource.message.createMessageComponentCollector({ filter, time: 180_000 });
 
             collector.on('collect', async (i) => {
-                if (i.customId === 'gfs') {
-                    gfs_toggle = !gfs_toggle;
+                switch (i.customId) {
+                    case 'gfs':
+                        gfs_toggle = !gfs_toggle;
+                        currentPage = 1;
+                        break;
+                    case 'owe':
+                        owe_toggle = !owe_toggle;
+                        currentPage = 1;
+                        break;
+                    case 'left':
+                        currentPage--;
+                        break;
+                    case 'right':
+                        currentPage++;
+                        break;
                 }
-                if (i.customId === 'left') {
-                    currentPage--;
-                } else if (i.customId === 'right') {
-                    currentPage++;
-                }
-
-                [data, count] = await getPaginatedBalances(currentPage, PERPAGE, gfs_toggle);
-                totalPages = Math.ceil(count / 10);
+            
+                [data, count] = await getPaginatedBalances(currentPage, PERPAGE, gfs_toggle, owe_toggle);
+                totalPages = Math.max(Math.ceil(count / 10), 1);
                 [embed, actionRow] = buildResponse(data, currentPage, totalPages);
 
                 await i.update({ embeds: [embed], components: [actionRow] });

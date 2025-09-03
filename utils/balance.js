@@ -63,18 +63,30 @@ async function clearBalance(userId) {
     return data[0];
 }
 
-async function getPaginatedBalances(page, perPage=10, is_gfs = false) {
+async function getPaginatedBalances(page, perPage=10, is_gfs = false, is_owe = false) {
     let data, error, countdata, countError;
     if (is_gfs) {
         ({ data, error } = await supabase
             .from('balances')
             .select('id::text, balance_usd, balance_rbx, is_gfs')
             .eq('is_gfs', true)
-            .order('balance_usd', { ascending: false }));
+            .order('balance_usd', { ascending: false })
+            .range((page - 1) * perPage, page * perPage - 1));
         ({ count: countdata, error: countError } = await supabase
         .from('balances')
         .select('*', { count: 'exact', head: true })
         .eq('is_gfs', true));
+    } else if (is_owe) { 
+        ({ data, error } = await supabase
+            .from('balances')
+            .select('id::text, balance_usd, balance_rbx, is_owe')
+            .eq('is_owe', true)
+            .order('balance_usd', {ascending: false})
+            .range((page - 1) * perPage, page * perPage - 1));
+        ({ count: countdata, error: countError } = await supabase
+        .from('balances')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_owe', true));
     } else {
         ({ data, error } = await supabase
             .from('balances')
