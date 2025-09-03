@@ -15,7 +15,7 @@ module.exports = {
         const user = interaction.options.getUser('user')
         try {
             const data = await setOwe(user.id, true);
-            await interaction.reply({ content: `Successfully added ${user.username} into the OWE List`})
+            await interaction.reply({ content: `Successfully added ${user.username} into the OWE List`, ephermeral: true})
         } catch {
             await interaction.reply({ content: 'An error occured running this command', ephermeral: true})
         }
