@@ -33,6 +33,6 @@ module.exports = {
             // This is actually never possible because of the access fee, but it's still here
             string += "It doesn't matter, choose either.";
         }
-        await interaction.reply({ content: string, epheremal: true});
+        await interaction.reply({ content: string, ephermeral: true});
     }
 }
