@@ -64,7 +64,7 @@ module.exports = {
 
             let [embed, actionRow] = buildResponse(data, currentPage, totalPages);
 
-            const response = await interaction.reply({ embeds: [embed], components: [actionRow], withResponse: true });
+            const response = await interaction.reply({ embeds: [embed], components: [actionRow], withResponse: true , ephemeral: true});
 
             const filter = i => i.user.id === interaction.user.id && 
                                 (i.customId === 'left' || i.customId === 'right' || i.customId === 'gfs' || i.customId === 'owe');

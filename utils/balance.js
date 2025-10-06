@@ -1,4 +1,3 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
 const { supabase } = require('./supabase/supabase_client.js')
 
 async function getUserBalance(userId) {

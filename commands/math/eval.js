@@ -12,7 +12,9 @@ module.exports = {
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel),
     async execute(interaction) {
         const expression = interaction.options.getString('expression');
+        expression.replaceAll('x', "*");
         try {
+            console.log(expression);
             const result = eval(expression);
             await interaction.reply(`:1234: Result: ${result}`);
         } catch (error) {
