@@ -22,6 +22,6 @@ module.exports = {
         passDetails.forEach(passItem => {
             passes += `${passItem.name}: ${passItem.in_use ? ":red_circle: in use" : ":green_circle: not in use"}\nlink: ${passItem.link} \n`
         });
-        return interaction.reply({ content: "Here are the passes: \n" + passes })
+        return interaction.reply({ content: "Here are the passes: \n" + passes, ephemeral: true })
     }
 }

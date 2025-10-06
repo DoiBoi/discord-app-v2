@@ -31,6 +31,6 @@ module.exports = {
         if (!passDetails) {
             return interaction.reply({ content: 'No pass found.', ephemeral: true });
         }
-        return interaction.reply({ content: `${passDetails.link}` })
+        return interaction.reply({ content: `${passDetails.link}`, ephemeral: true })
     }
 }

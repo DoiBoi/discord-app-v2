@@ -32,6 +32,6 @@ module.exports = {
         if (!passDetails) {
             return interaction.reply({ content: 'No pass found.', ephemeral: true });
         }
-        return interaction.reply({ content: `${passDetails.name}'s \`in_use\` field has been updated to \`${passDetails.in_use}\`` })
+        return interaction.reply({ content: `${passDetails.name}'s \`in_use\` field has been updated to \`${passDetails.in_use}\``, ephemeral: true })
     }
 }

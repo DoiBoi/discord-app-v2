@@ -45,11 +45,11 @@ module.exports = {
         const USD_header = ("`  USD Price  `");
         const RBX_header = ("`  Robux Price  `");
         if (totaluploads === 0) {
-            return interaction.reply({content: base + "\n" + "\n" + USD_header + "\n" + USD_publishing + "\n" + "\n" + RBX_header + "\n" + RBX_publishing});
+            return interaction.reply({content: base + "\n" + "\n" + USD_header + "\n" + USD_publishing + "\n" + "\n" + RBX_header + "\n" + RBX_publishing, ephemeral: true});
         } else if (hatorface >= 1 || other >= 1) {
-            return interaction.reply({content: base + "\n" + "\n" + USD_header + "\n" + USD_uploading + "\n" + USD_publishing + "\n" + "\n" + RBX_header + "\n" + RBX_uploading + "\n" + RBX_publishing});
+            return interaction.reply({content: base + "\n" + "\n" + USD_header + "\n" + USD_uploading + "\n" + USD_publishing + "\n" + "\n" + RBX_header + "\n" + RBX_uploading + "\n" + RBX_publishing, ephemeral: true});
         } else {
-            return  interaction.reply({content: base + "\n" + "\n" + USD_header + "\n" + USD_uploading + "\n" + "\n" + RBX_header + "\n" + RBX_uploading});    
+            return  interaction.reply({content: base + "\n" + "\n" + USD_header + "\n" + USD_uploading + "\n" + "\n" + RBX_header + "\n" + RBX_uploading, ephemeral: true});    
         }    
     }
 }
