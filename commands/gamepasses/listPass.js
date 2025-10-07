@@ -18,9 +18,9 @@ module.exports = {
         if (!passDetails) {
             return interaction.reply({ content: 'No pass found.', ephemeral: true });
         }
-        let passes = ""
+        let passes = "# Gamepass list\n"
         passDetails.forEach(passItem => {
-            passes += `${passItem.name}: ${passItem.in_use ? `:red_circle: in use\nIn use by <@${passItem.user}>` : ":green_circle: not in use"}\nlink: <${passItem.link}>\n`
+            passes += `## \` ${passItem.name} \`: ${passItem.in_use ? `:red_circle: in use by <@${passItem.user}>` : ":green_circle: not in use"}\n> -# <${passItem.link}>\n`
         });
         return interaction.reply({ content: "Here are the passes: \n" + passes, ephemeral: true })
     }
