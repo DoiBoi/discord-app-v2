@@ -20,8 +20,9 @@ module.exports = {
                     {name: "BEST", value: "BEST"},
                     {name: "DONATION", value: "DONATION"},
                     {name: "LARGE", value: "LARGE"},
-                    {name: "SMALL", value: "TYCOMM"},
-                    {name: "UGC", value: "UGC"},
+                    {name: "SMALL", value: "SMALL"},
+                    {name: "TYCOMM", value: "TYCOMM"},
+                    {name: "UGC", value: "UGC"}
                 )
         )
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel),

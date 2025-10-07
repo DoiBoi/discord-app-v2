@@ -20,7 +20,7 @@ module.exports = {
         }
         let passes = ""
         passDetails.forEach(passItem => {
-            passes += `${passItem.name}: ${passItem.in_use ? ":red_circle: in use" : ":green_circle: not in use"}\nlink: ${passItem.link} \n`
+            passes += `${passItem.name}: ${passItem.in_use ? `:red_circle: in use\nIn use by <@${passItem.user}>` : ":green_circle: not in use"}\nlink: <${passItem.link}>\n`
         });
         return interaction.reply({ content: "Here are the passes: \n" + passes, ephemeral: true })
     }

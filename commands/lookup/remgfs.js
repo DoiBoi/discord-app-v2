@@ -15,9 +15,9 @@ module.exports = {
         const user = interaction.options.getUser('user')
         try {
             const data = await setGfs(user.id, false);
-            await interaction.reply({ content: `Successfully removed ${user.username} from the GFS List`})
+            await interaction.reply({ content: `Successfully removed ${user.username} from the GFS List`, ephemeral: true})
         } catch {
-            await interaction.reply({ content: 'An error occured running this command', ephermeral: true})
+            await interaction.reply({ content: 'An error occured running this command', ephemeral: true})
         }
     } 
 }
