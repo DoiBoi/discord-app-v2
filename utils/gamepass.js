@@ -16,7 +16,7 @@ async function getGamePass(gamepass) {
 async function listGamePasses() {
     const { data, error } = await supabase
         .from('gamepasses')
-        .select("name, link, in_use, user")
+        .select("name, list_link, in_use, user")
     if (error) throw new Error(`Error retrieving gamepass ${error.message}`);
     return data
 }
@@ -24,7 +24,7 @@ async function listGamePasses() {
 async function toggleInUse(gamepass, user) {
     const { data, error } = await supabase
         .from('gamepasses')
-        .select("in_use, link, user")
+        .select("in_use, list_link, user")
         .eq("name", gamepass)
     if (error) throw new Error(`Error retrieving gamepass ${error.message}`);
     if (!data || data.length === 0) {
@@ -45,7 +45,7 @@ async function toggleInUse(gamepass, user) {
         .upsert({
             name: gamepass,
             in_use: !in_use,
-            link: gamepass.link,
+            list_link: gamepass.list_link,
             user: user
         })
         .select();
