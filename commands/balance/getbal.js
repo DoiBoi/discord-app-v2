@@ -18,6 +18,6 @@ module.exports = {
             await interaction.reply({ content: `User ${user.username} has no balance record.`, ephemeral: true});
             return;
         }
-        await interaction.reply({ content: `User ${user.username} has a balance of $${balance.balance_usd} USD and ${balance.balance_rbx} RBX.` , ephemeral: true });
+        await interaction.reply({ content: `User ${user.username} has a balance of $${balance.balance_usd} USD and ${balance.balance_rbx} RBX. ${balance.info ? `\n||-# **Information**: \`${balance.info}\`||`: ''}` , ephemeral: true });
     }
 };

@@ -41,8 +41,8 @@ function buildResponse(data, currentPage, totalPages) {
         .setStyle(ButtonStyle.Secondary)
 
     const InfoButton = new ButtonBuilder()
-        .setLabel('INFO')
-        .setCustomId('info')
+        .setLabel('PAY')
+        .setCustomId('pay')
         .setStyle(ButtonStyle.Secondary)
 
     const rightButton = new ButtonBuilder()
@@ -73,7 +73,7 @@ module.exports = {
             const response = await interaction.reply({ embeds: [embed], components: [actionRow], withResponse: true , ephemeral: true});
 
             const filter = i => i.user.id === interaction.user.id && 
-                                (i.customId === 'left' || i.customId === 'right' || i.customId === 'gfs' || i.customId === 'owe' || i.customId === 'info');
+                                (i.customId === 'left' || i.customId === 'right' || i.customId === 'gfs' || i.customId === 'owe' || i.customId === 'pay');
 
             const collector = response.resource.message.createMessageComponentCollector({ filter, time: 180_000 });
 
@@ -87,7 +87,7 @@ module.exports = {
                         owe_toggle = !owe_toggle;
                         currentPage = 1;
                         break;
-                    case 'info':
+                    case 'pay':
                         info_toggle = !info_toggle;
                         currentPage = 1;
                         break;
