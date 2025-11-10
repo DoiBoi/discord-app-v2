@@ -74,7 +74,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (!command) return;
 
     try {
-        if (Math.random() < 1/100) {
+        if (Math.random() < 1/1000) {
             await interaction.reply({content: "your mom", ephemeral: true})
         } else {
             await command.execute(interaction);

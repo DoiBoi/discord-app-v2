@@ -1,19 +1,19 @@
-const {supabase} = require('./supabase/supabase_client.js')
+const { supabase } = require('./supabase/supabase_client.js');
 
-async function setOwe(userId, owe_bool) {
+async function setPay(userId, info = null) {
     const { data, error } = await supabase
         .from('balances')
-        .update({ is_owe: owe_bool })
+        .update({ info: info ? info : null })
         .eq('id', userId)
         .select()
-
+    
     if (error) {
         throw new Error(`There was an error running this ${error.message}`)
     }
-    
+
     return data;
 }
 
 module.exports = {
-    setOwe
+    setPay
 }
