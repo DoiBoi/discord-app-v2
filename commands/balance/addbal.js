@@ -34,19 +34,33 @@ module.exports = {
         let result = null;
         let amount_arr = [];
 
-        switch (currency) {
-            case 'rbx':
-                amount_arr = amount.split(" ").map(num => parseInt(num.replace(",", '')));
-                [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, amount_arr, []);
-                await appendUserHistory(user.id, 'rbx', amount_arr)
-                await interaction.reply(`**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :green_circle: Added $${amount.split(" ").map(num => parseInt(num.replace(",", ''))).reduce((a, b) => a + b, 0)} RBX to ${user.username}'s balance\n||(**Previous balance: ${oldBalanceRbx} RBX**${result.info ? `, **Information:** \`${result.info}\`` : ''})||`);
-                break;
-            case 'usd':
-                amount_arr = amount.split(" ").map(num => parseFloat(num.replace(",", '')));
-                [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, [], amount_arr);
-                await appendUserHistory(user.id, 'usd', amount_arr)
-                await interaction.reply(`**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :green_circle: Added $${amount.split(" ").map(num => parseFloat(num.replace(",", ''))).reduce((a, b) => a + b, 0)} USD to ${user.username}'s balance\n||(**Previous balance: ${oldBalanceUsd} USD**${result.info ? `, **Information:** \`${result.info}\`` : ''})||`);
-                break;
+        try {
+            switch (currency) {
+                case 'rbx':
+                    amount_arr = amount.split(" ").map(num => parseInt(num.replace(",", '')));
+                    [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, amount_arr, []);
+                    await appendUserHistory(user.id, 'rbx', amount_arr)
+                    await interaction.reply({
+                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :green_circle: Added $${amount.split(" ").map(num => parseInt(num.replace(",", ''))).reduce((a, b) => a + b, 0)} RBX to ${user.username}'s balance\n||(**Previous balance: ${oldBalanceRbx} RBX**${result.info ? `, **Information:** \`${result.info}\`` : ''})||`,
+                        ephemeral: true
+                    });
+                    break;
+                case 'usd':
+                    amount_arr = amount.split(" ").map(num => parseFloat(num.replace(",", '')));
+                    [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, [], amount_arr);
+                    await appendUserHistory(user.id, 'usd', amount_arr)
+                    await interaction.reply({
+                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :green_circle: Added $${amount.split(" ").map(num => parseFloat(num.replace(",", ''))).reduce((a, b) => a + b, 0)} USD to ${user.username}'s balance\n||(**Previous balance: ${oldBalanceUsd} USD**${result.info ? `, **Information:** \`${result.info}\`` : ''})||`,
+                        ephemeral: true
+                    });
+                    break;
+            }
+        } catch (error) {
+            console.log(error.message);
+            await interaction.reply({
+                content: "An error occured!",
+                ephemeral: true
+            })
         }
     }
 };
