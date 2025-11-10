@@ -21,7 +21,7 @@ module.exports = {
         const info = interaction.options.getString('info');
         try {
             const data = await setPay(user.id, info)
-            await interaction.reply({ content: `Successfully added ${info} to ${user.username}`, ephemeral: true });
+            await interaction.reply({ content: `Successfully added \`${info}\` to ${user.username}`, ephemeral: true });
         } catch (error) {
             await interaction.reply({ content: "An error occured!" + error.message, ephemeral: true});
         }
