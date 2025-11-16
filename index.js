@@ -74,11 +74,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (!command) return;
 
     try {
-        if (Math.random() < 1/1000) {
-            await interaction.reply({content: "your mom", ephemeral: true})
-        } else {
-            await command.execute(interaction);
-        }
+        await command.execute(interaction);
     } catch (error) {
         console.error(`Error executing command ${interaction.commandName}:`, error);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
