@@ -1,0 +1,1 @@
+const { supabase } = require('../supabase/supabase_client.js')
