@@ -10,6 +10,10 @@ module.exports = {
                 .setDescription('The user to be added to the list')
                 .setRequired(true)
         )
+        .addStringOption(option => 
+            option.setName("info")
+            .setDescription("The info to add to the user")
+        )
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel),
     async execute(interaction) {
         const user = interaction.options.getUser('user')
