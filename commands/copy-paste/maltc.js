@@ -3,19 +3,20 @@ const { SlashCommandBuilder,
     EmbedBuilder,
     ActionRowBuilder,
     ButtonStyle,
-    ButtonBuilder
+    ButtonBuilder,
+    MessageFlags
 } = require('discord.js');
 const { getWallet } = require("../../utils/crypto")
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('malusdt')
-        .setDescription('Gets the address of usdt account')
+        .setName('maltc')
+        .setDescription('Gets the address of litecoin account')
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel),
     async execute(interaction) {
-        const wallet = await getWallet('usdt')
+        const wallet = await getWallet('ltc')
         if (!wallet) {
-            await interaction.reply({ content: 'Wallet not found', ephemeral: true });
+            await interaction.reply({ content: 'Wallet not found', flags: MessageFlags.Ephemeral });
             return;
         }
         await interaction.reply({ content: wallet.wallet });
