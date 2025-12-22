@@ -3,7 +3,8 @@ const { SlashCommandBuilder,
     EmbedBuilder,
     ButtonBuilder,
     ActionRowBuilder,
-    ButtonStyle
+    ButtonStyle,
+    MessageFlags
 } = require('discord.js');
 const { getPaginatedBalances, getUserInfo } = require('../../utils/balance.js');
 const { execute } = require('./getbal.js');
@@ -74,7 +75,7 @@ module.exports = {
 
             let [embed, actionRow] = buildResponse(data, currentPage, totalPages);
 
-            const response = await interaction.reply({ embeds: [embed], components: [actionRow], withResponse: true , ephemeral: true});
+            const response = await interaction.reply({ embeds: [embed], components: [actionRow], withResponse: true , flags: MessageFlags.Ephemeral});
 
             const filter = i => i.user.id === interaction.user.id && 
                                 (i.customId === 'left' || i.customId === 'right' || i.customId === 'gfs' || i.customId === 'owe' || i.customId === 'pay');
@@ -112,7 +113,7 @@ module.exports = {
 
         } catch (error) {
             console.error('Error executing listbals command:', error);
-            await interaction.reply({ content: 'There was an error while executing this command.', ephemeral: true });
+            await interaction.reply({ content: 'There was an error while executing this command.', flags: MessageFlags.Ephemeral });
         }
     }
 }

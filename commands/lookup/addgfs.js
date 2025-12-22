@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
 const { setGfs } = require("../../utils/gfs")
 
 module.exports = {
@@ -20,9 +20,9 @@ module.exports = {
         const info = interaction.options.getString('info')
         try {
             const data = await setGfs(user.id, true, info);
-            await interaction.reply({ content: `Successfully added ${user.username} into the GFS List ${info ? `and added \`${info}\` to their info`: ''}`, ephemeral: true})
+            await interaction.reply({ content: `Successfully added ${user.username} into the GFS List ${info ? `and added \`${info}\` to their info`: ''}`, flags: MessageFlags.Ephemeral})
         } catch {
-            await interaction.reply({ content: 'An error occured running this command', ephemeral: true})
+            await interaction.reply({ content: 'An error occured running this command', flags: MessageFlags.Ephemeral})
         }
     } 
 }

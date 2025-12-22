@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
 const { getUserBalance } = require('../../utils/balance.js');
 
 module.exports = {
@@ -15,9 +15,9 @@ module.exports = {
         const user = interaction.options.getUser('user');
         const balance = await getUserBalance(user.id);
         if (!balance) {
-            await interaction.reply({ content: `User ${user.username} has no balance record.`, ephemeral: true});
+            await interaction.reply({ content: `User ${user.username} has no balance record.`, flags: MessageFlags.Ephemeral});
             return;
         }
-        await interaction.reply({ content: `User ${user.username} has a balance of $${balance.balance_usd} USD and ${balance.balance_rbx} RBX. ${balance.info ? `\n||-# **Information**: \`${balance.info}\`||`: ''}` , ephemeral: true });
+        await interaction.reply({ content: `User ${user.username} has a balance of $${balance.balance_usd} USD and ${balance.balance_rbx} RBX. ${balance.info ? `\n||-# **Information**: \`${balance.info}\`||`: ''}` , flags: MessageFlags.Ephemeral });
     }
 };

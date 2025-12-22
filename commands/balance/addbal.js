@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
 const { editBalance, getUserInfo } = require('../../utils/balance.js');
 const { appendUserHistory } = require('../../utils/history.js');
 
@@ -65,7 +65,7 @@ module.exports = {
             console.log(error.message);
             await interaction.reply({
                 content: "An error occured!",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             })
         }
     }

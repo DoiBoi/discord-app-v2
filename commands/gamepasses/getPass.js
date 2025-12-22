@@ -3,7 +3,8 @@ const { SlashCommandBuilder,
     EmbedBuilder,
     ActionRowBuilder,
     ButtonStyle,
-    ButtonBuilder
+    ButtonBuilder,
+    MessageFlags
 } = require('discord.js');
 const { getGamePass } = require("../../utils/gamepass");
 
@@ -30,7 +31,7 @@ module.exports = {
         const pass = interaction.options.getString('pass');
         const passDetails = await getGamePass(pass);
         if (!passDetails) {
-            return interaction.reply({ content: 'No pass found.', ephemeral: true });
+            return interaction.reply({ content: 'No pass found.', flags: MessageFlags.Ephemeral });
         }
         return interaction.reply({ content: `${passDetails.get_link}` })
     }
