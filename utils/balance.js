@@ -112,10 +112,37 @@ async function getPaginatedBalances(page, perPage=10, is_gfs = false, is_owe = f
     return [data, countdata];
 }
 
+function getUserInfo(info, flags = {
+    gfs_toggle: false,
+    owe_toggle: false,
+    info_toggle: false,
+    new_line: true
+}) {
+    
+    if (info == undefined) {
+        return ''
+    }
+    let ret = ''
+    
+    if (flags.gfs_toggle) {
+        ret += info.gfs_info ? `**GFS Info:** \`${info.gfs_info}\`${flags.new_line ? "\n" : ''}` : ''
+    }
+
+    if (flags.owe_toggle) {
+        ret += info.owe_info ? `**OWE Info:** \`${info.owe_info}\`${flags.new_line ? "\n" : ''}` : ''
+    }
+
+    if (flags.info_toggle) {
+        ret += info.pay_info ? `**Info:** \`${info.pay_info}\`${flags.new_line ? "\n" : ''}` : ""
+    }
+    return ret;
+}
+
 // Export utility functions for use in other files
 module.exports = {
     getUserBalance,
     editBalance,
     clearBalance,
     getPaginatedBalances,
+    getUserInfo
 };

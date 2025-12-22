@@ -5,34 +5,13 @@ const { SlashCommandBuilder,
     ActionRowBuilder,
     ButtonStyle
 } = require('discord.js');
-const { getPaginatedBalances } = require('../../utils/balance.js');
+const { getPaginatedBalances, getUserInfo } = require('../../utils/balance.js');
 const { execute } = require('./getbal.js');
 
 let gfs_toggle = false;
 let owe_toggle = false;
 let info_toggle = false;
 const PERPAGE = 10;
-
-function getUserInfo(info) {
-    
-    if (info == undefined) {
-        return ''
-    }
-    let ret = ''
-    
-    if (gfs_toggle) {
-        ret += info.gfs_info ? `**GFS Info:** \`${info.gfs_info}\`\n` : ''
-    }
-
-    if (owe_toggle) {
-        ret += info.owe_info ? `**OWE Info:** \`${info.owe_info}\`\n` : ''
-    }
-
-    if (info_toggle) {
-        ret += info.pay_info ? `**Info:** \`${info.pay_info}\`\n` : ""
-    }
-    return ret;
-}
 
 function buildResponse(data, currentPage, totalPages) {
     const embed = new EmbedBuilder()
@@ -41,7 +20,11 @@ function buildResponse(data, currentPage, totalPages) {
         .setDescription(`Here are ${info_toggle ? 'the infos of ' : ''} the user balances${gfs_toggle ? '[GFS]' : ''}${owe_toggle ? '[OWE]' : ''}:`)
         .addFields(data.map((user) => ({
             name: '',
-            value: `<@${user.id}> | **USD**: $${user.balance_usd.toFixed(2)} | **RBX**: ${user.balance_rbx}\n${getUserInfo(user.info)}`,
+            value: `<@${user.id}> | **USD**: $${user.balance_usd.toFixed(2)} | **RBX**: ${user.balance_rbx}\n${getUserInfo(user.info, {
+                gfs_toggle: gfs_toggle,
+                owe_toggle: owe_toggle,
+                info_toggle: info_toggle
+            })}`,
         })));
     embed.setFooter({ text: `Page ${currentPage} of ${totalPages}` });
 

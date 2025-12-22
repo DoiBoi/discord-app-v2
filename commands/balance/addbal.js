@@ -1,6 +1,13 @@
 const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
-const { editBalance } = require('../../utils/balance.js');
+const { editBalance, getUserInfo } = require('../../utils/balance.js');
 const { appendUserHistory } = require('../../utils/history.js');
+
+const FLAGS = {
+    gfs_toggle: false,
+    owe_toggle: false,
+    info_toggle: true,
+    new_line: false
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -40,8 +47,9 @@ module.exports = {
                     amount_arr = amount.split(" ").map(num => parseInt(num.replace(",", '')));
                     [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, amount_arr, []);
                     await appendUserHistory(user.id, 'rbx', amount_arr)
+                    console.log(result.info)
                     await interaction.reply({
-                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :green_circle: Added $${amount.split(" ").map(num => parseInt(num.replace(",", ''))).reduce((a, b) => a + b, 0)} RBX to ${user.username}'s balance\n||-# (**Previous balance:** ${oldBalanceRbx} RBX${result.info ? `, **Information:** \`${result.info}\`` : ''})||`
+                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :green_circle: Added $${amount.split(" ").map(num => parseInt(num.replace(",", ''))).reduce((a, b) => a + b, 0)} RBX to ${user.username}'s balance\n||-# (**Previous balance:** ${oldBalanceRbx} RBX${getUserInfo(result.info, FLAGS) !== '' ? `, ${getUserInfo(result.info, FLAGS)}` : ''})||`
                     });
                     break;
                 case 'usd':
@@ -49,7 +57,7 @@ module.exports = {
                     [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, [], amount_arr);
                     await appendUserHistory(user.id, 'usd', amount_arr)
                     await interaction.reply({
-                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :green_circle: Added $${amount.split(" ").map(num => parseFloat(num.replace(",", ''))).reduce((a, b) => a + b, 0)} USD to ${user.username}'s balance\n||-# (**Previous balance:** ${oldBalanceUsd} USD${result.info ? `, **Information:** \`${result.info}\`` : ''})||`
+                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :green_circle: Added $${amount.split(" ").map(num => parseFloat(num.replace(",", ''))).reduce((a, b) => a + b, 0)} USD to ${user.username}'s balance\n||-# (**Previous balance:** ${oldBalanceUsd} USD${getUserInfo(result.info, FLAGS) !== '' ? `, ${getUserInfo(result.info, FLAGS)}` : ''})||`
                     });
                     break;
             }
