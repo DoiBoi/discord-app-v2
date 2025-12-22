@@ -5,11 +5,12 @@ async function setPay(userId, info = null) {
     const { data: get_data, error: get_error } = await supabase
         .from('balances')
         .select('info')
+        .eq('id', userId)
     
 
     let json = {}
-    if (get_data.info) {
-        json = get_data
+    if (get_data[0].info) {
+        json = get_data[0].info
     }
 
     json.pay_info = info
