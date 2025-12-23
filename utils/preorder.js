@@ -48,6 +48,13 @@ async function createPreOrder(from, to_info, amount) {
     return update_data;
 }
 
+async function setPreOrder(from, to_info, amount) {
+    const { data: to_data, error: to_error } = await supabase
+        .from("balances")
+        .select('id', "from_preorder")
+        .eq("info->preorder_info", to_info)
+}
+
 async function completePreOrder(from, to_info) {
     return;
 }
@@ -56,8 +63,10 @@ async function deletePreOrder(from, to_info) {
     return;
 }
 
+
 module.exports = { 
     addUserPreOrder
+    createPreOrder
     setPreOrder
     completePreOrder
     deletePreOrder
