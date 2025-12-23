@@ -125,7 +125,7 @@ function getUserInfo(info, flags = {
     let ret = ''
     
     if (flags.gfs_toggle) {
-        ret += info.gfs_info ? `**GFS Info:** \`${info.gfs_info}\`${flags.new_line ? "\n" : ''}` : ''
+        ret += info.gfs_info ? `**User:** \`${info.gfs_info}\`${flags.new_line ? "\n" : ''}` : ''
     }
 
     if (flags.owe_toggle) {
