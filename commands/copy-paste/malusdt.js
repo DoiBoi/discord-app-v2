@@ -3,7 +3,8 @@ const { SlashCommandBuilder,
     EmbedBuilder,
     ActionRowBuilder,
     ButtonStyle,
-    ButtonBuilder
+    ButtonBuilder,
+    MessageFlags
 } = require('discord.js');
 const { getWallet } = require("../../utils/crypto")
 
@@ -15,7 +16,7 @@ module.exports = {
     async execute(interaction) {
         const wallet = await getWallet('usdt')
         if (!wallet) {
-            await interaction.reply({ content: 'Wallet not found', ephemeral: true });
+            await interaction.reply({ content: 'Wallet not found', flags: MessageFlags.Ephemeral });
             return;
         }
         await interaction.reply({ content: wallet.wallet });

@@ -3,9 +3,10 @@ const { SlashCommandBuilder,
     EmbedBuilder,
     ButtonBuilder,
     ActionRowBuilder,
-    ButtonStyle
+    ButtonStyle,
+    MessageFlags
 } = require('discord.js');
-const { getPaginatedBalances } = require('../../utils/balance.js');
+const { getPaginatedBalances, getUserInfo } = require('../../utils/balance.js');
 const { execute } = require('./getbal.js');
 
 let gfs_toggle = false;
@@ -20,7 +21,11 @@ function buildResponse(data, currentPage, totalPages) {
         .setDescription(`Here are ${info_toggle ? 'the infos of ' : ''} the user balances${gfs_toggle ? '[GFS]' : ''}${owe_toggle ? '[OWE]' : ''}:`)
         .addFields(data.map((user) => ({
             name: '',
-            value: `<@${user.id}> | **USD**: $${user.balance_usd.toFixed(2)} | **RBX**: ${user.balance_rbx}\n${user.info ? `**Info**: \`${user.info}\`` : ''}`,
+            value: `<@${user.id}> | **USD**: $${user.balance_usd.toFixed(2)} | **RBX**: ${user.balance_rbx}\n${getUserInfo(user.info, {
+                gfs_toggle: gfs_toggle,
+                owe_toggle: owe_toggle,
+                info_toggle: info_toggle
+            })}`,
         })));
     embed.setFooter({ text: `Page ${currentPage} of ${totalPages}` });
 
@@ -70,7 +75,7 @@ module.exports = {
 
             let [embed, actionRow] = buildResponse(data, currentPage, totalPages);
 
-            const response = await interaction.reply({ embeds: [embed], components: [actionRow], withResponse: true , ephemeral: true});
+            const response = await interaction.reply({ embeds: [embed], components: [actionRow], withResponse: true , flags: MessageFlags.Ephemeral});
 
             const filter = i => i.user.id === interaction.user.id && 
                                 (i.customId === 'left' || i.customId === 'right' || i.customId === 'gfs' || i.customId === 'owe' || i.customId === 'pay');
@@ -108,7 +113,7 @@ module.exports = {
 
         } catch (error) {
             console.error('Error executing listbals command:', error);
-            await interaction.reply({ content: 'There was an error while executing this command.', ephemeral: true });
+            await interaction.reply({ content: 'There was an error while executing this command.', flags: MessageFlags.Ephemeral });
         }
     }
 }

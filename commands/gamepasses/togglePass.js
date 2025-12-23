@@ -4,7 +4,8 @@ const {
     EmbedBuilder,
     ActionRowBuilder,
     ButtonStyle,
-    ButtonBuilder
+    ButtonBuilder,
+    MessageFlags
 } = require('discord.js');
 const { toggleInUse } = require("../../utils/gamepass");
 
@@ -36,8 +37,8 @@ module.exports = {
         const user = interaction.options.getUser('user')
         const passDetails = await toggleInUse(pass, user?.id);
         if (!passDetails) {
-            return interaction.reply({ content: 'No pass found.', ephemeral: true });
+            return interaction.reply({ content: 'No pass found.', flags: MessageFlags.Ephemeral });
         }
-        return interaction.reply({ content: `${passDetails.name}'s \`in_use\` field has been updated to \`${passDetails.in_use}\``, ephemeral: true })
+        return interaction.reply({ content: `${passDetails.name}'s \`in_use\` field has been updated to \`${passDetails.in_use}\``, flags: MessageFlags.Ephemeral })
     }
 }

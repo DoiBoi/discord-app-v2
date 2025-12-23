@@ -1,6 +1,13 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
-const { editBalance } = require('../../utils/balance.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
+const { editBalance, getUserInfo } = require('../../utils/balance.js');
 const { appendUserHistory } = require('../../utils/history.js');
+
+const FLAGS = {
+    gfs_toggle: false,
+    owe_toggle: false,
+    info_toggle: true,
+    new_line: false
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -44,7 +51,7 @@ module.exports = {
                     [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, amount_arr, []);
                     await appendUserHistory(user.id, 'rbx', amount_arr);
                     await interaction.reply({
-                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :red_circle: Subtracted $${amount.split(" ").map(num => parseInt(num.replace(",", ''))).reduce((a, b) => a + b, 0)} RBX from ${user.username}'s balance\n||-# (**Previous balance:** ${oldBalanceRbx} RBX${result.info ? `, **Information:** \`${result.info}\`` : ''})||`
+                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :red_circle: Subtracted $${amount.split(" ").map(num => parseInt(num.replace(",", ''))).reduce((a, b) => a + b, 0)} RBX from ${user.username}'s balance\n||-# (**Previous balance:** ${oldBalanceRbx} RBX${getUserInfo(result.info, FLAGS) !== '' ? `, ${getUserInfo(result.info, FLAGS)}` : ''})||`
                     });
                     break;
                 case 'usd':
@@ -58,7 +65,7 @@ module.exports = {
                     [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(user.id, [], amount_arr);
                     await appendUserHistory(user.id, 'usd', amount_arr)
                     await interaction.reply({
-                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :red_circle: Subtracted $${amount.split(" ").map(num => parseFloat(num.replace(",", ''))).reduce((a, b) => a + b, 0)} USD from ${user.username}'s balance\n||-# (**Previous balance:** ${oldBalanceUsd} USD${result.info ? `, **Information:** \`${result.info}\`` : ''})||`
+                        content: `**New Balance:** $${result.balance_usd} USD, ${result.balance_rbx} RBX\n-# :red_circle: Subtracted $${amount.split(" ").map(num => parseFloat(num.replace(",", ''))).reduce((a, b) => a + b, 0)} USD from ${user.username}'s balance\n||-# (**Previous balance:** ${oldBalanceUsd} USD${getUserInfo(result.info, FLAGS) !== '' ? `, ${getUserInfo(result.info, FLAGS)}` : ''})||`
                     });
                     break;
             }
@@ -66,7 +73,7 @@ module.exports = {
             console.log(error.message);
             await interaction.reply({
                 content: "An error occured!",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             })
         }
     }

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
 const { setGfs } = require("../../utils/gfs")
 
 module.exports = {
@@ -10,14 +10,19 @@ module.exports = {
                 .setDescription('The user to be added to the list')
                 .setRequired(true)
         )
+        .addStringOption(option =>
+            option.setName("info")
+            .setDescription("The info to add to the user")
+        )
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel),
     async execute(interaction) {
         const user = interaction.options.getUser('user')
+        const info = interaction.options.getString('info')
         try {
-            const data = await setGfs(user.id, true);
-            await interaction.reply({ content: `Successfully added ${user.username} into the GFS List`, ephemeral: true})
+            const data = await setGfs(user.id, true, info);
+            await interaction.reply({ content: `Successfully added ${user.username} into the GFS List ${info ? `and added \`${info}\` to their info`: ''}`, flags: MessageFlags.Ephemeral})
         } catch {
-            await interaction.reply({ content: 'An error occured running this command', ephemeral: true})
+            await interaction.reply({ content: 'An error occured running this command', flags: MessageFlags.Ephemeral})
         }
     } 
 }

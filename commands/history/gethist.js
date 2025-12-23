@@ -3,7 +3,8 @@ const { SlashCommandBuilder,
     EmbedBuilder,
     ActionRowBuilder,
     ButtonStyle,
-    ButtonBuilder
+    ButtonBuilder,
+    MessageFlags
 } = require('discord.js');
 const { getUserHistory } = require("../../utils/history.js");
 const { if_exist } = require("../../utils/supabase/supabase_client.js")
@@ -82,7 +83,7 @@ module.exports = {
             let currentPage = 1;
 
             if (await !if_exist(user)) {
-                await interaction.reply({ content: 'No user was found', ephemeral: true });
+                await interaction.reply({ content: 'No user was found', flags: MessageFlags.Ephemeral });
                 return;
             }
 
@@ -90,7 +91,7 @@ module.exports = {
             hist.reverse();
 
             if (hist.length < 1) {
-                await interaction.reply({ content: 'No history was found of this user', ephemeral: true })
+                await interaction.reply({ content: 'No history was found of this user', flags: MessageFlags.Ephemeral })
                 return;
             }
             const totalPages = Math.ceil(hist.length/ITEM_IN_PAGE)
@@ -115,7 +116,7 @@ module.exports = {
             });
         } catch (error) {
             throw new Error(`There was an error running command gethist: ${error}`)
-            await interaction.reply({ content: 'There was an error running this command', ephemeral: true })
+            await interaction.reply({ content: 'There was an error running this command', flags: MessageFlags.Ephemeral })
         }
     }
 }

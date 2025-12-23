@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
 const { setOwe } = require("../../utils/owe");
 
 module.exports = {
@@ -15,9 +15,9 @@ module.exports = {
         const user = interaction.options.getUser('user')
         try {
             const data = await setOwe(user.id, false);
-            await interaction.reply({ content: `Successfully removed ${user.username} from the OWE List`,  ephemeral: true })
+            await interaction.reply({ content: `Successfully removed ${user.username} from the OWE List`,  flags: MessageFlags.Ephemeral })
         } catch {
-            await interaction.reply({ content: 'An error occured running this command', ephemeral: true })
+            await interaction.reply({ content: 'An error occured running this command', flags: MessageFlags.Ephemeral })
         }
     } 
 }

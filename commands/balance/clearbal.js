@@ -1,5 +1,12 @@
 const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
-const { clearBalance } = require('../../utils/balance.js');
+const { clearBalance, getUserInfo } = require('../../utils/balance.js');
+
+const FLAGS = {
+    gfs_toggle: false,
+    owe_toggle: false,
+    info_toggle: true,
+    new_line: false
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,6 +21,7 @@ module.exports = {
     async execute(interaction) {
         const user = interaction.options.getUser('user');
         const result = await clearBalance(user.id);
-        await interaction.reply(`Cleared balance for ${user.username}. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX. ${result.info ? `\n||-# **Information**: \`${result.info}\`||`: ''}`);
+        console.log(getUserInfo(result.info, FLAGS))
+        await interaction.reply(`Cleared balance for ${user.username}. \nNew Balance: $${result.balance_usd} USD, ${result.balance_rbx} RBX. ${getUserInfo(result.info, FLAGS) !== '' ? `\n-# ||${getUserInfo(result.info, FLAGS)}||`: ''}`);
     }
 }

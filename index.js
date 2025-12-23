@@ -38,7 +38,7 @@ for (const folder of commandFolders) {
     }
 }
 
-client.once('ready', () => {
+client.once(Events.ClientReady, () => {
     console.log('Bot is online!');
 
     // Set debug presence if --debug flag is passed

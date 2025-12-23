@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
 const { setPay } = require("../../utils/pay.js")
 
 module.exports = {
@@ -21,9 +21,9 @@ module.exports = {
         const info = interaction.options.getString('info');
         try {
             const data = await setPay(user.id, info)
-            await interaction.reply({ content: `Successfully added \`${info}\` to ${user.username}`, ephemeral: true });
+            await interaction.reply({ content: `Successfully added \`${info}\` to ${user.username}`, flags: MessageFlags.Ephemeral });
         } catch (error) {
-            await interaction.reply({ content: "An error occured!" + error.message, ephemeral: true});
+            await interaction.reply({ content: "An error occured!" + error.message, flags: MessageFlags.Ephemeral});
         }
     }
 }

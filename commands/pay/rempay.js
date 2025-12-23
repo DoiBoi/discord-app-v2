@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
 const { setPay } = require("../../utils/pay.js");
 
 module.exports = {
@@ -15,9 +15,9 @@ module.exports = {
         const user = interaction.options.getUser('user');
         try {
             const data = await setPay(user.id, null)
-            await interaction.reply({ content: `Successfully removed info from ${user.username}`, ephemeral: true });
+            await interaction.reply({ content: `Successfully removed info from ${user.username}`, flags: MessageFlags.Ephemeral });
         } catch (error) {
-            await interaction.reply({ content: "An error occured! " + error.message, ephemeral: true});
+            await interaction.reply({ content: "An error occured! " + error.message, flags: MessageFlags.Ephemeral});
         }
     }
 }
