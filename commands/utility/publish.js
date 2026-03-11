@@ -32,9 +32,9 @@ module.exports = {
         const other = interaction.options.getNumber("other")
         const totaluploads = interaction.options.getNumber("totaluploads")
         const recolors = interaction.options.getNumber("recolors")
-        const upload_usd = ((totaluploads - recolors) * 4.9) + (recolors * 4.5)
+        const upload_usd = ((totaluploads - recolors) * 3.3) + (recolors * 2.9)
         const publish_usd = (hatorface * 6.7) + (other * 4.5)
-        const upload_rbx = (totaluploads * 1.3) * 1000
+        const upload_rbx = (totaluploads * 0.85) * 1000
         const publish_rbx = ((hatorface * 1.8) + (other * 1.4)) * 1000
 
         let base = `**Uploads:** ${totaluploads} total uploads, ${recolors} of them being recolors. \n**Publishes:** ${hatorface} hat/face accessories and ${other} other accessories.`;
