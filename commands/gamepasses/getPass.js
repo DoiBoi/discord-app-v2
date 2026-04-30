@@ -17,7 +17,7 @@ module.exports = {
                 .setDescription('Name of the pass to get detail of')
                 .setRequired(true)
                 .addChoices(
-                    {name: "APPREC", value: "APPREC"},
+                    {name: "SUPPORT", value: "SUPPORT"},
                     {name: "BEST", value: "BEST"},
                     {name: "DONATION", value: "DONATION"},
                     {name: "LARGE", value: "LARGE"},
