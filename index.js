@@ -1,9 +1,9 @@
 require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
+const adminCommands = require('./commands.json')
+const { auth } = require('./utils/supabase/supabase_client.js')
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ActivityType } = require('discord.js');
-
-// TODO: implement supabase connectivity
 
 const client = new Client({
     intents: [
@@ -16,6 +16,26 @@ const client = new Client({
         GatewayIntentBits.DirectMessageReactions
     ]
 });
+
+// let adminCommands;
+
+// function loadCommands() {
+//     try {
+//         const response = await fetch('./commands.json');
+//         if (!response.ok) {
+//             throw new Error("An error occured");
+//         }
+//         return response.json();
+//     } catch (error) {
+//         console.error("An error occured");
+//     }
+// }
+
+// loadCommands()
+//     .then((commands) => {
+//         adminCommands = commands["AdminCommands"]
+//     }
+// )
 
 client.commands = new Collection();
 
@@ -73,12 +93,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
 
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(`Error executing command ${interaction.commandName}:`, error);
+    console.log(adminCommands["AdminCommands"].includes(interaction.commandName.trim()))
+    if (adminCommands["AdminCommands"].includes(interaction.commandName.trim())) {
+        // console.log(interaction.user.id)
+        if (await auth(interaction.user.id)) {
+            try {
+                await command.execute(interaction);
+            } catch (error) {
+                console.error(`Error executing command ${interaction.commandName}:`, error);
+                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            }
+        } else {
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
+    } else {
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
+
+
 });
 
 client.login(process.env.DISCORD_TOKEN);
