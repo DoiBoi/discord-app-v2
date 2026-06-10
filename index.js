@@ -93,7 +93,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
 
-    console.log(adminCommands["AdminCommands"].includes(interaction.commandName.trim()))
+    // console.log(adminCommands["AdminCommands"].includes(interaction.commandName.trim()))
     if (adminCommands["AdminCommands"].includes(interaction.commandName.trim())) {
         // console.log(interaction.user.id)
         if (await auth(interaction.user.id)) {
