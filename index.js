@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const adminCommands = require('./commands.json')
 const { auth } = require('./utils/supabase/supabase_client.js')
-const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ActivityType } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ActivityType, MessageFlags } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -92,25 +92,32 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     const command = client.commands.get(interaction.commandName);
     if (!command) return;
+    const commandName = interaction.commandName.trim()
 
     // console.log(adminCommands["AdminCommands"].includes(interaction.commandName.trim()))
-    if (adminCommands["AdminCommands"].includes(interaction.commandName.trim())) {
+    if (adminCommands["AdminCommands"].includes(commandName)) {
         // console.log(interaction.user.id)
         if (await auth(interaction.user.id)) {
-            try {
-                await command.execute(interaction);
-            } catch (error) {
-                console.error(`Error executing command ${interaction.commandName}:`, error);
-                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-            }
+            await runInteraction(command, interaction);
         } else {
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
         }
+    } else if (adminCommands["PublicCommands"].includes(commandName)) {
+        await runInteraction(command, interaction);
     } else {
-        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
     }
 
 
 });
 
 client.login(process.env.DISCORD_TOKEN);
+
+async function runInteraction(command, interaction) {
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(`Error executing command ${interaction.commandName}:`, error);
+        await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+    }
+}

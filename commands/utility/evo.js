@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionContextType } = require('discord.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
 const { calcDiff } = require('../../utils/evo_fee_calculator')
 
 module.exports = {
@@ -33,6 +33,6 @@ module.exports = {
             // This is actually never possible because of the access fee, but it's still here
             string += "It doesn't matter, choose either.";
         }
-        await interaction.reply({ content: string, ephermeral: true});
+        await interaction.reply({ content: string, flags: MessageFlags.Ephemeral});
     }
 }

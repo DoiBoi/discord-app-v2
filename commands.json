@@ -1,0 +1,34 @@
+{
+    "AdminCommands": [
+        "addbal",
+        "clearbal",
+        "getbal",
+        "listbals",
+        "subbal",
+        "malsol",
+        "maltc",
+        "malusdt",
+        "mmltc",
+        "mmusdt",
+        "mmusdte",
+        "pptos",
+        "getpass",
+        "listpass",
+        "toggleinuse",
+        "gethist",
+        "addgfs",
+        "addowe",
+        "users",
+        "remgfs",
+        "remowe",
+        "eval",
+        "sum",
+        "addpay",
+        "rempay",
+        "evo",
+        "upub"
+    ],
+    "PublicCommands": [
+        "exchange"
+    ]
+}
