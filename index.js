@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const adminCommands = require('./commands.json')
 const { auth } = require('./utils/supabase/supabase_client.js')
-const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ActivityType, MessageFlags } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, MessageFlags, ActivityType } = require('discord.js');
 
 const client = new Client({
     intents: [
