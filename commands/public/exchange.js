@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionContextType, MessageFlags } = require('discord.js');
+const { SlashCommandBuilder, InteractionContextType, MessageFlags, ButtonBuilder, SectionBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 const { execute } = require('../balance/subbal');
 
 const rec_rates = {
@@ -66,7 +66,7 @@ module.exports = {
                 flags: MessageFlags.Ephemeral
             })
             return
-        } 
+        }
         if (!recieving_amt && !sending_amt) {
             await interaction.reply({
                 content: "Please specify one of `recieving_amt` or `sending_amt`",
@@ -74,16 +74,62 @@ module.exports = {
             })
             return
         }
-        let message = "<a:7loading:1210687656703561758>";
+        let message = "";
+
         const multiplier = rec_rates[recieving_curr];
         if (sending_amt) {
             message += `You will recieve **\$${(sending_amt * multiplier).toFixed(2)} ${recieving_curr}** when sending **\$${sending_amt} ${sending_curr}**`
-        } 
+        }
         if (recieving_amt) {
-           message += `You must send **\$${(recieving_amt / multiplier).toFixed(2)} ${sending_curr}** to recieve **\$${recieving_amt} ${recieving_curr}**`
+            message += `You must send **\$${(recieving_amt / multiplier).toFixed(2)} ${sending_curr}** to recieve **\$${recieving_amt} ${recieving_curr}**`
         }
 
-        await interaction.reply({ content: message });
-    }
+        // const textSection = new SectionBuilder()
+        //     .addTextDisplayComponents(
+        //         (textDisplay) => textDisplay.setContent(
+        //             '-# <:warn:1497984754551623780> the button expires in 3 minutes, ping mal if you exceed this time \n'
+        //         ),
+        //         (textDisplay) => textDisplay.setContent(message),
+        //         (textDisplay) => textDisplay.setContent(
+        //             `Send to [GET ACCOUNT DETAILS] \nOnce done, screenshot and click complete`
+        //         )
+        //     )
 
+        const continueButton = new ButtonBuilder().setCustomId('continue').setLabel('Continue').setStyle(ButtonStyle.Success)
+        const cancelButton = new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+        const actionRow = new ActionRowBuilder().addComponents(continueButton, cancelButton)
+
+        const sentMessage = await interaction.reply({
+            content: `-# <:warn:1497984754551623780> the button expires in 3 minutes, ping mal if you exceed this time \n\n${message}\n\nSend to [GET ACCOUNT DETAILS] \nOnce done, screenshot and click complete`,
+            components: [actionRow]
+        });
+
+        const disableButtons = async () => {
+            continueButton.setDisabled(true)
+            cancelButton.setDisabled(true)
+            const disabledRow = new ActionRowBuilder().addComponents(continueButton, cancelButton)
+
+            await sentMessage.edit({ components: [disabledRow] })
+        }
+
+        const collector = sentMessage.createMessageComponentCollector({
+            time: 180000
+        })
+
+        collector.on('collect', async (interaction) => {
+            await interaction.deferUpdate()
+            if (interaction.customId == 'continue') {
+                interaction.followUp({
+                    content: `<a:7loading:1210687656703561758> wait for <@1474220722665558066> to review this & complete the exchange.\nPlease provide the ${recieving_curr} payment information while you wait`
+                })
+            }
+            await disableButtons()
+        })
+
+        setTimeout(async () => {
+            await disableButtons()
+        }, 180000)
+
+
+    }
 }
