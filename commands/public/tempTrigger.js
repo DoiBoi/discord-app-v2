@@ -21,14 +21,15 @@ const ORDER = {
 }
 
 function buildMessage(item) {
-    const calculated_fee = (item["amount"] * (100 - item["fee"]) / 100).toFixed(2)
+    const amount = item["amount"] - item["pending"]
+    const calculated_fee = (amount * (100 - item["fee"]) / 100).toFixed(2)
     let currency_text;
     if (item["currency"] == "PayPal") {
         currency_text = `${item["currency"]} (${item["fnf"] ? "cover" : "minus"} fnf fee)`
     } else {
         currency_text = item["currency"];
     }
-    let ret = `Your \$${item["amount"]} ${currency_text} for my \$${calculated_fee} crypto, ${item["fee"]}\% fee`
+    let ret = `Your \$${amount} ${currency_text} for my \$${calculated_fee} crypto, ${item["fee"]}\% fee`
     if (item["min"] == 0) {
         ret += '\n> no min'
     } else {
@@ -85,10 +86,13 @@ function buildDropdown(exchanges) {
             if (currency == "PayPal") {
                 additionalText = ` (${item["fnf"] ? "cover" : "minus"} fnf fee)`
             }
+
+            const amount = item["amount"] - item["pending"]
             options.push(
                 new StringSelectMenuOptionBuilder()
-                    .setLabel(`${currency}: \$${item["amount"]} for \$${(item["amount"] * (100-item["fee"])/100).toFixed(2)} Crypto${additionalText}, ${item["fee"]}\% fee, min \$${item["min"]}`)
+                    .setLabel(`${currency}: \$${amount} for \$${(amount * (100-item["fee"])/100).toFixed(2)} Crypto${additionalText}, ${item["fee"]}\% fee, min \$${item["min"]}`)
                     .setValue(String(item["id"]))
+                    .setEmoji(emoji)
             )
         }
     }
@@ -108,6 +112,7 @@ module.exports = {
         .setContexts(InteractionContextType.Guild, InteractionContextType.BotDM, InteractionContextType.PrivateChannel)
         .addUserOption(option =>
             option.setName('user')
+                // TODO
                 .setDescription('INSERT DESCRIPTION')
                 .setRequired(true)
         )
@@ -124,18 +129,21 @@ module.exports = {
         )
         .addNumberOption(option =>
             option.setName('fee')
+                // TODO
                 .setDescription("INSERT DESCRIPTION")
                 .setRequired(true)
                 .setMinValue(0.0)
         )
         .addNumberOption(option =>
             option.setName("min")
+                // TODO
                 .setDescription('INSERT DESCRIPTION')
                 .setRequired(true)
                 .setMinValue(0.0)
         )
         .addBooleanOption(option =>
             option.setName('fnf')
+                // TODO
                 .setDescription('INSERT DESCRIPTION')
         ),
     async execute(interaction) {
@@ -170,6 +178,7 @@ module.exports = {
 
         await updateExchange({
             amount: userBalance ? userBalance["balance_usd"] : 0,
+            user_id: user.id,
             fee: fee,
             currency: recieving,
             fnf: fnf,
@@ -190,5 +199,8 @@ module.exports = {
             content: `Message sent in ${response.url}`,
             flags: MessageFlags.Ephemeral
         })
-    }
+    },
+    buildDropdown,
+    buildMessage,
+    buildResponse
 }
