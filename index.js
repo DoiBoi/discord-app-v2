@@ -221,11 +221,11 @@ async function updateBoard(interaction) {
 
   try {
     channel = await interaction.client.channels.fetch(String(channel_id));
-  } catch {}
+  } catch { }
 
   try {
     message = await channel.messages.fetch(String(message_id));
-  } catch {}
+  } catch { }
   const exchanges = await getExchanges();
   const hasExchanges = Object.values(exchanges).some((items) =>
     items.some(
@@ -288,7 +288,7 @@ async function handleTOS(interaction, row, item, input) {
     );
 
     const response = await interaction.channel.send({
-      content: `send ${input} to ${item["info"]}, Send proof \& click complete once done\n-# Buttons will be disabled <t:${calculateTimeStamp(60 * 5)}:R>`,
+      content: `The exchange is now reserved for <t:${calculateTimeStamp(60 * 5)}:R>! \n -# WARNING: Do not send if the reservation time has passed, otherwise you risk losing your funds. \n Please send ${input} to \`${item["info"]}\`. Once paid, send proof of payment below, then click "Complete"`,
       components: [actionRow],
     });
 
