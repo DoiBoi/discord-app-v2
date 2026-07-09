@@ -239,7 +239,7 @@ async function handleTOS(interaction, row, item, input) {
     if (!ok.data) {
       await interaction.followUp({
         // TODO
-        content: "[INSERT UNAVAILABLE MSG]",
+        content: "The exchange you attempted to claim is no longer available, please check <#1474045625510400104> for the updated amount and repeat the process if necessary.",
         ephemeral: true,
       });
       return;
