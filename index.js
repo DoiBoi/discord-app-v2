@@ -196,11 +196,11 @@ async function updateBoard(interaction) {
 
   try {
     channel = await interaction.client.channels.fetch(String(channel_id));
-  } catch {}
+  } catch { }
 
   try {
     message = await channel.messages.fetch(String(message_id));
-  } catch {}
+  } catch { }
   const exchanges = await getExchanges();
   const hasExchanges = Object.values(exchanges).some((items) =>
     items.some(
@@ -549,8 +549,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
           const matches = interaction.customId.match(CONFIRM_REGEX);
           const id = matches[0];
           const amount = matches[1];
-          // TODO: subtract amount from pending as well as balance
-          //       then subtract amount from balances
           const item = await getExchange(Number(id));
           const forward_channel = await interaction.client.channels.fetch(
             String(item["channel"]),
@@ -575,7 +573,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
           console.log(e);
         }
       } else if (interaction.customId.includes("reject")) {
-        // TODO
         if (!(await auth(interaction.user.id))) {
           return await interaction.reply({
             content: "Not Authorized",

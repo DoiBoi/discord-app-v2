@@ -137,13 +137,13 @@ module.exports = {
       option
         .setName("user")
         // TODO
-        .setDescription("INSERT DESCRIPTION")
+        .setDescription("The Discord tag of the receiver")
         .setRequired(true),
     )
     .addStringOption((option) =>
       option
         .setName("recieving")
-        .setDescription("The currency you're recieving in")
+        .setDescription("The currency they're recieving in")
         .setRequired(true)
         .addChoices(
           { name: "PayPal", value: "PayPal" },
@@ -156,7 +156,7 @@ module.exports = {
       option
         .setName("fee")
         // TODO
-        .setDescription("INSERT DESCRIPTION")
+        .setDescription("The exchange fee you want to charge")
         .setRequired(true)
         .setMinValue(0.0),
     )
@@ -164,7 +164,7 @@ module.exports = {
       option
         .setName("min")
         // TODO
-        .setDescription("INSERT DESCRIPTION")
+        .setDescription("The minimum amount that senders can claim")
         .setRequired(true)
         .setMinValue(0.0),
     )
@@ -172,7 +172,7 @@ module.exports = {
       option
         .setName("fnf")
         // TODO
-        .setDescription("INSERT DESCRIPTION"),
+        .setDescription("If FNF fee for a Paypal exchange should be covered or not"),
     ),
   async execute(interaction) {
     const user = interaction.options.getUser("user");
@@ -205,7 +205,7 @@ module.exports = {
     try {
       message = await channel.messages.fetch(String(message_id));
       await message.delete();
-    } catch {}
+    } catch { }
 
     await updateExchange({
       amount: userBalance ? userBalance["balance_usd"] : 0,
