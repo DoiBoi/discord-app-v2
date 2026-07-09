@@ -1,73 +1,110 @@
-const { supabase } = require('./supabase/supabase_client.js');
+const { supabase } = require("./supabase/supabase_client.js");
 
 async function getExchanges() {
-    const { data, error } = await supabase
-        .from('temp_exchanges')
-        .select('*')
+  const { data, error } = await supabase.from("temp_exchanges").select("*");
 
-    if (error) return console.error("An error occured", error.message)
-    const ret = {}
+  if (error) return console.error("An error occured", error.message);
+  const ret = {};
 
-    data.forEach(item => {
-        if (!(item["currency"] in ret)) {
-            ret[item["currency"]] = [item]
-        } else {
-            ret[item["currency"]].push(item)
-        }
-    });
+  data.forEach((item) => {
+    if (!(item["currency"] in ret)) {
+      ret[item["currency"]] = [item];
+    } else {
+      ret[item["currency"]].push(item);
+    }
+  });
 
-    return ret
+  return ret;
 }
 
 async function getExchange(id) {
-    const { data, error } = await supabase
-        .from('temp_exchanges')
-        .select()
-        .eq('id', id)
+  const { data, error } = await supabase
+    .from("temp_exchanges")
+    .select("*, channel::text")
+    .eq("id", id);
 
-    if (error) return console.error("an error occured", error.message)
+  if (error) return console.error("an error occured", error.message);
 
-    return data[0]
+  return data[0];
 }
 
 async function updateExchange(item) {
+  const { data: get_data, error: get_error } = await supabase
+    .from("balances")
+    .select("info")
+    .eq("id", item["user_id"]);
+
+  if (get_error)
+    return console.error("An error occured in get", get_error.message);
+
+  item["info"] = get_data[0]["info"]["pay_info"] ?? "";
+  item["amount"] = Math.round(item["amount"] * 100) / 100;
+  const { data, error } = await supabase.from("temp_exchanges").upsert(item);
+
+  if (error) return console.error("An error occured", error.message);
+
+  return;
+}
+
+async function finalizeTemp(id, input) {
+  const num_id = Number(id)
+  const num_input = Number(input)
+
+  const { data: old_data, error: old_error} = await supabase
+    .from("temp_exchanges")
+    .select("pending, amount, user_id::text")
+    .eq("id", num_id)
+  
+  if (old_error) return console.error(old_error.message)
+  
+  const new_amt = Math.round((old_data[0]["amount"] - input) * 100)/100
+  const new_pend = Math.round((old_data[0]["pending"] - input) * 100)/100
+
+  if (new_amt == 0.00) {
+    const { data: delete_data, error: delete_error} = await supabase
+      .from("temp_exchanges")
+      .delete()
+      .eq("id", num_id)
+  } else {
     const { data, error } = await supabase
-        .from('temp_exchanges')
-        .upsert(item)
+      .from("temp_exchanges")
+      .update({
+        pending: new_pend,
+        amount: new_amt
+      })
+      .eq("id", num_id)
+  }
 
-    if (error) return console.error("An error occured", error.message)
-
-    return
+  return String(old_data[0]["user_id"])
 }
 
 async function addToPending(id, input) {
-    const num_id = Number(id)
+  const num_id = Number(id);
 
-    const { data: old_data, error: old_error } = await supabase
-        .from('temp_exchanges')
-        .select('pending')
-        .eq('id', num_id)
+  const { data: old_data, error: old_error } = await supabase
+    .from("temp_exchanges")
+    .select("pending")
+    .eq("id", num_id);
 
-    if (old_error) return console.error(old_error.message)
+  if (old_error) return console.error(old_error.message);
 
-    let new_val = old_data[0]["pending"] ?? 0
-    new_val += input;
+  let new_val = old_data[0]["pending"] ?? 0;
+  new_val += input;
 
-    console.log(new_val)
+  const { data: new_data, error: new_error } = await supabase
+    .from("temp_exchanges")
+    .update({
+      pending: new_val,
+    })
+    .eq("id", num_id);
 
-    const { data: new_data, error: new_error } = await supabase
-        .from('temp_exchanges')
-        .update({
-            pending: new_val 
-        })
-        .eq('id', num_id)
-
-    return
+  return;
 }
 
 module.exports = {
-    getExchanges,
-    getExchange,
-    updateExchange,
-    addToPending
-}
+  getExchanges,
+  getExchange,
+  updateExchange,
+  addToPending,
+  finalizeTemp
+};
