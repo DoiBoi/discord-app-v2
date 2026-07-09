@@ -591,6 +591,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             [],
             [-Number(amount)],
           );
+          // TODO: Add to hist as well
           await interaction.reply({
             content: "Finalized Transaction",
           });
