@@ -44,24 +44,28 @@ const client = new Client({
   ],
 });
 
-function buildTOSMessage(currency) {
+function buildTOSMessage(currency, amount) {
   switch (currency) {
     // TODO
     case "PayPal":
-      return '# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__  \n \n Make sure your payments are** FNF, BALANCE AND USD** \n > If you send bank, card, gns payments and/or you don\'t screen record from mobile app, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n (numba) of the Paypal exchange will be reserved for you for 5 minutes after pressing "I agree"''
+      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__  \n \n Make sure your payments are** FNF, BALANCE AND USD** \n > If you send bank, card, gns payments and/or you don\'t screen record from mobile app, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n ${amount.toFixed(2)} of the Paypal exchange will be reserved for you for 5 minutes after pressing "I agree"`
       break;
     case "CashApp":
-      return '# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__ \n \n Must send with **CASH BALANCE** and **FOOD NOTE** \n > If you send bank, card and/or notes related to the exchange, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n (numba) of the Cashapp exchange will be reserved for you for 5 minutes after pressing "I agree"'
+      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__ \n \n Must send with **CASH BALANCE** and **FOOD NOTE** \n > If you send bank, card and/or notes related to the exchange, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n ${amount.toFixed(2)} of the Cashapp exchange will be reserved for you for 5 minutes after pressing "I agree"`
       break;
     case "Zelle":
-      return '# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n (numba) of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"'
+      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n ${amount.toFixed(2)} of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"`
       break;
     case "Venmo":
-      return '# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n (numba) of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"'
+      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n ${amount.toFixed(2)} of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"`
       break;
     default:
-      return ""
+      return "";
   }
+}
+
+function calculateTimeStamp(seconds) {
+  return Math.floor(Date.now() / 1000) + seconds;
 }
 
 const CONFIRM_REGEX = /\d+\.\d+|\d+/gm;
@@ -204,7 +208,8 @@ async function handleSendCancel(interaction, id, amount, actionRow) {
 
 async function handleSendHelp(interaction) {
   await interaction.reply({
-    content: "Your payment proof has been forwarded to the receiver to ask for confirmation. <@1474220722665558066> will review your exchange and pay you shortly. Please make sure to send your crypto address while waiting.",
+    content:
+      "Your payment proof has been forwarded to the receiver to ask for confirmation. <@1474220722665558066> will review your exchange and pay you shortly. Please make sure to send your crypto address while waiting.",
   });
   return;
 }
@@ -216,11 +221,11 @@ async function updateBoard(interaction) {
 
   try {
     channel = await interaction.client.channels.fetch(String(channel_id));
-  } catch { }
+  } catch {}
 
   try {
     message = await channel.messages.fetch(String(message_id));
-  } catch { }
+  } catch {}
   const exchanges = await getExchanges();
   const hasExchanges = Object.values(exchanges).some((items) =>
     items.some(
@@ -258,7 +263,8 @@ async function handleTOS(interaction, row, item, input) {
 
     if (!ok.data) {
       await interaction.followUp({
-        content: "The exchange you attempted to claim is no longer available, please check <#1474045625510400104> for the updated amount and repeat the process if necessary.",
+        content:
+          "The exchange you attempted to claim is no longer available, please check <#1474045625510400104> for the updated amount and repeat the process if necessary.",
         ephemeral: true,
       });
       return;
@@ -282,7 +288,7 @@ async function handleTOS(interaction, row, item, input) {
     );
 
     const response = await interaction.channel.send({
-      content: `send ${input} to ${item["info"]}, Send proof \& click complete once done\n-# Buttons will be disabled after 5 minutes`,
+      content: `send ${input} to ${item["info"]}, Send proof \& click complete once done\n-# Buttons will be disabled <t:${calculateTimeStamp(60 * 5)}:R>`,
       components: [actionRow],
     });
 
@@ -321,11 +327,20 @@ async function handleTOS(interaction, row, item, input) {
           ),
         );
 
+        const ok = await supabase.rpc("update_temp_pending", {
+          p_id: Number(item["id"]),
+          p_delta: -input,
+        });
+
         await response
           .edit({
             components: [timedOutRow],
           })
           .catch(console.error);
+        await response.reply({
+          content: "Timed out, please try again",
+          flags: MessageFlags.Ephemeral
+        })
       }
     });
   }
@@ -368,7 +383,7 @@ async function handleChannelDropdown(interaction, item, input) {
   const row = new ActionRowBuilder().addComponents(agreeButton, cancelButton);
 
   const TOSResponse = await targetChannel.send({
-    content: buildTOSMessage(item["currency"]),
+    content: buildTOSMessage(item["currency"], input),
     components: [row],
   });
 
@@ -521,8 +536,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         }
 
         const channelResponse = await interaction.reply({
-          content:
-            "Select the channel to do this exchange in\n-# Button will not work after 1 minute",
+          content: `Select the channel to do this exchange in\n-# Button will not work <t:${calculateTimeStamp(60)}:R>`,
           components: [buildChannelDropdown()],
           flags: MessageFlags.Ephemeral,
           withResponse: true,
