@@ -44,6 +44,26 @@ const client = new Client({
   ],
 });
 
+function buildTOSMessage(currency){
+  switch (currency) {
+    // TODO
+    case "PayPal":
+      return "INSERT MESSAGE"
+      break;
+    case "CashApp":
+      return "INSERT MESSAGE"
+      break;
+    case "Zelle":
+      return "INSERT MESSAGE"
+      break;
+    case "Venmo":
+      return "INSERT MESSAGE"
+      break;
+    default:
+      return ""
+  }
+}
+
 const CONFIRM_REGEX = /\d+\.\d+|\d+/gm;
 
 async function handleSendComplete(interaction, actionRow, item, input) {
@@ -238,7 +258,6 @@ async function handleTOS(interaction, row, item, input) {
 
     if (!ok.data) {
       await interaction.followUp({
-        // TODO
         content: "The exchange you attempted to claim is no longer available, please check <#1474045625510400104> for the updated amount and repeat the process if necessary.",
         ephemeral: true,
       });
@@ -349,8 +368,7 @@ async function handleChannelDropdown(interaction, item, input) {
   const row = new ActionRowBuilder().addComponents(agreeButton, cancelButton);
 
   const TOSResponse = await targetChannel.send({
-    // TODO
-    content: "[INSERT MARKDOWN OF TOS]",
+    content: buildTOSMessage(item["currency"]),
     components: [row],
   });
 
