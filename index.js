@@ -184,7 +184,7 @@ async function handleSendCancel(interaction, id, amount, actionRow) {
 
 async function handleSendHelp(interaction) {
   await interaction.reply({
-    content: "[PING MAL MESSAGE]",
+    content: "Your payment proof has been forwarded to the receiver to ask for confirmation. <@1474220722665558066> will review your exchange and pay you shortly. Please make sure to send your crypto address while waiting.",
   });
   return;
 }
