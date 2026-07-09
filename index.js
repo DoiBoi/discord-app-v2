@@ -288,7 +288,7 @@ async function handleTOS(interaction, row, item, input) {
     );
 
     const response = await interaction.channel.send({
-      content: `The exchange is now reserved for <t:${calculateTimeStamp(60 * 5)}:R>! \n-# WARNING: Do not send if the reservation time has passed, otherwise you risk losing your funds. \n Please send ${input} to \`${item["info"]}\`. Once paid, send proof of payment below, then click "Complete"`,
+      content: `## The exchange is now reserved for <t:${calculateTimeStamp(60 * 5)}:R>! \n-# WARNING: Do not send if the reservation time has passed, otherwise you risk losing your funds. \n Please send $${input} to \`${item["info"]}\`. \nOnce paid, send proof of payment below, then click "Complete"`,
       components: [actionRow],
     });
 
