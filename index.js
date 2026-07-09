@@ -48,16 +48,16 @@ function buildTOSMessage(currency, amount) {
   switch (currency) {
     // TODO
     case "PayPal":
-      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__  \n \n Make sure your payments are** FNF, BALANCE AND USD** \n > If you send bank, card, gns payments and/or you don\'t screen record from mobile app, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n ${amount.toFixed(2)} of the Paypal exchange will be reserved for you for 5 minutes after pressing "I agree"`
+      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__  \n \n Make sure your payments are** FNF, BALANCE AND USD** \n > If you send bank, card, gns payments and/or you don\'t screen record from mobile app, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Paypal exchange will be reserved for you for 5 minutes after pressing "I agree"`
       break;
     case "CashApp":
-      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__ \n \n Must send with **CASH BALANCE** and **FOOD NOTE** \n > If you send bank, card and/or notes related to the exchange, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n ${amount.toFixed(2)} of the Cashapp exchange will be reserved for you for 5 minutes after pressing "I agree"`
+      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__ \n \n Must send with **CASH BALANCE** and **FOOD NOTE** \n > If you send bank, card and/or notes related to the exchange, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Cashapp exchange will be reserved for you for 5 minutes after pressing "I agree"`
       break;
     case "Zelle":
-      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n ${amount.toFixed(2)} of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"`
+      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"`
       break;
     case "Venmo":
-      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n ${amount.toFixed(2)} of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"`
+      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"`
       break;
     default:
       return "";
@@ -288,7 +288,7 @@ async function handleTOS(interaction, row, item, input) {
     );
 
     const response = await interaction.channel.send({
-      content: `The exchange is now reserved for <t:${calculateTimeStamp(60 * 5)}:R>! \n -# WARNING: Do not send if the reservation time has passed, otherwise you risk losing your funds. \n Please send ${input} to \`${item["info"]}\`. Once paid, send proof of payment below, then click "Complete"`,
+      content: `The exchange is now reserved for <t:${calculateTimeStamp(60 * 5)}:R>! \n-# WARNING: Do not send if the reservation time has passed, otherwise you risk losing your funds. \n Please send ${input} to \`${item["info"]}\`. Once paid, send proof of payment below, then click "Complete"`,
       components: [actionRow],
     });
 
