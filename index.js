@@ -44,20 +44,20 @@ const client = new Client({
   ],
 });
 
-function buildTOSMessage(currency){
+function buildTOSMessage(currency) {
   switch (currency) {
     // TODO
     case "PayPal":
-      return "INSERT MESSAGE"
+      return '# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__  \n \n Make sure your payments are** FNF, BALANCE AND USD** \n > If you send bank, card, gns payments and/or you don\'t screen record from mobile app, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n (numba) of the Paypal exchange will be reserved for you for 5 minutes after pressing "I agree"''
       break;
     case "CashApp":
-      return "INSERT MESSAGE"
+      return '# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__ \n \n Must send with **CASH BALANCE** and **FOOD NOTE** \n > If you send bank, card and/or notes related to the exchange, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n (numba) of the Cashapp exchange will be reserved for you for 5 minutes after pressing "I agree"'
       break;
     case "Zelle":
-      return "INSERT MESSAGE"
+      return '# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n (numba) of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"'
       break;
     case "Venmo":
-      return "INSERT MESSAGE"
+      return '# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n (numba) of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"'
       break;
     default:
       return ""
