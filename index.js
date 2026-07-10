@@ -31,6 +31,7 @@ const {
   buildMessage,
   buildResponse,
 } = require("./commands/public/tempTrigger");
+const { appendUserHistory } = require("./utils/history");
 
 const client = new Client({
   intents: [
@@ -44,20 +45,20 @@ const client = new Client({
   ],
 });
 
-function buildTOSMessage(currency, amount) {
+function buildTOSMessage(currency, amount, user) {
   switch (currency) {
     // TODO
     case "PayPal":
-      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__  \n \n Make sure your payments are** FNF, BALANCE AND USD** \n > If you send bank, card, gns payments and/or you don\'t screen record from mobile app, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Paypal exchange will be reserved for you for 5 minutes after pressing "I agree"`
+      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__  \n \n Make sure your payments are** FNF, BALANCE AND USD** \n > If you send bank, card, gns payments and/or you don\'t screen record from mobile app, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Paypal exchange will be reserved for you for 5 minutes after pressing "I agree"`;
       break;
     case "CashApp":
-      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__ \n \n Must send with **CASH BALANCE** and **FOOD NOTE** \n > If you send bank, card and/or notes related to the exchange, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Cashapp exchange will be reserved for you for 5 minutes after pressing "I agree"`
+      return `# Please read the following message carefully. \n Only once you are certain you can follow the instructions, click "I agree" \n __SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__ \n \n Must send with **CASH BALANCE** and **FOOD NOTE** \n > If you send bank, card and/or notes related to the exchange, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Cashapp exchange will be reserved for you for 5 minutes after pressing "I agree"`;
       break;
     case "Zelle":
-      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"`
+      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"`;
       break;
     case "Venmo":
-      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"`
+      return `# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \n Make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"`;
       break;
     default:
       return "";
@@ -92,6 +93,8 @@ async function handleSendComplete(interaction, actionRow, item, input) {
     let response;
 
     if (hasImage) {
+      await interaction.deferUpdate();
+
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("forward-yes")
@@ -107,10 +110,7 @@ async function handleSendComplete(interaction, actionRow, item, input) {
           ButtonBuilder.from(button).setDisabled(true),
         ),
       );
-      await interaction.update({
-        components: [disabledRow],
-      });
-      response = await interaction.channel.send({
+      response = await hasImage.reply({
         content: "Do you want to forward this to the sender?",
         components: [row],
       });
@@ -134,8 +134,16 @@ async function handleSendComplete(interaction, actionRow, item, input) {
             .setLabel("Reject")
             .setStyle(ButtonStyle.Danger),
         );
+        const disabledRow = new ActionRowBuilder().addComponents(
+          row.components.map((button) =>
+            ButtonBuilder.from(button).setDisabled(true),
+          ),
+        );
         if (i.customId == "forward-yes") {
           try {
+            await interaction.message.edit({
+              components: [disabledRow],
+            });
             forward_channel = await interaction.client.channels.fetch(
               String(forward_channel),
             );
@@ -153,15 +161,10 @@ async function handleSendComplete(interaction, actionRow, item, input) {
           }
         } else if (i.customId == "forward-cancel") {
           await i.reply({
-            content: "Please wait for <@1474220722665558066> to confirm",
-            components: [confirmRow],
+            content:
+              "Please send the correct image to be forwarded then click on `Confirm` again",
           });
         }
-        const disabledRow = new ActionRowBuilder().addComponents(
-          row.components.map((button) =>
-            ButtonBuilder.from(button).setDisabled(true),
-          ),
-        );
         await i.message.edit({
           components: [disabledRow],
         });
@@ -221,11 +224,11 @@ async function updateBoard(interaction) {
 
   try {
     channel = await interaction.client.channels.fetch(String(channel_id));
-  } catch { }
+  } catch {}
 
   try {
     message = await channel.messages.fetch(String(message_id));
-  } catch { }
+  } catch {}
   const exchanges = await getExchanges();
   const hasExchanges = Object.values(exchanges).some((items) =>
     items.some(
@@ -339,8 +342,8 @@ async function handleTOS(interaction, row, item, input) {
           .catch(console.error);
         await response.reply({
           content: "Timed out, please try again",
-          flags: MessageFlags.Ephemeral
-        })
+          flags: MessageFlags.Ephemeral,
+        });
       }
     });
   }
@@ -383,7 +386,7 @@ async function handleChannelDropdown(interaction, item, input) {
   const row = new ActionRowBuilder().addComponents(agreeButton, cancelButton);
 
   const TOSResponse = await targetChannel.send({
-    content: buildTOSMessage(item["currency"], input),
+    content: buildTOSMessage(item["currency"], input, interaction.user.id),
     components: [row],
   });
 
@@ -591,7 +594,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             [],
             [-Number(amount)],
           );
-          // TODO: Add to hist as well
+          await appendUserHistory(user_id, "usd", [-Number(amount)]);
           await interaction.reply({
             content: "Finalized Transaction",
           });

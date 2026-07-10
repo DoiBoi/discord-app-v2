@@ -20,7 +20,7 @@ async function getExchanges() {
 async function getExchange(id) {
   const { data, error } = await supabase
     .from("temp_exchanges")
-    .select("*, channel::text")
+    .select("*, channel::text, user_id::text")
     .eq("id", id);
 
   if (error) return console.error("an error occured", error.message);
