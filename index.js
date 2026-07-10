@@ -71,7 +71,7 @@ function calculateTimeStamp(seconds) {
 
 const CONFIRM_REGEX = /\d+\.\d+|\d+/gm;
 
-async function handleSendComplete(interaction, actionRow, item, input) {
+async function handleSendComplete(interaction, actionRow, item, input, prevCollector) {
   try {
     let forward_channel = item["channel"];
     const messages = await interaction.channel.messages.fetch({ limit: 5 });
@@ -152,6 +152,7 @@ async function handleSendComplete(interaction, actionRow, item, input) {
               content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n Please make sure to send your crypto address while waiting.`,
               components: [confirmRow],
             });
+            prevCollector.stop()
           } catch (error) {
             console.error(error);
             await i.reply({
@@ -309,7 +310,7 @@ async function handleTOS(interaction, row, item, input) {
     collector.on("collect", async (i) => {
       switch (i.customId) {
         case "send-complete":
-          await handleSendComplete(i, actionRow, item, input);
+          await handleSendComplete(i, actionRow, item, input, collector);
           break;
         case "send-cancel":
           await handleSendCancel(i, item["id"], input, actionRow);
@@ -398,6 +399,8 @@ async function handleChannelDropdown(interaction, item, input) {
 
   newCollector.on("collect", async (i) => {
     await handleTOS(i, row, item, input);
+
+    newCollector.stop()
   });
 
   newCollector.on("end", async (collected, reason) => {
