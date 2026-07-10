@@ -49,16 +49,16 @@ function buildTOSMessage(currency, amount, user) {
   switch (currency) {
     // TODO
     case "PayPal":
-      return `<@${user}>\n# Please read the following message carefully. \nOnly once you are certain you can follow the instructions, click "I agree" \n__SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__  \n\nMake sure your payments are** FNF, BALANCE AND USD** \n> If you send bank, card, gns payments and/or you don\'t screen record from mobile app, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Paypal exchange will be reserved for you for 5 minutes after pressing "I agree"`;
+      return `<@${user}>\n## Please read the following message carefully. \nOnly once you are certain you can follow the instructions, click "I agree" \n__SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__  \n\nMake sure your payments are** FNF, BALANCE AND USD** \n> If you send bank, card, gns payments and/or you don\'t screen record from mobile app, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Paypal exchange will be reserved for you for 5 minutes after pressing "I agree"`;
       break;
     case "CashApp":
-      return `<@${user}>\n# Please read the following message carefully. \nOnly once you are certain you can follow the instructions, click "I agree" \n__SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__ \n \nMust send with **CASH BALANCE** and **FOOD NOTE** \n> If you send bank, card and/or notes related to the exchange, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Cashapp exchange will be reserved for you for 5 minutes after pressing "I agree"`;
+      return `<@${user}>\n## Please read the following message carefully. \nOnly once you are certain you can follow the instructions, click "I agree" \n__SCREEN RECORD THE SENDING & THE RECEIPT PAGE ON THE MOBILE APP__ \n \nMust send with **CASH BALANCE** and **FOOD NOTE** \n> If you send bank, card and/or notes related to the exchange, I will not release the crypto. \n Additionally, you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds, so make sure you only claim an exchange when you are ready to send. \n \$${amount.toFixed(2)} of the Cashapp exchange will be reserved for you for 5 minutes after pressing "I agree"`;
       break;
     case "Zelle":
-      return `<@${user}>\n# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \nMake sure you only claim an exchange when you are ready to send. \n\$${amount.toFixed(2)} of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"`;
+      return `<@${user}>\n## Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \nMake sure you only claim an exchange when you are ready to send. \n\$${amount.toFixed(2)} of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"`;
       break;
     case "Venmo":
-      return `<@${user}>\n# Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \nMake sure you only claim an exchange when you are ready to send. \n\$${amount.toFixed(2)} of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"`;
+      return `<@${user}>\n## Do you understand that you must send the funds within 5 minutes, and if sent outside of your reserved duration, you risk losing your funds? \nMake sure you only claim an exchange when you are ready to send. \n\$${amount.toFixed(2)} of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"`;
       break;
     default:
       return "";
@@ -111,7 +111,7 @@ async function handleSendComplete(interaction, actionRow, item, input) {
         ),
       );
       response = await hasImage.reply({
-        content: "Do you want to forward this to the sender?",
+        content: '⚠️ Is this the correct proof of payment? \n- Clicking "Yes" will forward it to the receiver to ask for confirmation \n- Clicking "No" allows you to resend the correct proof',
         components: [row],
       });
       const filter = (i) =>
@@ -149,20 +149,20 @@ async function handleSendComplete(interaction, actionRow, item, input) {
             );
             const forwarded = await hasImage.forward(forward_channel);
             await i.reply({
-              content: `Message sent in ${forwarded.url}, wait for <@1474220722665558066> to confirm`,
+              content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n Please make sure to send your crypto address while waiting.`,
               components: [confirmRow],
             });
           } catch (error) {
             console.error(error);
             await i.reply({
-              content: "Channel not found, ping mal to assist in forwarding",
+              content: "⚠️ Error occured while forwarding, please wait for <@1474220722665558066> to manually confirm.",
               flags: MessageFlags.Ephemeral,
             });
           }
         } else if (i.customId == "forward-cancel") {
           await i.reply({
             content:
-              "Please send the correct image to be forwarded then click on `Confirm` again",
+              '<a:loading:1524945258998399063> Please send the correct proof of payment then click "Complete" again.',
           });
         }
         await i.message.edit({
@@ -171,7 +171,7 @@ async function handleSendComplete(interaction, actionRow, item, input) {
       });
     } else {
       await interaction.reply({
-        content: "Image not detected, please submit an image of the proof",
+        content: 'Image/Video has not been detected, please submit proof of payemnt before clicking "Complete"',
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -212,7 +212,7 @@ async function handleSendCancel(interaction, id, amount, actionRow) {
 async function handleSendHelp(interaction) {
   await interaction.reply({
     content:
-      "Your payment proof has been forwarded to the receiver to ask for confirmation. <@1474220722665558066> will review your exchange and pay you shortly. Please make sure to send your crypto address while waiting.",
+      "State what you need help with and wait for <@1474220722665558066> to assist you. \n-# ⚠️ The exchange is no longer reserved, please do not send money otherwise you risk losing funds. If somehow you figured the problem out, you can repeat the claim process to reserve the exchange again.",
   });
   return;
 }
@@ -224,11 +224,11 @@ async function updateBoard(interaction) {
 
   try {
     channel = await interaction.client.channels.fetch(String(channel_id));
-  } catch {}
+  } catch { }
 
   try {
     message = await channel.messages.fetch(String(message_id));
-  } catch {}
+  } catch { }
   const exchanges = await getExchanges();
   const hasExchanges = Object.values(exchanges).some((items) =>
     items.some(
@@ -291,7 +291,7 @@ async function handleTOS(interaction, row, item, input) {
     );
 
     const response = await interaction.channel.send({
-      content: `## The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>! \n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds. \n\nPlease send $${input} to \`${item["info"]}\`. \n- Once paid, send proof of payment below, then click "Complete"`,
+      content: `## <a:loading:1524945258998399063> The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>! \n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds. \n\nPlease send $${input} to \`${item["info"]}\`. \n- Once paid, send proof of payment below, then click "Complete"`,
       components: [actionRow],
     });
 
@@ -533,7 +533,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ) {
           return await interaction.reply({
             content:
-              "Please input a valid number (Please make sure that the amount you input is between the minimum & maximum that the exchange can do)",
+              "Please input a valid amount! It must be between the minimum & maximum that the exchange can do.",
             flags: MessageFlags.Ephemeral,
           });
         }
