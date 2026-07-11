@@ -181,7 +181,7 @@ async function handleSendComplete(interaction, actionRow, item, input, prevColle
   }
 }
 
-async function handleSendCancel(interaction, id, amount, actionRow) {
+async function handleSendCancel(interaction, id, amount, actionRow, contentText) {
   const ok = await supabase.rpc("update_temp_pending", {
     p_id: Number(id),
     p_delta: -amount,
@@ -205,12 +205,13 @@ async function handleSendCancel(interaction, id, amount, actionRow) {
   });
   await updateBoard(interaction);
   await interaction.reply({
-    content: "Exchange cancelled",
+    content: contentText,
   });
   return;
 }
 
-async function handleSendHelp(interaction) {
+async function handleSendHelp(interaction, id, amount, actionRow) {
+
   await interaction.reply({
     content:
       "State what you need help with and wait for <@1474220722665558066> to assist you. \n-# ⚠️ The exchange is no longer reserved, please do not send money otherwise you risk losing funds. If somehow you figured the problem out, you can repeat the claim process to reserve the exchange again.",
@@ -308,15 +309,17 @@ async function handleTOS(interaction, row, item, input) {
     });
 
     collector.on("collect", async (i) => {
+      const cancelContent = "Exchange cancelled"
+      const helpContent = "State what you need help with and wait for <@1474220722665558066> to assist you. \n-# ⚠️ The exchange is no longer reserved, please do not send money otherwise you risk losing funds. If somehow you figured the problem out, you can repeat the claim process to reserve the exchange again."
       switch (i.customId) {
         case "send-complete":
           await handleSendComplete(i, actionRow, item, input, collector);
           break;
         case "send-cancel":
-          await handleSendCancel(i, item["id"], input, actionRow);
+          await handleSendCancel(i, item["id"], input, actionRow, cancelContent);
           break;
         case "send-help":
-          await handleSendHelp(i);
+          await handleSendCancel(i, item["id"], input, actionRow, helpContent);
           break;
         default:
           break;
