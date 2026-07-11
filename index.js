@@ -9,7 +9,7 @@ const {
   addToPending,
   finalizeTemp,
 } = require("./utils/temp_exchage.js");
-const { editBalance } = require("./utils/balance");
+const { editBalance, getUserInfo } = require("./utils/balance");
 const { getId } = require("./utils/id.js");
 const { buildTempModal, buildChannelDropdown } = require("./utils/build.js");
 const {
@@ -32,6 +32,13 @@ const {
   buildResponse,
 } = require("./commands/public/tempTrigger");
 const { appendUserHistory } = require("./utils/history");
+
+const FLAGS = {
+  gfs_toggle: false,
+  owe_toggle: false,
+  info_toggle: true,
+  new_line: false,
+};
 
 const client = new Client({
   intents: [
@@ -155,6 +162,9 @@ async function handleSendComplete(
               String(forward_channel),
             );
             const forwarded = await hasImage.forward(forward_channel);
+            await forward_channel.send({
+              content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${item["amount"] - item["pending"] - Number(input).toFixed(2)}`,
+            });
             await i.reply({
               content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n Please make sure to send your crypto address while waiting.`,
               components: [confirmRow],
@@ -196,7 +206,7 @@ async function handleSendCancel(
   amount,
   actionRow,
   contentText,
-  collector
+  collector,
 ) {
   const ok = await supabase.rpc("update_temp_pending", {
     p_id: Number(id),
@@ -223,7 +233,7 @@ async function handleSendCancel(
   await interaction.reply({
     content: contentText,
   });
-  await collector.stop()
+  await collector.stop();
   return;
 }
 
@@ -339,11 +349,18 @@ async function handleTOS(interaction, row, item, input) {
             input,
             actionRow,
             cancelContent,
-            collector
+            collector,
           );
           break;
         case "send-help":
-          await handleSendCancel(i, item["id"], input, actionRow, helpContent, collector);
+          await handleSendCancel(
+            i,
+            item["id"],
+            input,
+            actionRow,
+            helpContent,
+            collector,
+          );
           break;
         default:
           break;
@@ -625,12 +642,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
             [],
             [-Number(amount)],
           );
+          const user = await client.users.fetch(user_id);
           await appendUserHistory(user_id, "usd", [-Number(amount)]);
           await interaction.reply({
             content: "Finalized Transaction",
           });
           await forward_channel.send({
-            content: `<@${item["user_id"]}> New balance \$${result.balance_usd.toFixed(2)}`,
+            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${Number(amount).toFixed(2)} from ${user ? user.username : ""}'s balance\n||-# (**Previous balance:** \$${oldBalanceUsd} USD${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
           });
           await interaction.message.edit({
             components: [disabledRow],
