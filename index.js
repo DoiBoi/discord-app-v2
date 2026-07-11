@@ -196,6 +196,7 @@ async function handleSendCancel(
   amount,
   actionRow,
   contentText,
+  collector
 ) {
   const ok = await supabase.rpc("update_temp_pending", {
     p_id: Number(id),
@@ -222,6 +223,7 @@ async function handleSendCancel(
   await interaction.reply({
     content: contentText,
   });
+  await collector.stop()
   return;
 }
 
@@ -337,10 +339,11 @@ async function handleTOS(interaction, row, item, input) {
             input,
             actionRow,
             cancelContent,
+            collector
           );
           break;
         case "send-help":
-          await handleSendCancel(i, item["id"], input, actionRow, helpContent);
+          await handleSendCancel(i, item["id"], input, actionRow, helpContent, collector);
           break;
         default:
           break;
