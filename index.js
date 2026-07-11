@@ -175,7 +175,6 @@ async function handleSendComplete(
             await i.reply({
               content:
                 "⚠️ Error occured while forwarding, please wait for <@1474220722665558066> to manually confirm.",
-              flags: MessageFlags.Ephemeral,
             });
           }
         } else if (i.customId == "forward-cancel") {
