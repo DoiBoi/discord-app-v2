@@ -71,7 +71,13 @@ function calculateTimeStamp(seconds) {
 
 const CONFIRM_REGEX = /\d+\.\d+|\d+/gm;
 
-async function handleSendComplete(interaction, actionRow, item, input, prevCollector) {
+async function handleSendComplete(
+  interaction,
+  actionRow,
+  item,
+  input,
+  prevCollector,
+) {
   try {
     let forward_channel = item["channel"];
     const messages = await interaction.channel.messages.fetch({ limit: 5 });
@@ -111,7 +117,8 @@ async function handleSendComplete(interaction, actionRow, item, input, prevColle
         ),
       );
       response = await hasImage.reply({
-        content: '⚠️ Is this the correct proof of payment? \n- Clicking "Yes" will forward it to the receiver to ask for confirmation \n- Clicking "No" allows you to resend the correct proof',
+        content:
+          '⚠️ Is this the correct proof of payment? \n- Clicking "Yes" will forward it to the receiver to ask for confirmation \n- Clicking "No" allows you to resend the correct proof',
         components: [row],
       });
       const filter = (i) =>
@@ -152,11 +159,12 @@ async function handleSendComplete(interaction, actionRow, item, input, prevColle
               content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n Please make sure to send your crypto address while waiting.`,
               components: [confirmRow],
             });
-            prevCollector.stop()
+            prevCollector.stop();
           } catch (error) {
             console.error(error);
             await i.reply({
-              content: "⚠️ Error occured while forwarding, please wait for <@1474220722665558066> to manually confirm.",
+              content:
+                "⚠️ Error occured while forwarding, please wait for <@1474220722665558066> to manually confirm.",
               flags: MessageFlags.Ephemeral,
             });
           }
@@ -172,7 +180,8 @@ async function handleSendComplete(interaction, actionRow, item, input, prevColle
       });
     } else {
       await interaction.reply({
-        content: 'Image/Video has not been detected, please submit proof of payemnt before clicking "Complete"',
+        content:
+          'Image/Video has not been detected, please submit proof of payemnt before clicking "Complete"',
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -181,7 +190,13 @@ async function handleSendComplete(interaction, actionRow, item, input, prevColle
   }
 }
 
-async function handleSendCancel(interaction, id, amount, actionRow, contentText) {
+async function handleSendCancel(
+  interaction,
+  id,
+  amount,
+  actionRow,
+  contentText,
+) {
   const ok = await supabase.rpc("update_temp_pending", {
     p_id: Number(id),
     p_delta: -amount,
@@ -211,7 +226,6 @@ async function handleSendCancel(interaction, id, amount, actionRow, contentText)
 }
 
 async function handleSendHelp(interaction, id, amount, actionRow) {
-
   await interaction.reply({
     content:
       "State what you need help with and wait for <@1474220722665558066> to assist you. \n-# ⚠️ The exchange is no longer reserved, please do not send money otherwise you risk losing funds. If somehow you figured the problem out, you can repeat the claim process to reserve the exchange again.",
@@ -226,11 +240,11 @@ async function updateBoard(interaction) {
 
   try {
     channel = await interaction.client.channels.fetch(String(channel_id));
-  } catch { }
+  } catch {}
 
   try {
     message = await channel.messages.fetch(String(message_id));
-  } catch { }
+  } catch {}
   const exchanges = await getExchanges();
   const hasExchanges = Object.values(exchanges).some((items) =>
     items.some(
@@ -309,14 +323,21 @@ async function handleTOS(interaction, row, item, input) {
     });
 
     collector.on("collect", async (i) => {
-      const cancelContent = "Exchange cancelled"
-      const helpContent = "State what you need help with and wait for <@1474220722665558066> to assist you. \n-# ⚠️ The exchange is no longer reserved, please do not send money otherwise you risk losing funds. If somehow you figured the problem out, you can repeat the claim process to reserve the exchange again."
+      const cancelContent = "Exchange cancelled";
+      const helpContent =
+        "State what you need help with and wait for <@1474220722665558066> to assist you. \n-# ⚠️ The exchange is no longer reserved, please do not send money otherwise you risk losing funds. If somehow you figured the problem out, you can repeat the claim process to reserve the exchange again.";
       switch (i.customId) {
         case "send-complete":
           await handleSendComplete(i, actionRow, item, input, collector);
           break;
         case "send-cancel":
-          await handleSendCancel(i, item["id"], input, actionRow, cancelContent);
+          await handleSendCancel(
+            i,
+            item["id"],
+            input,
+            actionRow,
+            cancelContent,
+          );
           break;
         case "send-help":
           await handleSendCancel(i, item["id"], input, actionRow, helpContent);
@@ -345,7 +366,8 @@ async function handleTOS(interaction, row, item, input) {
           })
           .catch(console.error);
         await response.reply({
-          content: "## ⚠️ Your 5-minute exchange reservation has expired. \nDo NOT send money past this point to the payment method because you risk losing your funds. \nIf you wish to still do the exchange, you can repeat the claiming process.",
+          content:
+            "## ⚠️ Your 5-minute exchange reservation has expired. \nDo NOT send money past this point to the payment method because you risk losing your funds. \nIf you wish to still do the exchange, you can repeat the claiming process.",
           flags: MessageFlags.Ephemeral,
         });
       }
@@ -403,7 +425,7 @@ async function handleChannelDropdown(interaction, item, input) {
   newCollector.on("collect", async (i) => {
     await handleTOS(i, row, item, input);
 
-    newCollector.stop()
+    newCollector.stop();
   });
 
   newCollector.on("end", async (collected, reason) => {
