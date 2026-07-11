@@ -164,6 +164,7 @@ async function handleSendComplete(
                 ),
               ],
             });
+            await prevCollector.stop();
             forward_channel = await interaction.client.channels.fetch(
               String(forward_channel),
             );
@@ -175,7 +176,6 @@ async function handleSendComplete(
               content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)`,
               components: [confirmRow],
             });
-            prevCollector.stop();
           } catch (error) {
             const confirmRow = new ActionRowBuilder().addComponents(
               new ButtonBuilder()
