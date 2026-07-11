@@ -156,7 +156,13 @@ async function handleSendComplete(
         if (i.customId == "forward-yes") {
           try {
             await interaction.message.edit({
-              components: [disabledRow],
+              components: [
+                new ActionRowBuilder().addComponents(
+                  actionRow.components.map((button) =>
+                    ButtonBuilder.from(button).setDisabled(true),
+                  ),
+                ),
+              ],
             });
             forward_channel = await interaction.client.channels.fetch(
               String(forward_channel),
@@ -166,15 +172,29 @@ async function handleSendComplete(
               content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${item["amount"] - item["pending"] - Number(input).toFixed(2)}`,
             });
             await i.reply({
-              content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n Please make sure to send your crypto address while waiting.`,
+              content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)`,
               components: [confirmRow],
             });
             prevCollector.stop();
           } catch (error) {
-            console.error(error);
+            const confirmRow = new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+                .setCustomId(`confirm-${item["id"]}-${input}`)
+                .setLabel("Confirm")
+                .setStyle(ButtonStyle.Primary),
+              new ButtonBuilder()
+                .setCustomId(`reject-${item["id"]}-${input}`)
+                .setLabel("Reject")
+                .setStyle(ButtonStyle.Danger),
+            );
             await i.reply({
               content:
                 "⚠️ Error occured while forwarding, please wait for <@1474220722665558066> to manually confirm.",
+            });
+            await i.channel.send({
+              content:
+                "<a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)",
+              components: [confirmRow],
             });
           }
         } else if (i.customId == "forward-cancel") {
@@ -339,6 +359,7 @@ async function handleTOS(interaction, row, item, input) {
         "State what you need help with and wait for <@1474220722665558066> to assist you. \n-# ⚠️ The exchange is no longer reserved, please do not send money otherwise you risk losing funds. If somehow you figured the problem out, you can repeat the claim process to reserve the exchange again.";
       switch (i.customId) {
         case "send-complete":
+          // TODO FIX
           await handleSendComplete(i, actionRow, item, input, collector);
           break;
         case "send-cancel":
@@ -632,9 +653,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
           const id = matches[0];
           const amount = matches[1];
           const item = await getExchange(Number(id));
-          const forward_channel = await interaction.client.channels.fetch(
-            String(item["channel"]),
-          );
           const user_id = await finalizeTemp(id, amount);
           [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(
             user_id,
@@ -646,9 +664,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
           await interaction.reply({
             content: "Finalized Transaction",
           });
-          await forward_channel.send({
-            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${Number(amount).toFixed(2)} from ${user ? user.username : ""}'s balance\n||-# (**Previous balance:** \$${oldBalanceUsd} USD${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
-          });
+          try {
+            const forward_channel = await interaction.client.channels.fetch(
+              String(item["channel"]),
+            );
+            await forward_channel.send({
+              content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${Number(amount).toFixed(2)} from ${user ? user.username : ""}'s balance\n||-# (**Previous balance:** \$${oldBalanceUsd} USD${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
+            });
+          } catch {}
           await interaction.message.edit({
             components: [disabledRow],
           });
@@ -686,16 +709,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
           content: "Cancelled Transaction",
         });
         const item = await getExchange(Number(id));
-        const forward_channel = await interaction.client.channels.fetch(
-          String(item["channel"]),
-        );
-        await forward_channel.send({
-          content: `<@${item["user_id"]}> New balance \$${(item["amount"] - item["pending"]).toFixed(2)}`,
-        });
         await interaction.message.edit({
           components: [disabledRow],
         });
         await updateBoard(interaction);
+        try {
+          const forward_channel = await interaction.client.channels.fetch(
+            String(item["channel"]),
+          );
+          await forward_channel.send({
+            content: `Your balance remains at \$${(item["amount"] - item["pending"]).toFixed(2)}`,
+          });
+        } catch {}
       }
     }
     if (interaction.isCommand()) {
