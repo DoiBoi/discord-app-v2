@@ -136,7 +136,6 @@ module.exports = {
     .addUserOption((option) =>
       option
         .setName("user")
-        // TODO
         .setDescription("The Discord tag of the receiver")
         .setRequired(true),
     )
@@ -180,7 +179,8 @@ module.exports = {
     const fee = interaction.options.getNumber("fee");
     const min = interaction.options.getNumber("min");
     const fnf = interaction.options.getBoolean("fnf");
-
+    
+    await interaction.deferReply({ ephemeral: true });
     if (recieving == "PayPal" && fnf === null) {
       return await interaction.reply({
         content: "Please specify if FNF is covered or not",
@@ -196,7 +196,7 @@ module.exports = {
     try {
       channel = await interaction.client.channels.fetch(String(channel_id));
     } catch {
-      return await interaction.reply({
+      return await interaction.editReply({
         content: "Could not find the target channel.",
         flags: MessageFlags.Ephemeral,
       });
@@ -230,7 +230,7 @@ module.exports = {
 
     await upsertId("message_id", response.id);
 
-    return await interaction.reply({
+    return await interaction.editReply({
       content: `Message sent in ${response.url}`,
       flags: MessageFlags.Ephemeral,
     });
