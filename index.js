@@ -405,6 +405,7 @@ async function handleTOS(interaction, row, item, input) {
             components: [timedOutRow],
           })
           .catch(console.error);
+        updateBoard(interaction)
         await response.reply({
           content:
             "## ⚠️ Your 5-minute exchange reservation has expired. \nDo NOT send money past this point to the payment method because you risk losing your funds. \nIf you wish to still do the exchange, you can repeat the claiming process.",
