@@ -179,7 +179,7 @@ module.exports = {
     const fee = interaction.options.getNumber("fee");
     const min = interaction.options.getNumber("min");
     const fnf = interaction.options.getBoolean("fnf");
-    
+
     await interaction.deferReply({ ephemeral: true });
     if (recieving == "PayPal" && fnf === null) {
       return await interaction.reply({
@@ -238,4 +238,5 @@ module.exports = {
   buildDropdown,
   buildMessage,
   buildResponse,
+  ORDER
 };
