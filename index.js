@@ -30,7 +30,7 @@ const {
   buildDropdown,
   buildMessage,
   buildResponse,
-  ORDER
+  ORDER,
 } = require("./commands/public/tempTrigger");
 const { appendUserHistory } = require("./utils/history");
 
@@ -338,8 +338,8 @@ async function handleTOS(interaction, row, item, input) {
         .setStyle(ButtonStyle.Primary),
     );
 
-    const calculatedAmount = item["amount"] - item["pending"]
-    const amountMinusFee = (calculatedAmount * (100 - item["fee"])/100)
+    const calculatedAmount = item["amount"] - item["pending"];
+    const amountMinusFee = (calculatedAmount * (100 - item["fee"])) / 100;
 
     const response = await interaction.channel.send({
       content: `## <a:loading:1524945258998399063> The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>! \n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds.\n-# **${ORDER[item["currency"]]} ${item["currency"]}: \$${calculatedAmount.toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == True ? " (cover fnf)" : " (minus fnf)") : ""} for \$${amountMinusFee.toFixed(2)}, ${item["fee"]}\% fee, min \$${item["min"]}** \n\nPlease send $${input} to \`${item["info"]}\`. \n- Once paid, send proof of payment below, then click "Complete"`,
@@ -409,7 +409,7 @@ async function handleTOS(interaction, row, item, input) {
             components: [timedOutRow],
           })
           .catch(console.error);
-        updateBoard(interaction)
+        updateBoard(interaction);
         await response.reply({
           content:
             "## ⚠️ Your 5-minute exchange reservation has expired. \nDo NOT send money past this point to the payment method because you risk losing your funds. \nIf you wish to still do the exchange, you can repeat the claiming process.",
@@ -666,9 +666,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
           );
           const user = await client.users.fetch(user_id);
           await appendUserHistory(user_id, "usd", [-Number(amount)]);
-          await interaction.reply({
-            content: "Finalized Transaction",
-          });
           try {
             const forward_channel = await interaction.client.channels.fetch(
               String(item["channel"]),
@@ -681,6 +678,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
             components: [disabledRow],
           });
           await updateBoard(interaction);
+          try {
+            await interaction.channel.send({
+              content: "Finalized Transaction",
+            });
+          } catch {}
         } catch (e) {
           console.log(e);
         }
