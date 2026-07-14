@@ -6,12 +6,10 @@ const { auth, supabase } = require("./utils/supabase/supabase_client.js");
 const {
   getExchanges,
   getExchange,
-  addToPending,
   finalizeTemp,
 } = require("./utils/temp_exchage.js");
 const { editBalance, getUserInfo } = require("./utils/balance");
 const { getId } = require("./utils/id.js");
-const { buildTempModal, buildChannelDropdown } = require("./utils/build.js");
 const {
   Client,
   Collection,
@@ -20,7 +18,6 @@ const {
   MessageFlags,
   ActivityType,
   PermissionFlagsBits,
-  StringSelectMenuBuilder,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
@@ -28,10 +25,10 @@ const {
 } = require("discord.js");
 const {
   buildDropdown,
-  buildMessage,
   buildResponse,
 } = require("./commands/public/tempTrigger");
 const { appendUserHistory } = require("./utils/history");
+const { handleStringSelect } = require("./handlers/stringSelect.js")
 
 const FLAGS = {
   gfs_toggle: false,
@@ -549,91 +546,11 @@ client.once(Events.ClientReady, () => {
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isStringSelectMenu()) {
-      switch (interaction.customId) {
-        case "dropdown":
-          const item = await getExchange(interaction.values[0]);
-          const modal = buildTempModal(interaction.values[0], item);
-          await interaction.showModal(modal);
-
-          const oldComponent = interaction.component;
-
-          const clearedMenu = new StringSelectMenuBuilder()
-            .setCustomId(oldComponent.customId)
-            .setPlaceholder(oldComponent.placeholder)
-            .addOptions(
-              oldComponent.options.map((opt) => ({
-                label: opt.label,
-                value: opt.value,
-                emoji: opt.emoji || undefined,
-              })),
-            );
-
-          const row = new ActionRowBuilder().addComponents(clearedMenu);
-
-          await interaction.message.edit({
-            components: [row],
-          });
-          break;
-        case "select-channel":
-          break;
-        default:
-          await interaction.deferReply();
-      }
+      handleStringSelect(interaction)
     }
 
     if (interaction.isModalSubmit()) {
-      if (interaction.customId.includes("temp-popup")) {
-        const item = await getExchange(interaction.customId.match(/\d+/gm)[0]);
-        const input = parseFloat(
-          interaction.fields.getTextInputValue("temp-input"),
-        );
-
-        if (isNaN(input)) {
-          return await interaction.reply({
-            content: "Please input a valid number!",
-            flags: MessageFlags.Ephemeral,
-          });
-        }
-
-        const amount = item["amount"] - item["pending"];
-        if (
-          (amount > item["min"] && (input < item["min"] || input > amount)) ||
-          (amount <= item["min"] && input != amount)
-        ) {
-          return await interaction.reply({
-            content:
-              "Please input a valid amount! It must be between the minimum & maximum that the exchange can do.",
-            flags: MessageFlags.Ephemeral,
-          });
-        }
-
-        const channelResponse = await interaction.reply({
-          content: `Select the channel to do this exchange in\n-# Button will not work <t:${calculateTimeStamp(60)}:R>`,
-          components: [buildChannelDropdown()],
-          flags: MessageFlags.Ephemeral,
-          withResponse: true,
-        });
-        const filter = (i) =>
-          i.customId === "select-channel" && i.user.id === interaction.user.id;
-
-        const collector =
-          channelResponse.resource.message.createMessageComponentCollector({
-            filter,
-            time: 60_000,
-          });
-
-        collector.on("collect", async (i) => {
-          await handleChannelDropdown(i, item, input);
-        });
-
-        collector.on("end", async (collected, reason) => {
-          if (reason === "time") {
-            await interaction.editReply({
-              components: [],
-            });
-          }
-        });
-      }
+      handleModalSelect(interaction)
     }
 
     if (interaction.isButton()) {
