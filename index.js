@@ -30,6 +30,7 @@ const {
   buildDropdown,
   buildMessage,
   buildResponse,
+  ORDER
 } = require("./commands/public/tempTrigger");
 const { appendUserHistory } = require("./utils/history");
 
@@ -337,8 +338,11 @@ async function handleTOS(interaction, row, item, input) {
         .setStyle(ButtonStyle.Primary),
     );
 
+    const calculatedAmount = item["amount"] - item["pending"]
+    const amountMinusFee = (calculatedAmount * (100 - item["fee"])/100)
+
     const response = await interaction.channel.send({
-      content: `## <a:loading:1524945258998399063> The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>! \n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds. \n\nPlease send $${input} to \`${item["info"]}\`. \n- Once paid, send proof of payment below, then click "Complete"`,
+      content: `## <a:loading:1524945258998399063> The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>! \n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds.\n-# **${ORDER[item["currency"]]} ${item["currency"]}: \$${calculatedAmount.toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == True ? " (cover fnf)" : " (minus fnf)") : ""} for \$${amountMinusFee.toFixed(2)}, ${item["fee"]}\% fee, min \$${item["min"]}** \n\nPlease send $${input} to \`${item["info"]}\`. \n- Once paid, send proof of payment below, then click "Complete"`,
       components: [actionRow],
     });
 
