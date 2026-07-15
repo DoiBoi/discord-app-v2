@@ -54,9 +54,9 @@ async function finalizeTemp(id, input) {
     .from("temp_exchanges")
     .select("pending, amount, user_id::text")
     .eq("id", num_id)
-  
+
   if (old_error) return console.error(old_error.message)
-  
+
   const new_amt = Math.round((old_data[0]["amount"] - input) * 100)/100
   const new_pend = Math.round((old_data[0]["pending"] - input) * 100)/100
 
@@ -101,10 +101,25 @@ async function addToPending(id, input) {
   return;
 }
 
+async function setSelectChannel(id, interaction, amount, prevMessage, prevChannel) {
+  return
+}
+
+async function getProgress(messageId, channelId) {
+  return
+}
+
+async function setTOS(id, interaction, prevMessage, prevChannel) {
+  return
+}
+
 module.exports = {
   getExchanges,
   getExchange,
   updateExchange,
   addToPending,
-  finalizeTemp
+  finalizeTemp,
+  setSelectChannel,
+  getProgress,
+  getProgress
 };
