@@ -21,7 +21,7 @@ module.exports = {
                     {name: "BEST", value: "BEST"},
                     {name: "DONATION", value: "DONATION"},
                     {name: "LARGE", value: "LARGE"},
-                    {name: "SMALL", value: "SMALL"},
+                    {name: "GENEROUS", value: "GENEROUS"},
                     {name: "TYCOMM", value: "TYCOMM"},
                     {name: "UGC", value: "UGC"}
                 )
