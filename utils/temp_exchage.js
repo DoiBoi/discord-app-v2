@@ -102,14 +102,17 @@ async function addToPending(id, input) {
 }
 
 async function setSelectChannel(id, interaction, amount, prevMessage, prevChannel) {
+  // TODO
   return
 }
 
 async function getProgress(messageId, channelId) {
+  // TODO
   return
 }
 
 async function setTOS(id, interaction, prevMessage, prevChannel) {
+  // TODO
   return
 }
 
