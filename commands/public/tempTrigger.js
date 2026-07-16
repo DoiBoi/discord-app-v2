@@ -42,9 +42,9 @@ function buildMessage(item) {
   return ret;
 }
 
-function buildResponse(exchanges) {
+function buildResponse(exchanges, ping) {
   let message =
-    "<@&1474255029241249913>\n[  <:pinkpin:1515497127751585942>  ]  Use the hidden text in brackets (first 3 letters of the payment details) to keep track of the amount left\n";
+    `${ping ? "<@&1474255029241249913>\n" : ""}[  <:pinkpin:1515497127751585942>  ]  Use the hidden text in brackets (first 3 letters of the payment details) to keep track of the amount left\n`;
   for (const [currency, emoji] of Object.entries(ORDER)) {
     message += `# ${currency} ${emoji}\n`;
     if (currency == "PayPal") {
@@ -154,7 +154,6 @@ module.exports = {
     .addNumberOption((option) =>
       option
         .setName("fee")
-        // TODO
         .setDescription("The exchange fee you want to charge")
         .setRequired(true)
         .setMinValue(0.0),
@@ -162,7 +161,6 @@ module.exports = {
     .addNumberOption((option) =>
       option
         .setName("min")
-        // TODO
         .setDescription("The minimum amount that senders can claim")
         .setRequired(true)
         .setMinValue(0.0),
@@ -170,15 +168,18 @@ module.exports = {
     .addBooleanOption((option) =>
       option
         .setName("fnf")
-        // TODO
         .setDescription("If FNF fee for a Paypal exchange should be covered or not"),
-    ),
+  ).addBooleanOption((option) =>
+    option
+      .setName("ping")
+      .setDescription("To ping or not")),
   async execute(interaction) {
     const user = interaction.options.getUser("user");
     const recieving = interaction.options.getString("recieving");
     const fee = interaction.options.getNumber("fee");
     const min = interaction.options.getNumber("min");
     const fnf = interaction.options.getBoolean("fnf");
+    const ping = interaction.options.getBoolean("ping");
 
     await interaction.deferReply({ ephemeral: true });
     if (recieving == "PayPal" && fnf === null) {
@@ -224,7 +225,7 @@ module.exports = {
       : [];
 
     const response = await channel.send({
-      content: buildResponse(exchanges),
+      content: buildResponse(exchanges, ping),
       components,
     });
 

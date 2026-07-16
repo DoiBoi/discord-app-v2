@@ -290,7 +290,7 @@ async function updateBoard(interaction) {
     : [];
 
   await message.edit({
-    content: buildResponse(exchanges),
+    content: buildResponse(exchanges, interaction.message.mentions.roles.size > 0),
     components: dropdownRow,
   });
 }
