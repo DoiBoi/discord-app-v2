@@ -155,6 +155,7 @@ async function handleSendComplete(
         );
         if (i.customId == "forward-yes") {
           try {
+            await interaction.deferUpdate()
             await interaction.message.edit({
               components: [
                 new ActionRowBuilder().addComponents(
