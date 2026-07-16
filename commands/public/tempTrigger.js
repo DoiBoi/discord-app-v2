@@ -179,7 +179,7 @@ module.exports = {
     const fee = interaction.options.getNumber("fee");
     const min = interaction.options.getNumber("min");
     const fnf = interaction.options.getBoolean("fnf");
-    const ping = interaction.options.getBoolean("ping");
+    const ping = interaction.options.getBoolean("ping") ?? true;
 
     await interaction.deferReply({ ephemeral: true });
     if (recieving == "PayPal" && fnf === null) {

@@ -6,7 +6,6 @@ const { auth, supabase } = require("./utils/supabase/supabase_client.js");
 const {
   getExchanges,
   getExchange,
-  addToPending,
   finalizeTemp,
 } = require("./utils/temp_exchage.js");
 const { editBalance, getUserInfo } = require("./utils/balance");
