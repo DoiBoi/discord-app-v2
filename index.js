@@ -155,7 +155,6 @@ async function handleSendComplete(
         );
         if (i.customId == "forward-yes") {
           try {
-            await interaction.deferUpdate()
             await interaction.message.edit({
               components: [
                 new ActionRowBuilder().addComponents(
@@ -166,6 +165,7 @@ async function handleSendComplete(
               ],
             });
             await prevCollector.stop();
+            await i.deferReply()
             forward_channel = await interaction.client.channels.fetch(
               String(forward_channel),
             );
@@ -173,11 +173,12 @@ async function handleSendComplete(
             await forward_channel.send({
               content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${item["amount"] - item["pending"] - Number(input).toFixed(2)}`,
             });
-            await i.reply({
+            await i.editReply({
               content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)`,
               components: [confirmRow],
             });
           } catch (error) {
+            console.error(error)
             const confirmRow = new ActionRowBuilder().addComponents(
               new ButtonBuilder()
                 .setCustomId(`confirm-${item["id"]}-${input}`)
@@ -194,9 +195,10 @@ async function handleSendComplete(
             });
             await i.channel.send({
               content:
-                "<a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)",
+              "<a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)",
               components: [confirmRow],
             });
+            await prevCollector.stop()
           }
         } else if (i.customId == "forward-cancel") {
           await i.reply({
