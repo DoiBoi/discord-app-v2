@@ -206,7 +206,9 @@ module.exports = {
     try {
       message = await channel.messages.fetch(String(message_id));
       await message.delete();
-    } catch { }
+    } catch (error) {
+      console.error(error)
+    }
 
     await updateExchange({
       amount: userBalance ? userBalance["balance_usd"] : 0,
