@@ -27,7 +27,8 @@
         "rempay",
         "evo",
         "upub",
-        "temptrigger"
+        "temptrigger",
+        "queue"
     ],
     "PublicCommands": [
         "exchange"

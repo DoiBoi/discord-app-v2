@@ -29,26 +29,7 @@ async function setGfs(userId, gfs_bool, info = null) {
     return data;
 }
 
-async function addToQueue(userId, info, channelId, balance) {
-  const { data: getData, error: getError } = await supabase
-    .from('rbx_queue')
-    .select()
-    .eq('user_id', userId)
-    .single()
-
-  const { data: response, error: errorResponse } = await supabase
-    .from('rbx_queue')
-    .upsert({
-      id: getData.id ?? null,
-      buyer_channel: channelId,
-      date_created: new Date().toISOString(),
-
-    })
-
-
-
-}
-
 module.exports = {
-    setGfs
+  setGfs,
+  addToQueue
 }
