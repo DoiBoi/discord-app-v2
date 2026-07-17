@@ -195,9 +195,10 @@ async function handleSendComplete(
             });
             await i.channel.send({
               content:
-                "<a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)",
+              "<a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)",
               components: [confirmRow],
             });
+            await prevCollector.stop()
           }
         } else if (i.customId == "forward-cancel") {
           await i.reply({
