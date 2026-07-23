@@ -4,13 +4,12 @@ const path = require("node:path");
 const adminCommands = require("./commands.json");
 const { auth, supabase } = require("./utils/supabase/supabase_client.js");
 const {
-  getExchanges,
   getExchange,
   finalizeTemp,
 } = require("./utils/temp_exchage.js");
 const { editBalance, getUserInfo } = require("./utils/balance");
 const { getId } = require("./utils/id.js");
-const { buildTempModal, buildChannelDropdown } = require("./utils/build.js");
+const { buildTempModal, buildChannelDropdown, updateBoard } = require("./utils/build.js");
 const {
   Client,
   Collection,
@@ -265,36 +264,6 @@ async function handleSendHelp(interaction, id, amount, actionRow) {
       "State what you need help with and wait for <@1474220722665558066> to assist you. \n-# ⚠️ The exchange is no longer reserved, please do not send money otherwise you risk losing funds. If somehow you figured the problem out, you can repeat the claim process to reserve the exchange again.",
   });
   return;
-}
-
-async function updateBoard(interaction) {
-  let channel, message;
-  const channel_id = await getId("channel_id");
-  const message_id = await getId("message_id");
-
-  try {
-    channel = await interaction.client.channels.fetch(String(channel_id));
-  } catch {}
-
-  try {
-    message = await channel.messages.fetch(String(message_id));
-  } catch {}
-  const exchanges = await getExchanges();
-  const hasExchanges = Object.values(exchanges).some((items) =>
-    items.some(
-      (item) => Math.round((item.amount - item.pending) * 100) / 100 > 0,
-    ),
-  );
-
-  const dropdown = hasExchanges ? buildDropdown(exchanges) : null;
-  const dropdownRow = dropdown
-    ? [new ActionRowBuilder().addComponents(dropdown)]
-    : [];
-
-  await message.edit({
-    content: buildResponse(exchanges, interaction.message.mentions.roles.size > 0),
-    components: dropdownRow,
-  });
 }
 
 async function handleTOS(interaction, row, item, input) {

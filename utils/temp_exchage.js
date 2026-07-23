@@ -54,9 +54,9 @@ async function finalizeTemp(id, input) {
     .from("temp_exchanges")
     .select("pending, amount, user_id::text")
     .eq("id", num_id)
-  
+
   if (old_error) return console.error(old_error.message)
-  
+
   const new_amt = Math.round((old_data[0]["amount"] - input) * 100)/100
   const new_pend = Math.round((old_data[0]["pending"] - input) * 100)/100
 
@@ -76,6 +76,16 @@ async function finalizeTemp(id, input) {
   }
 
   return String(old_data[0]["user_id"])
+}
+
+async function removeExchange(id) {
+  const num_id = Number(id)
+  const { data, error } = await supabase
+    .from("temp_exchanges")
+    .delete()
+    .eq("id", num_id)
+
+  if (error) throw new Error(`An error occured in removeExchange ${error.message}`)
 }
 
 async function addToPending(id, input) {
@@ -106,5 +116,6 @@ module.exports = {
   getExchange,
   updateExchange,
   addToPending,
-  finalizeTemp
+  finalizeTemp,
+  removeExchange
 };

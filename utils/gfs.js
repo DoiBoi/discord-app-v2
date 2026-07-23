@@ -5,7 +5,7 @@ async function setGfs(userId, gfs_bool, info = null) {
         .from('balances')
         .select('info')
         .eq('id', userId)
-    
+
 
     let json = {}
     if (get_data[0].info) {
@@ -21,11 +21,11 @@ async function setGfs(userId, gfs_bool, info = null) {
         .update({ is_gfs: gfs_bool, info: json })
         .eq('id', userId)
         .select()
-    
+
     if (error) {
         throw new Error(`There was an error running this ${error.message}`)
     }
-    
+
     return data;
 }
 

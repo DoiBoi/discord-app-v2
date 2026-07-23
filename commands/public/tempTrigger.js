@@ -190,8 +190,8 @@ module.exports = {
     }
 
     let channel, message;
-    const channel_id = await getId("channel_id");
-    const message_id = await getId("message_id");
+    const channel_id = await getId("dummy_channel_id");
+    const message_id = await getId("dummy_message_id");
     const userBalance = (await getUserBalance(user.id)) ?? 0;
 
     try {
