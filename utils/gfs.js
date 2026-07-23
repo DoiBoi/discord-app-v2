@@ -31,5 +31,4 @@ async function setGfs(userId, gfs_bool, info = null) {
 
 module.exports = {
   setGfs,
-  addToQueue
 }

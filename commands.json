@@ -28,7 +28,10 @@
         "evo",
         "upub",
         "temptrigger",
-        "queue"
+        "queue",
+        "addentry",
+        "editentry",
+        "cashout"
     ],
     "PublicCommands": [
         "exchange"

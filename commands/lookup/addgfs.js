@@ -21,7 +21,6 @@ module.exports = {
         const info = interaction.options.getString('info')
         try {
           const data = await setGfs(user.id, true, info);
-          await addToQueue(user.id, info, interaction.channelId, data[0].balance_rbx)
           await interaction.reply({ content: `Successfully added ${user.username} into the GFS List ${info ? `and added \`${info}\` to their info`: ''}`, flags: MessageFlags.Ephemeral})
         } catch {
             await interaction.reply({ content: 'An error occured running this command', flags: MessageFlags.Ephemeral})
