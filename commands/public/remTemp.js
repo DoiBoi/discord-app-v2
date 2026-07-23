@@ -38,8 +38,7 @@ module.exports = {
       await i.deferReply({
         flags: MessageFlags.Ephemeral
       })
-      const item = await getExchange(interaction.values[0]);
-      await removeExchange(item)
+      await removeExchange(i.values[0])
       await updateBoard(i)
       await i.editReply("Exchange removed")
     })

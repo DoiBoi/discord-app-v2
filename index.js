@@ -653,7 +653,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
             await interaction.channel.send({
               content: "Finalized Transaction",
             });
-          } catch {}
+            const logging = await getId("log");
+            const channel = await interaction.client.channels.fetch(String(logging));
+            await channel.send({
+              content: `Completed transaction: ${item.currency}, ${amount} sent to \`${item.info}\``
+            })
+          } catch (e) {
+            console.log(e)
+          }
         } catch (e) {
           console.log(e);
         }

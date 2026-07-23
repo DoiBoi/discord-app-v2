@@ -6,7 +6,9 @@ const {
   ChannelSelectMenuBuilder,
   ActionRowBuilder,
 } = require("discord.js");
-const { getExchanges, buildResponse } = require("./temp_exchage");
+const { getExchanges } = require("./temp_exchage");
+const { buildResponse, buildDropdown } = require("../commands/public/tempTrigger")
+
 const { getId } = require("./id");
 
 function buildTempModal(id, item) {
@@ -45,8 +47,8 @@ function buildChannelDropdown() {
 
 async function updateBoard(interaction) {
   let channel, message;
-  const channel_id = await getId("dummy_channel_id");
-  const message_id = await getId("dummy_message_id");
+  const channel_id = await getId("channel_id");
+  const message_id = await getId("message_id");
 
   try {
     channel = await interaction.client.channels.fetch(String(channel_id));
