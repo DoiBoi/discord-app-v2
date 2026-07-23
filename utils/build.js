@@ -47,8 +47,8 @@ function buildChannelDropdown() {
 
 async function updateBoard(interaction) {
   let channel, message;
-  const channel_id = await getId("channel_id");
-  const message_id = await getId("message_id");
+  const channel_id = await getId("dummy_channel_id");
+  const message_id = await getId("dummy_message_id");
 
   try {
     channel = await interaction.client.channels.fetch(String(channel_id));
@@ -65,16 +65,14 @@ async function updateBoard(interaction) {
   );
 
   const dropdown = hasExchanges ? buildDropdown(exchanges) : null;
-  const dropdownRow = dropdown
-    ? [new ActionRowBuilder().addComponents(dropdown)]
-    : [];
-
+  const container = buildResponse(
+    exchanges,
+    interaction.message.mentions.roles.size > 0
+  ).addActionRowComponents((actionRow) =>
+      actionRow.setComponents(new ActionRowBuilder().addComponents(dropdown))
+    )
   await message.edit({
-    content: buildResponse(
-      exchanges,
-      interaction.message.mentions.roles.size > 0,
-    ),
-    components: dropdownRow,
+    components: [container]
   });
 }
 

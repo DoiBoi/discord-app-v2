@@ -2,9 +2,8 @@ const {
   SlashCommandBuilder,
   InteractionContextType,
   MessageFlags,
-  ButtonBuilder,
-  SectionBuilder,
-  ButtonStyle,
+  ContainerBuilder,
+  TextDisplayBuilder,
   ActionRowBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
@@ -43,10 +42,13 @@ function buildMessage(item) {
 }
 
 function buildResponse(exchanges, ping) {
-  let message =
-    `${ping ? "<@&1474255029241249913>\n" : ""}[  <:pinkpin:1515497127751585942>  ]  Use the hidden text in brackets (first 3 letters of the payment details) to keep track of the amount left\n`;
+  const container = new ContainerBuilder().setAccentColor(0x0099ff);
+  let message = `${ping ? "<@&1474255029241249913>\n" : ""}[  <:pinkpin:1515497127751585942>  ]  Use the hidden text in brackets (first 3 letters of the payment details) to keep track of the amount left\n`;
+  container
+    .addTextDisplayComponents((textDisplay) => textDisplay.setContent(message))
+    .addSeparatorComponents((separator) => separator);
   for (const [currency, emoji] of Object.entries(ORDER)) {
-    message += `# ${currency} ${emoji}\n`;
+    message = `# ${currency} ${emoji}\n`;
     if (currency == "PayPal") {
       message +=
         "> - can exchange __any amount lower than amounts stated__, but custom amounts = +1%\n\n";
@@ -83,8 +85,13 @@ function buildResponse(exchanges, ping) {
           }
         }
     }
+    container
+      .addTextDisplayComponents((textDisplay) =>
+        textDisplay.setContent(message),
+      )
+      .addSeparatorComponents((separator) => separator);
   }
-  return message;
+  return container;
 }
 
 function buildDropdown(exchanges) {
@@ -168,11 +175,13 @@ module.exports = {
     .addBooleanOption((option) =>
       option
         .setName("fnf")
-        .setDescription("If FNF fee for a Paypal exchange should be covered or not"),
-  ).addBooleanOption((option) =>
-    option
-      .setName("ping")
-      .setDescription("To ping or not")),
+        .setDescription(
+          "If FNF fee for a Paypal exchange should be covered or not",
+        ),
+    )
+    .addBooleanOption((option) =>
+      option.setName("ping").setDescription("To ping or not"),
+    ),
   async execute(interaction) {
     const user = interaction.options.getUser("user");
     const recieving = interaction.options.getString("recieving");
@@ -190,8 +199,8 @@ module.exports = {
     }
 
     let channel, message;
-    const channel_id = await getId("channel_id");
-    const message_id = await getId("message_id");
+    const channel_id = await getId("dummy_channel_id");
+    const message_id = await getId("dummy_message_id");
     const userBalance = (await getUserBalance(user.id)) ?? 0;
 
     try {
@@ -207,7 +216,7 @@ module.exports = {
       message = await channel.messages.fetch(String(message_id));
       await message.delete();
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
 
     await updateExchange({
@@ -222,16 +231,17 @@ module.exports = {
 
     const exchanges = await getExchanges();
     const dropdown = buildDropdown(exchanges);
-    const components = dropdown
-      ? [new ActionRowBuilder().addComponents(dropdown)]
-      : [];
+
+    const container = buildResponse(exchanges, ping).addActionRowComponents(
+      (actionRow) => actionRow.setComponents(dropdown),
+    );
 
     const response = await channel.send({
-      content: buildResponse(exchanges, ping),
-      components,
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
     });
 
-    await upsertId("message_id", response.id);
+    await upsertId("dummy_message_id", response.id);
 
     return await interaction.editReply({
       content: `Message sent in ${response.url}`,
@@ -241,5 +251,5 @@ module.exports = {
   buildDropdown,
   buildMessage,
   buildResponse,
-  ORDER
+  ORDER,
 };
