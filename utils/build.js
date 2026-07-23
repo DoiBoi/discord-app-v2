@@ -5,9 +5,11 @@ const {
   LabelBuilder,
   ChannelSelectMenuBuilder,
   ActionRowBuilder,
+  ContainerBuilder,
+  SeparatorSpacingSize
 } = require("discord.js");
 const { getExchanges } = require("./temp_exchage");
-const { buildResponse, buildDropdown } = require("../commands/public/tempTrigger")
+const { buildResponse, buildDropdown, ORDER } = require("../commands/public/tempTrigger")
 
 const { getId } = require("./id");
 
@@ -78,8 +80,28 @@ async function updateBoard(interaction) {
   });
 }
 
+function buildSuccessContainer(item, amount) {
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents((textDisplay) =>
+     textDisplay.setContent("<:zzmilkoke2:767455348856193034>  **Exchange Completed** <:zzmilkoke1:767455348952924180>"))
+    .addSeparatorComponents((separator) =>
+        separator.setDivider(false)
+        .setSpacing(SeparatorSpacingSize.Large)
+    )
+    .addTextDisplayComponents((textDisplay) =>
+      textDisplay.setContent(`<:BLANK:958322768951263232>
+        <:BLANK:958322768951263232><:BLANK:958322768951263232>${ORDER[item.currency]} **\$${amount}** ${item.currency}`)
+    )
+    .addTextDisplayComponents((textDisplay) =>
+      textDisplay.setContent(`-# <:BLANK:958322768951263232><:BLANK:958322768951263232><:BLANK:958322768951263232><:BLANK:958322768951263232><:BLANK:958322768951263232>to`))
+    .addTextDisplayComponents((textDisplay) =>
+      textDisplay.setContent(`<:BLANK:958322768951263232><:BLANK:958322768951263232><:carrots:1474257807212675203> **\$${amount}** Crypto`))
+  return container
+}
+
 module.exports = {
   buildTempModal,
   buildChannelDropdown,
   updateBoard,
+  buildSuccessContainer
 };

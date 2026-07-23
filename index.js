@@ -9,7 +9,7 @@ const {
 } = require("./utils/temp_exchage.js");
 const { editBalance, getUserInfo } = require("./utils/balance");
 const { getId } = require("./utils/id.js");
-const { buildTempModal, buildChannelDropdown, updateBoard } = require("./utils/build.js");
+const { buildTempModal, buildChannelDropdown, updateBoard, buildSuccessContainer } = require("./utils/build.js");
 const {
   Client,
   Collection,
@@ -25,9 +25,6 @@ const {
   ChannelType,
 } = require("discord.js");
 const {
-  buildDropdown,
-  buildMessage,
-  buildResponse,
   ORDER,
 } = require("./commands/public/tempTrigger");
 const { appendUserHistory } = require("./utils/history");
@@ -613,6 +610,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isButton()) {
       if (interaction.customId.includes("confirm")) {
+        await interaction.deferUpdate()
         if (!(await auth(interaction.user.id))) {
           return await interaction.reply({
             content: "Not Authorized",
@@ -656,7 +654,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
             const logging = await getId("log");
             const channel = await interaction.client.channels.fetch(String(logging));
             await channel.send({
-              content: `Completed transaction: ${item.currency}, ${amount} sent to \`${item.info}\``
+              components: [buildSuccessContainer(item, amount)],
+              flags: MessageFlags.IsComponentsV2
             })
           } catch (e) {
             console.log(e)
@@ -665,6 +664,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           console.log(e);
         }
       } else if (interaction.customId.includes("reject")) {
+        await interaction.deferReply()
         if (!(await auth(interaction.user.id))) {
           return await interaction.reply({
             content: "Not Authorized",
@@ -680,7 +680,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         });
 
         if (!ok.data) {
-          return await interaction.reply({
+          return await interaction.editReply({
             content: "Reject Failed",
             flags: MessageFlags.Ephemeral,
           });
@@ -690,7 +690,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             ButtonBuilder.from(button).setDisabled(true),
           ),
         );
-        await interaction.reply({
+        await interaction.editReply({
           content: "Cancelled Transaction",
         });
         const item = await getExchange(Number(id));
