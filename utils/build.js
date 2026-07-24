@@ -89,13 +89,12 @@ function buildSuccessContainer(item, amount) {
         .setSpacing(SeparatorSpacingSize.Large)
     )
     .addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(`<:BLANK:1530093881826213970>
-        <:BLANK:1530093881826213970><:BLANK:1530093881826213970>${ORDER[item.currency]} **\$${amount}** ${item.currency}`)
+      textDisplay.setContent(`<:BLANK:1530093881826213970><:BLANK:1530093881826213970>${ORDER[item.currency]} **\$${amount}** ${item.currency}`)
     )
     .addTextDisplayComponents((textDisplay) =>
       textDisplay.setContent(`-# <:BLANK:1530093881826213970><:BLANK:1530093881826213970><:BLANK:1530093881826213970><:BLANK:1530093881826213970><:BLANK:1530093881826213970>to`))
     .addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(`<:BLANK:1530093881826213970><:BLANK:1530093881826213970><:carrots:1474257807212675203> **\$${amount}** Crypto`))
+      textDisplay.setContent(`<:BLANK:1530093881826213970><:BLANK:1530093881826213970><:crypto:1529960750477611110> **\$${amount}** Crypto`))
   return container
 }
 
