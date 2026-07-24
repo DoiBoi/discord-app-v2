@@ -83,7 +83,7 @@ async function updateBoard(interaction) {
 function buildSuccessContainer(item, amount) {
   const container = new ContainerBuilder()
     .addTextDisplayComponents((textDisplay) =>
-     textDisplay.setContent("<:zzmilkoke2:1530093885924184064>  **Exchange Completed** <:zzmilkoke1:1530093883747471392>"))
+     textDisplay.setContent("## <:zzmilkoke2:1530093885924184064>  **Exchange Completed** <:zzmilkoke1:1530093883747471392>"))
     .addSeparatorComponents((separator) =>
         separator.setDivider(false)
         .setSpacing(SeparatorSpacingSize.Large)
