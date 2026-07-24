@@ -83,19 +83,19 @@ async function updateBoard(interaction) {
 function buildSuccessContainer(item, amount) {
   const container = new ContainerBuilder()
     .addTextDisplayComponents((textDisplay) =>
-     textDisplay.setContent("<:zzmilkoke2:767455348856193034>  **Exchange Completed** <:zzmilkoke1:767455348952924180>"))
+     textDisplay.setContent("<:zzmilkoke2:1530093885924184064>  **Exchange Completed** <:zzmilkoke1:1530093883747471392>"))
     .addSeparatorComponents((separator) =>
         separator.setDivider(false)
         .setSpacing(SeparatorSpacingSize.Large)
     )
     .addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(`<:BLANK:958322768951263232>
-        <:BLANK:958322768951263232><:BLANK:958322768951263232>${ORDER[item.currency]} **\$${amount}** ${item.currency}`)
+      textDisplay.setContent(`<:BLANK:1530093881826213970>
+        <:BLANK:1530093881826213970><:BLANK:1530093881826213970>${ORDER[item.currency]} **\$${amount}** ${item.currency}`)
     )
     .addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(`-# <:BLANK:958322768951263232><:BLANK:958322768951263232><:BLANK:958322768951263232><:BLANK:958322768951263232><:BLANK:958322768951263232>to`))
+      textDisplay.setContent(`-# <:BLANK:1530093881826213970><:BLANK:1530093881826213970><:BLANK:1530093881826213970><:BLANK:1530093881826213970><:BLANK:1530093881826213970>to`))
     .addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(`<:BLANK:958322768951263232><:BLANK:958322768951263232><:carrots:1474257807212675203> **\$${amount}** Crypto`))
+      textDisplay.setContent(`<:BLANK:1530093881826213970><:BLANK:1530093881826213970><:carrots:1474257807212675203> **\$${amount}** Crypto`))
   return container
 }
 
