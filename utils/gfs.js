@@ -22,7 +22,7 @@ async function setGfs(userId, gfs_bool, info = null) {
         .eq('id', userId)
         .select()
 
-  if (error) {
+    if (error) {
         throw new Error(`There was an error running this ${error.message}`)
     }
 

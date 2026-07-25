@@ -8,13 +8,16 @@ const {
 } = require("discord.js");
 const { getId, upsertId } = require("../../utils/id.js");
 const { getUserBalance } = require("../../utils/balance.js");
+const { emojis, ids } = require("../../utils/config.js")
 const { getExchanges, updateExchange } = require("../../utils/temp_exchage.js");
+const CHANNEL = ids.channel_id
+const MESSAGE = ids.message_id
 
 const ORDER = {
-  CashApp: "<:cashapp:1515497126518329505>",
-  Zelle: "<:zelle:1515497124190617722>",
-  Venmo: "<:venmo:1515497122794045440>",
-  PayPal: "<:paypal:1515497121560920114>",
+  CashApp: `<:cashapp:${emojis.cashapp}>`,
+  Zelle: `<:zelle:${emojis.zelle}>`,
+  Venmo: `<:venmo:${emojis.venmo}>`,
+  PayPal: `<:paypal:${emojis.paypal}>`,
 };
 
 function buildMessage(item) {
@@ -41,7 +44,7 @@ function buildMessage(item) {
 
 function buildResponse(exchanges, ping) {
   let message =
-    `${ping ? "<@&1474255029241249913>\n" : ""}[  <:pinkpin:1515497127751585942>  ]  Use the hidden text in brackets (first 3 letters of the payment details) to keep track of the amount left\n`;
+    `${ping ? "<@&1474255029241249913>\n" : ""}[  <:pinkpin:${emojis.pinkpin}>  ]  Use the hidden text in brackets (first 3 letters of the payment details) to keep track of the amount left\n`;
   for (const [currency, emoji] of Object.entries(ORDER)) {
     message += `# ${currency} ${emoji}\n`;
     if (currency == "PayPal") {
@@ -180,15 +183,15 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: true });
     if (recieving == "PayPal" && fnf === null) {
-      return await interaction.reply({
+      return await interaction.editReply({
         content: "Please specify if FNF is covered or not",
         flags: MessageFlags.Ephemeral,
       });
     }
 
     let channel, message;
-    const channel_id = await getId("channel_id");
-    const message_id = await getId("message_id");
+    const channel_id = await getId(CHANNEL);
+    const message_id = await getId(MESSAGE);
     const userBalance = (await getUserBalance(user.id)) ?? 0;
 
     try {
@@ -228,7 +231,7 @@ module.exports = {
       components,
     });
 
-    await upsertId("message_id", response.id);
+    await upsertId(MESSAGE, response.id);
 
     return await interaction.editReply({
       content: `Message sent in ${response.url}`,

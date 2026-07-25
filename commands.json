@@ -31,7 +31,9 @@
         "queue",
         "addentry",
         "editentry",
-        "cashout"
+        "cashout",
+        "remtrigger",
+        "gettemp"
     ],
     "PublicCommands": [
         "exchange"
