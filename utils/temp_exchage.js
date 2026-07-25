@@ -1,6 +1,6 @@
 const { ids } = require("./config.js");
 const { supabase } = require("./supabase/supabase_client.js");
-const TABLE = ids.table
+const TABLE = ids.table;
 
 async function getExchanges() {
   const { data, error } = await supabase.from(TABLE).select("*");
@@ -49,45 +49,43 @@ async function updateExchange(item) {
 }
 
 async function finalizeTemp(id, input) {
-  const num_id = Number(id)
-  const num_input = Number(input)
+  const num_id = Number(id);
+  const num_input = Number(input);
 
-  const { data: old_data, error: old_error} = await supabase
+  const { data: old_data, error: old_error } = await supabase
     .from(TABLE)
     .select("pending, amount, user_id::text")
-    .eq("id", num_id)
+    .eq("id", num_id);
 
-  if (old_error) return console.error(old_error.message)
+  if (old_error) return console.error(old_error.message);
 
-  const new_amt = Math.round((old_data[0]["amount"] - input) * 100)/100
-  const new_pend = Math.round((old_data[0]["pending"] - input) * 100)/100
+  const new_amt = Math.round((old_data[0]["amount"] - input) * 100) / 100;
+  const new_pend = Math.round((old_data[0]["pending"] - input) * 100) / 100;
 
-  if (new_amt == 0.00) {
-    const { data: delete_data, error: delete_error} = await supabase
+  if (new_amt == 0.0) {
+    const { data: delete_data, error: delete_error } = await supabase
       .from(TABLE)
       .delete()
-      .eq("id", num_id)
+      .eq("id", num_id);
   } else {
     const { data, error } = await supabase
       .from(TABLE)
       .update({
         pending: new_pend,
-        amount: new_amt
+        amount: new_amt,
       })
-      .eq("id", num_id)
+      .eq("id", num_id);
   }
 
-  return String(old_data[0]["user_id"])
+  return String(old_data[0]["user_id"]);
 }
 
 async function removeExchange(id) {
-  const num_id = Number(id)
-  const { data, error } = await supabase
-    .from(TABLE)
-    .delete()
-    .eq("id", num_id)
+  const num_id = Number(id);
+  const { data, error } = await supabase.from(TABLE).delete().eq("id", num_id);
 
-  if (error) throw new Error(`An error occured in removeExchange ${error.message}`)
+  if (error)
+    throw new Error(`An error occured in removeExchange ${error.message}`);
 }
 
 async function addToPending(id, input) {
@@ -113,11 +111,79 @@ async function addToPending(id, input) {
   return;
 }
 
+async function addMessage(id, url, userId) {
+  const { data: fetchData, error: fetchError } = await supabase
+    .from(TABLE)
+    .select("message_links")
+    .eq("id", id)
+    .single();
+  if (fetchError) {
+    throw new Error(fetchError.message);
+  }
+
+  const messages = fetchData.message_links;
+  messages.push({
+    id: userId,
+    url: url,
+  });
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({
+      message_links: [...new Set(messages)],
+    })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+async function getAvailableTransaction() {
+  const { data, error } = await supabase()
+    .from(TABLE)
+    .select("info, message_links, pending")
+    .gt("pending", 0);
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+async function removeMessage(id, userid) {
+  const { data: fetchData, error: fetchError } = await supabase
+    .from(TABLE)
+    .select("message_links")
+    .eq("id", id)
+    .single();
+
+  if (fetchError) {
+    throw new Error(fetchError.message);
+  }
+
+  const newArray = fetchData.message_links.filter(
+    (item) => item.userId !== userid,
+  );
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({
+      message_links: newArray
+    })
+    .eq('id', id)
+
+  return
+}
+
 module.exports = {
   getExchanges,
   getExchange,
   updateExchange,
   addToPending,
   finalizeTemp,
-  removeExchange
+  removeExchange,
+  removeMessage,
+  addMessage,
+  getAvailableTransaction
 };

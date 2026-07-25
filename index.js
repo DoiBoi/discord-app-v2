@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const adminCommands = require("./commands.json");
 const { auth, supabase } = require("./utils/supabase/supabase_client.js");
-const { getExchange, finalizeTemp } = require("./utils/temp_exchage.js");
+const { getExchange, finalizeTemp, addMessage } = require("./utils/temp_exchage.js");
 const { editBalance, getUserInfo } = require("./utils/balance");
 const { getId } = require("./utils/id.js");
 const {
@@ -589,6 +589,7 @@ async function handleChannelDropdown(interaction, item, input) {
     // embeds: [embed],
     embeds: buildTOSMessage(item["currency"], input, interaction.user.id),
     components: [row],
+    fetchReply: true
   });
 
   const filter = (i) => interaction.user.id === i.user.id;
@@ -598,6 +599,9 @@ async function handleChannelDropdown(interaction, item, input) {
   });
 
   newCollector.on("collect", async (i) => {
+    if (i.customId === "tos-agree") {
+      await addMessage(Number(item.id), TOSResponse.url, i.user.id)
+    }
     await handleTOS(i, row, item, input);
 
     newCollector.stop();
