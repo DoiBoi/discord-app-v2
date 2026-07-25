@@ -450,7 +450,7 @@ async function handleTOS(interaction, row, item, input) {
 
     const embed = new EmbedBuilder()
       .setDescription(
-        `### Please send $68.75 to \`${item["info"]}\`
+        `### Please send \$${input.toFixed(2)} to \`${item["info"]}\`
       <:8blackarrow:${emojis["8blackarrow"]}>  Send proof of payment below, then click "Complete"`,
       )
       .setThumbnail(
