@@ -3,13 +3,15 @@ const fs = require("node:fs");
 const path = require("node:path");
 const adminCommands = require("./commands.json");
 const { auth, supabase } = require("./utils/supabase/supabase_client.js");
-const {
-  getExchange,
-  finalizeTemp,
-} = require("./utils/temp_exchage.js");
+const { getExchange, finalizeTemp } = require("./utils/temp_exchage.js");
 const { editBalance, getUserInfo } = require("./utils/balance");
 const { getId } = require("./utils/id.js");
-const { buildTempModal, buildChannelDropdown, updateBoard, buildSuccessContainer } = require("./utils/build.js");
+const {
+  buildTempModal,
+  buildChannelDropdown,
+  updateBoard,
+  buildSuccessContainer,
+} = require("./utils/build.js");
 const {
   Client,
   Collection,
@@ -23,11 +25,14 @@ const {
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
+  ContainerBuilder,
 } = require("discord.js");
-const {
-  ORDER,
-} = require("./commands/public/tempTrigger");
+const { ORDER } = require("./commands/public/tempTrigger");
+const { ids, emojis } = require("./utils/config.js");
 const { appendUserHistory } = require("./utils/history");
+const { EmbedBuilder } = require("discord.js");
+const RPC = ids.rpc;
+const LOG = ids.log;
 
 const FLAGS = {
   gfs_toggle: false,
@@ -119,7 +124,11 @@ async function handleSendComplete(
           ButtonBuilder.from(button).setDisabled(true),
         ),
       );
+      const embed = new EmbedBuilder().setDescription(
+        '⚠️ Is this the correct proof of payment? \n- Clicking "Yes" will forward it to the receiver to ask for confirmation \n- Clicking "No" allows you to resend the correct proof',
+      );
       response = await hasImage.reply({
+        // embeds: [embed],
         content:
           '⚠️ Is this the correct proof of payment? \n- Clicking "Yes" will forward it to the receiver to ask for confirmation \n- Clicking "No" allows you to resend the correct proof',
         components: [row],
@@ -161,20 +170,30 @@ async function handleSendComplete(
               ],
             });
             await prevCollector.stop();
-            await i.deferReply()
+            await i.deferReply();
             forward_channel = await interaction.client.channels.fetch(
               String(forward_channel),
             );
             const forwarded = await hasImage.forward(forward_channel);
             await forward_channel.send({
+              // embeds: [
+              //   new EmbedBuilder().setDescription(
+              //     `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${item["amount"] - item["pending"] - Number(input).toFixed(2)}`,
+              //   ),
+              // ],
               content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${item["amount"] - item["pending"] - Number(input).toFixed(2)}`,
             });
             await i.editReply({
-              content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)`,
+              // embeds: [
+              //   new EmbedBuilder().setDescription(
+              //     `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:${emojis.loading}> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)`,
+              //   ),
+              // ],
+              content: `✅ Your payment proof has been forwarded to the receiver to ask for confirmation. ||${forwarded.url}|| \n \n <a:loading:${emojis.loading}> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)`,
               components: [confirmRow],
             });
           } catch (error) {
-            console.error(error)
+            console.error(error);
             const confirmRow = new ActionRowBuilder().addComponents(
               new ButtonBuilder()
                 .setCustomId(`confirm-${item["id"]}-${input}`)
@@ -186,20 +205,33 @@ async function handleSendComplete(
                 .setStyle(ButtonStyle.Danger),
             );
             await i.reply({
+              // embeds: [
+              //   new EmbedBuilder().setDescription(
+              //     "⚠️ Error occured while forwarding, please wait for <@1474220722665558066> to manually confirm.",
+              //   ),
+              // ],
               content:
                 "⚠️ Error occured while forwarding, please wait for <@1474220722665558066> to manually confirm.",
             });
             await i.channel.send({
-              content:
-              "<a:loading:1524945258998399063> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)",
+              // embeds: [
+              //   new EmbedBuilder().setDescription(
+              //     `<a:loading:${emojis.loading}> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)`,
+              //   ),
+              // ],
+              content: `<a:loading:${emojis.loading}> <@1474220722665558066> will review your exchange and pay you shortly. \n- Please send your crypto address and ignore the buttons below! (It is for Mal)`,
               components: [confirmRow],
             });
-            await prevCollector.stop()
+            await prevCollector.stop();
           }
         } else if (i.customId == "forward-cancel") {
           await i.reply({
-            content:
-              '<a:loading:1524945258998399063> Please send the correct proof of payment then click "Complete" again.',
+            // embeds: [
+            //   new EmbedBuilder().setDescription(
+            //     `<a:loading:${emojis.loading}> Please send the correct proof of payment then click "Complete" again.`,
+            //   ),
+            // ],
+            content: `<a:loading:${emojis.loading}> Please send the correct proof of payment then click "Complete" again.`,
           });
         }
         await i.message.edit({
@@ -208,6 +240,11 @@ async function handleSendComplete(
       });
     } else {
       await interaction.reply({
+        // embeds: [
+        //   new EmbedBuilder().setDescription(
+        //     'Image/Video has not been detected, please submit proof of payemnt before clicking "Complete"',
+        //   ),
+        // ],
         content:
           'Image/Video has not been detected, please submit proof of payemnt before clicking "Complete"',
         flags: MessageFlags.Ephemeral,
@@ -226,7 +263,7 @@ async function handleSendCancel(
   contentText,
   collector,
 ) {
-  const ok = await supabase.rpc("update_temp_pending", {
+  const ok = await supabase.rpc(RPC, {
     p_id: Number(id),
     p_delta: -amount,
   });
@@ -249,17 +286,10 @@ async function handleSendCancel(
   });
   await updateBoard(interaction);
   await interaction.reply({
+    // embeds: [new EmbedBuilder().setDescription(contentText)],
     content: contentText,
   });
   await collector.stop();
-  return;
-}
-
-async function handleSendHelp(interaction, id, amount, actionRow) {
-  await interaction.reply({
-    content:
-      "State what you need help with and wait for <@1474220722665558066> to assist you. \n-# ⚠️ The exchange is no longer reserved, please do not send money otherwise you risk losing funds. If somehow you figured the problem out, you can repeat the claim process to reserve the exchange again.",
-  });
   return;
 }
 
@@ -275,7 +305,7 @@ async function handleTOS(interaction, row, item, input) {
   });
 
   if (interaction.customId === "tos-agree") {
-    const ok = await supabase.rpc("update_temp_pending", {
+    const ok = await supabase.rpc(RPC, {
       p_id: Number(item["id"]),
       p_delta: input,
     });
@@ -309,8 +339,12 @@ async function handleTOS(interaction, row, item, input) {
     const calculatedAmount = item["amount"] - item["pending"];
     const amountMinusFee = (calculatedAmount * (100 - item["fee"])) / 100;
 
+    const embed = new EmbedBuilder().setDescription(
+      `## <a:loading:${emojis.loading}> The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>! \n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds.\n-# **${ORDER[item["currency"]]} ${item["currency"]}: \$${calculatedAmount.toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == true ? " (cover fnf)" : " (minus fnf)") : ""} for \$${amountMinusFee.toFixed(2)}, ${item["fee"]}\% fee, min \$${item["min"]}** \n\nPlease send $${input} to \`${item["info"]}\`. \n- Once paid, send proof of payment below, then click "Complete"`,
+    );
     const response = await interaction.channel.send({
-      content: `## <a:loading:1524945258998399063> The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>! \n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds.\n-# **${ORDER[item["currency"]]} ${item["currency"]}: \$${calculatedAmount.toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == true ? " (cover fnf)" : " (minus fnf)") : ""} for \$${amountMinusFee.toFixed(2)}, ${item["fee"]}\% fee, min \$${item["min"]}** \n\nPlease send $${input} to \`${item["info"]}\`. \n- Once paid, send proof of payment below, then click "Complete"`,
+      // embeds: [embed],
+      content: `## <a:loading:${emojis.loading}> The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>! \n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds.\n-# **${ORDER[item["currency"]]} ${item["currency"]}: \$${calculatedAmount.toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == true ? " (cover fnf)" : " (minus fnf)") : ""} for \$${amountMinusFee.toFixed(2)}, ${item["fee"]}\% fee, min \$${item["min"]}** \n\nPlease send $${input} to \`${item["info"]}\`. \n- Once paid, send proof of payment below, then click "Complete"`,
       components: [actionRow],
     });
 
@@ -367,7 +401,7 @@ async function handleTOS(interaction, row, item, input) {
           ),
         );
 
-        const ok = await supabase.rpc("update_temp_pending", {
+        const ok = await supabase.rpc(RPC, {
           p_id: Number(item["id"]),
           p_delta: -input,
         });
@@ -379,6 +413,11 @@ async function handleTOS(interaction, row, item, input) {
           .catch(console.error);
         updateBoard(interaction);
         await response.reply({
+          // embeds: [
+          //   new EmbedBuilder().setDescription(
+          //     "## ⚠️ Your 5-minute exchange reservation has expired. \nDo NOT send money past this point to the payment method because you risk losing your funds. \nIf you wish to still do the exchange, you can repeat the claiming process.",
+          //   ),
+          // ],
           content:
             "## ⚠️ Your 5-minute exchange reservation has expired. \nDo NOT send money past this point to the payment method because you risk losing your funds. \nIf you wish to still do the exchange, you can repeat the claiming process.",
           flags: MessageFlags.Ephemeral,
@@ -423,8 +462,12 @@ async function handleChannelDropdown(interaction, item, input) {
     .setStyle(ButtonStyle.Secondary);
 
   const row = new ActionRowBuilder().addComponents(agreeButton, cancelButton);
+  const embed = new EmbedBuilder().setDescription(
+    buildTOSMessage(item["currency"], input, interaction.user.id),
+  );
 
   const TOSResponse = await targetChannel.send({
+    // embeds: [embed],
     content: buildTOSMessage(item["currency"], input, interaction.user.id),
     components: [row],
   });
@@ -610,7 +653,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isButton()) {
       if (interaction.customId.includes("confirm")) {
-        await interaction.deferUpdate()
+        await interaction.deferUpdate();
         if (!(await auth(interaction.user.id))) {
           return await interaction.reply({
             content: "Not Authorized",
@@ -640,6 +683,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
               String(item["channel"]),
             );
             await forward_channel.send({
+              // embeds: [
+              //   new EmbedBuilder().setDescription(
+              //     `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${Number(amount).toFixed(2)} from ${user ? user.username : ""}'s balance\n||-# (**Previous balance:** \$${oldBalanceUsd} USD${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
+              //   ),
+              // ],
               content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${Number(amount).toFixed(2)} from ${user ? user.username : ""}'s balance\n||-# (**Previous balance:** \$${oldBalanceUsd} USD${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
             });
           } catch {}
@@ -649,22 +697,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
           await updateBoard(interaction);
           try {
             await interaction.channel.send({
-              content: "Finalized Transaction",
+              // embeds: [
+              //   new EmbedBuilder().setDescription("Finalized Transaction"),
+              // ],
+              content: "Finalized Transaction"
             });
-            const logging = await getId("log");
-            const channel = await interaction.client.channels.fetch(String(logging));
+            const logging = await getId(LOG);
+            const channel = await interaction.client.channels.fetch(
+              String(logging),
+            );
             await channel.send({
-              components: [buildSuccessContainer(item, amount)],
-              flags: MessageFlags.IsComponentsV2
-            })
+              embeds: [buildSuccessContainer(item, amount)],
+            });
           } catch (e) {
-            console.log(e)
+            console.log(e);
           }
         } catch (e) {
           console.log(e);
         }
       } else if (interaction.customId.includes("reject")) {
-        await interaction.deferReply()
+        await interaction.deferReply();
         if (!(await auth(interaction.user.id))) {
           return await interaction.reply({
             content: "Not Authorized",
@@ -674,7 +726,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         const matches = interaction.customId.match(CONFIRM_REGEX);
         const id = matches[0];
         const amount = matches[1];
-        const ok = await supabase.rpc("update_temp_pending", {
+        const ok = await supabase.rpc(RPC, {
           p_id: Number(id),
           p_delta: -amount,
         });
@@ -691,6 +743,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           ),
         );
         await interaction.editReply({
+          // embeds: [new EmbedBuilder().setDescription("Cancelled Transaction")],
           content: "Cancelled Transaction",
         });
         const item = await getExchange(Number(id));

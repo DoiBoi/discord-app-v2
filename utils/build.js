@@ -6,12 +6,23 @@ const {
   ChannelSelectMenuBuilder,
   ActionRowBuilder,
   ContainerBuilder,
-  SeparatorSpacingSize
+  SeparatorSpacingSize,
 } = require("discord.js");
 const { getExchanges } = require("./temp_exchage");
-const { buildResponse, buildDropdown, ORDER } = require("../commands/public/tempTrigger")
+const {
+  buildResponse,
+  buildDropdown,
+  ORDER,
+} = require("../commands/public/tempTrigger");
 
 const { getId } = require("./id");
+const { emojis, ids } = require("./config");
+const { EmbedBuilder } = require("discord.js");
+const CHANNEL = ids.channel_id;
+const MESSAGE = ids.message_id;
+const BLANK = `<:BLANK:${emojis.blank}>`;
+const OKE1 = `<:zzmilkoke1:${emojis.oke1}>`;
+const OKE2 = `<:zzmilkoke2:${emojis.oke2}>`;
 
 function buildTempModal(id, item) {
   const amount = item["amount"] - item["pending"];
@@ -49,8 +60,8 @@ function buildChannelDropdown() {
 
 async function updateBoard(interaction) {
   let channel, message;
-  const channel_id = await getId("channel_id");
-  const message_id = await getId("message_id");
+  const channel_id = await getId(CHANNEL);
+  const message_id = await getId(MESSAGE);
 
   try {
     channel = await interaction.client.channels.fetch(String(channel_id));
@@ -81,26 +92,18 @@ async function updateBoard(interaction) {
 }
 
 function buildSuccessContainer(item, amount) {
-  const container = new ContainerBuilder()
-    .addTextDisplayComponents((textDisplay) =>
-     textDisplay.setContent("<:zzmilkoke2:1530093885924184064>  **Exchange Completed** <:zzmilkoke1:1530093883747471392>"))
-    .addSeparatorComponents((separator) =>
-        separator.setDivider(false)
-        .setSpacing(SeparatorSpacingSize.Large)
-    )
-    .addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(`<:BLANK:1530093881826213970><:BLANK:1530093881826213970>${ORDER[item.currency]} **\$${amount}** ${item.currency}`)
-    )
-    .addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(`-# <:BLANK:1530093881826213970><:BLANK:1530093881826213970><:BLANK:1530093881826213970><:BLANK:1530093881826213970><:BLANK:1530093881826213970>to`))
-    .addTextDisplayComponents((textDisplay) =>
-      textDisplay.setContent(`<:BLANK:1530093881826213970><:BLANK:1530093881826213970><:crypto:1529960750477611110> **\$${amount}** Crypto`))
-  return container
+  const embed = new EmbedBuilder().setTitle(
+    `${OKE2}  **Exchange Completed**  ${OKE1}`,
+  ).setDescription(`${BLANK}
+    \n${BLANK}${BLANK}${BLANK}${ORDER[item.currency]} **\$${amount}** ${item.currency}
+    \n-# ${BLANK}${BLANK}${BLANK}${BLANK}${BLANK}to
+    \n${BLANK}${BLANK}${BLANK}<:crypto:${emojis.crypto}> **\$${amount}** Crypto`);
+  return embed;
 }
 
 module.exports = {
   buildTempModal,
   buildChannelDropdown,
   updateBoard,
-  buildSuccessContainer
+  buildSuccessContainer,
 };

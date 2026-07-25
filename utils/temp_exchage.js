@@ -1,7 +1,9 @@
+const { ids } = require("./config.js");
 const { supabase } = require("./supabase/supabase_client.js");
+const TABLE = ids.table
 
 async function getExchanges() {
-  const { data, error } = await supabase.from("temp_exchanges").select("*");
+  const { data, error } = await supabase.from(TABLE).select("*");
 
   if (error) return console.error("An error occured", error.message);
   const ret = {};
@@ -19,7 +21,7 @@ async function getExchanges() {
 
 async function getExchange(id) {
   const { data, error } = await supabase
-    .from("temp_exchanges")
+    .from(TABLE)
     .select("*, channel::text, user_id::text")
     .eq("id", id);
 
@@ -39,7 +41,7 @@ async function updateExchange(item) {
 
   item["info"] = get_data[0]["info"]["pay_info"] ?? "";
   item["amount"] = Math.round(item["amount"] * 100) / 100;
-  const { data, error } = await supabase.from("temp_exchanges").upsert(item);
+  const { data, error } = await supabase.from(TABLE).upsert(item);
 
   if (error) return console.error("An error occured", error.message);
 
@@ -51,7 +53,7 @@ async function finalizeTemp(id, input) {
   const num_input = Number(input)
 
   const { data: old_data, error: old_error} = await supabase
-    .from("temp_exchanges")
+    .from(TABLE)
     .select("pending, amount, user_id::text")
     .eq("id", num_id)
 
@@ -62,12 +64,12 @@ async function finalizeTemp(id, input) {
 
   if (new_amt == 0.00) {
     const { data: delete_data, error: delete_error} = await supabase
-      .from("temp_exchanges")
+      .from(TABLE)
       .delete()
       .eq("id", num_id)
   } else {
     const { data, error } = await supabase
-      .from("temp_exchanges")
+      .from(TABLE)
       .update({
         pending: new_pend,
         amount: new_amt
@@ -81,7 +83,7 @@ async function finalizeTemp(id, input) {
 async function removeExchange(id) {
   const num_id = Number(id)
   const { data, error } = await supabase
-    .from("temp_exchanges")
+    .from(TABLE)
     .delete()
     .eq("id", num_id)
 
@@ -92,7 +94,7 @@ async function addToPending(id, input) {
   const num_id = Number(id);
 
   const { data: old_data, error: old_error } = await supabase
-    .from("temp_exchanges")
+    .from(TABLE)
     .select("pending")
     .eq("id", num_id);
 
@@ -102,7 +104,7 @@ async function addToPending(id, input) {
   new_val += input;
 
   const { data: new_data, error: new_error } = await supabase
-    .from("temp_exchanges")
+    .from(TABLE)
     .update({
       pending: new_val,
     })
