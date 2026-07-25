@@ -95,9 +95,8 @@ function buildSuccessContainer(item, amount) {
   const embed = new EmbedBuilder().setTitle(
     `${OKE2}  **Exchange Completed**  ${OKE1}`,
   ).setDescription(`${BLANK}
-    \n${BLANK}${BLANK}${BLANK}${ORDER[item.currency]} **\$${amount}** ${item.currency}
-    \n-# ${BLANK}${BLANK}${BLANK}${BLANK}${BLANK}to
-    \n${BLANK}${BLANK}${BLANK}<:crypto:${emojis.crypto}> **\$${amount}** Crypto`);
+    ${BLANK}${BLANK}${BLANK}${ORDER[item.currency]} **\$${amount}** ${item.currency}\n-# ${BLANK}${BLANK}${BLANK}${BLANK}${BLANK}to
+    ${BLANK}${BLANK}${BLANK}<:crypto:${emojis.crypto}> **\$${amount}** Crypto`);
   return embed;
 }
 
