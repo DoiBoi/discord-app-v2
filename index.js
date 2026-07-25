@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const adminCommands = require("./commands.json");
 const { auth, supabase } = require("./utils/supabase/supabase_client.js");
-const { getExchange, finalizeTemp, addMessage } = require("./utils/temp_exchage.js");
+const { getExchange, finalizeTemp, addMessage, removeMessage } = require("./utils/temp_exchage.js");
 const { editBalance, getUserInfo } = require("./utils/balance");
 const { getId } = require("./utils/id.js");
 const {
@@ -204,7 +204,8 @@ async function handleSendComplete(
         (embed) => embed.video || embed.data.video,
       );
       const hasEmbed = msg.embeds.some((emb) => emb.image || emb.thumbnail);
-      return hasAttachment || hasEmbed || hasUploadedVideo || hasEmbeddedVideo;
+      const notSelf = msg.author.id !== interaction.guild.members.me.id
+      return (hasAttachment || hasEmbed || hasUploadedVideo || hasEmbeddedVideo) && notSelf;
     });
     let response;
 
@@ -285,7 +286,7 @@ async function handleSendComplete(
               // ],
               content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${item["amount"] - item["pending"] - Number(input).toFixed(2)}`,
             });
-            await i.editReply({
+            const confirm_msg = await i.editReply({
               embeds: [
                 new EmbedBuilder()
                   .setAuthor({
@@ -298,8 +299,9 @@ async function handleSendComplete(
                   .setThumbnail("https://cdn.discordapp.com/attachments/853109872698982451/1530452978920587376/79ea6ffa1ca3345b59042a9ce9638dfc.gif?ex=6a65a0e8&is=6a644f68&hm=e98d52a9f5ba97466e72494f0217c254d7fc65ca65c2c8b446dc4e32c30c95f8&")
               ],
               content: `-# <@1474220722665558066> ||${forwarded.url}||`,
-              components: [confirmRow],
+              components: [confirmRow]
             });
+            await addMessage(Number(item.id), confirm_msg.url, i.user.id)
           } catch (error) {
             console.error(error);
             const confirmRow = new ActionRowBuilder().addComponents(
@@ -384,6 +386,7 @@ async function handleSendCancel(
     });
     return;
   }
+  await removeMessage(Number(id), i.user.id)
   await interaction.message.edit({
     components: [
       new ActionRowBuilder().addComponents(
@@ -599,9 +602,6 @@ async function handleChannelDropdown(interaction, item, input) {
   });
 
   newCollector.on("collect", async (i) => {
-    if (i.customId === "tos-agree") {
-      await addMessage(Number(item.id), TOSResponse.url, i.user.id)
-    }
     await handleTOS(i, row, item, input);
 
     newCollector.stop();
@@ -776,7 +776,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isButton()) {
       if (interaction.customId.includes("confirm")) {
-        await interaction.deferUpdate();
+        await interaction.deferReply({
+          flags: MessageFlags.Ephemeral
+        });
         if (!(await auth(interaction.user.id))) {
           return await interaction.reply({
             content: "Not Authorized",
@@ -793,6 +795,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           const id = matches[0];
           const amount = matches[1];
           const item = await getExchange(Number(id));
+          await removeMessage(Number(id), interaction.message.url);
           const user_id = await finalizeTemp(id, amount);
           const calculatedAmount = item["amount"] - item["pending"];
           const amountMinusFee = (calculatedAmount * (100 - item["fee"])) / 100;
@@ -820,6 +823,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
             components: [disabledRow],
           });
           await updateBoard(interaction);
+          await interaction.editReply({
+            content: "Done"
+          })
           try {
             await interaction.channel.send({
               embeds: [
@@ -847,13 +853,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
           console.log(e);
         }
       } else if (interaction.customId.includes("reject")) {
-        await interaction.deferReply();
         if (!(await auth(interaction.user.id))) {
           return await interaction.reply({
             content: "Not Authorized",
             flags: MessageFlags.Ephemeral,
           });
         }
+        await interaction.deferReply();
         const matches = interaction.customId.match(CONFIRM_REGEX);
         const id = matches[0];
         const amount = matches[1];
@@ -873,9 +879,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
             ButtonBuilder.from(button).setDisabled(true),
           ),
         );
+        await removeMessage(Number(id), interaction.message.url)
         await interaction.editReply({
           // embeds: [new EmbedBuilder().setDescription("Cancelled Transaction")],
-          embed: [cancelEmbed],
+          embeds: [cancelEmbed],
         });
         const item = await getExchange(Number(id));
         await interaction.message.edit({
@@ -916,7 +923,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
     }
   } catch (error) {
-    console.error(error.message);
+    console.error(error);
   }
 });
 

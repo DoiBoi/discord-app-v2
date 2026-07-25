@@ -28,7 +28,8 @@
         "evo",
         "upub",
         "temptrigger",
-        "remtrigger"
+        "remtrigger",
+        "gettemp"
     ],
     "PublicCommands": [
         "exchange"

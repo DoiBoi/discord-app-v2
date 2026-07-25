@@ -142,7 +142,7 @@ async function addMessage(id, url, userId) {
 }
 
 async function getAvailableTransaction() {
-  const { data, error } = await supabase()
+  const { data, error } = await supabase
     .from(TABLE)
     .select("info, message_links, pending")
     .gt("pending", 0);
@@ -152,7 +152,7 @@ async function getAvailableTransaction() {
   return data;
 }
 
-async function removeMessage(id, userid) {
+async function removeMessage(id, url) {
   const { data: fetchData, error: fetchError } = await supabase
     .from(TABLE)
     .select("message_links")
@@ -164,7 +164,7 @@ async function removeMessage(id, userid) {
   }
 
   const newArray = fetchData.message_links.filter(
-    (item) => item.userId !== userid,
+    (item) => item.url !== url,
   );
   const { data, error } = await supabase
     .from(TABLE)
