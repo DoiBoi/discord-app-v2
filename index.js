@@ -386,7 +386,7 @@ async function handleSendCancel(
     });
     return;
   }
-  await removeMessage(Number(id), i.user.id)
+  await removeMessage(Number(id), interaction.user.id)
   await interaction.message.edit({
     components: [
       new ActionRowBuilder().addComponents(
