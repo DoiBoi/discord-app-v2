@@ -1,5 +1,7 @@
-const {supabase} = require('./supabase/supabase_client.js')
+const { ids } = require('./config.js');
+const { supabase } = require('./supabase/supabase_client.js')
 
+const TABLE = ids.queue
 async function showQueue() {
   const { data, error } = await supabase
     .from("rbx_queue")
