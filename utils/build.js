@@ -96,7 +96,7 @@ function buildSuccessContainer(item, amount) {
     `${OKE2}  **Exchange Completed**  ${OKE1}`,
   ).setDescription(`${BLANK}
     ${BLANK}${BLANK}${ORDER[item.currency]} **\$${amount}** ${item.currency}\n-# ${BLANK}${BLANK}${BLANK}${BLANK}${BLANK}to
-    ${BLANK}${BLANK}<:crypto:${emojis.crypto}> **\$${amount}** Crypto`);
+    ${BLANK}${BLANK}<:crypto:${emojis.crypto}> **\$${amount*(100-item.fee)/100}** Crypto`);
   return embed;
 }
 
