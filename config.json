@@ -23,7 +23,9 @@
       "log": "dummy_log",
       "table": "dummy_temp_exchanges",
       "rpc": "update_dummy_temp_pending",
-      "queue": "dummy_rbx_queue"
+      "queue": "dummy_rbx_queue",
+      "pending": "dummy_rbx_pending",
+      "cashout_rpc": "handle_cashout_dummy"
     }
   },
   "production": {
@@ -50,7 +52,8 @@
       "log": "log",
       "table": "temp_exchanges",
       "rpc": "update_temp_pending",
-      "queue": "dummy_rbx_queue"
+      "queue": "rbx_queue",
+      "pending": "rbx_pending"
     }
   }
 }

@@ -6,7 +6,7 @@ const {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } = require("discord.js");
-const { addToQueue, getEntries } = require("../../utils/queue");
+const { addToQueue, getEntry } = require("../../utils/queue");
 const { getUserBalance } = require("../../utils/balance");
 
 module.exports = {
@@ -36,15 +36,15 @@ module.exports = {
     const user = interaction.options.getUser("user");
     const info = interaction.options.getString("info");
     const amount = interaction.options.getNumber("amount");
-    const entries = await getEntries(user.id);
+    const entries = await getEntry(user.id);
     const balance = await getUserBalance(user.id);
     let rbx_bal = balance.balance_rbx;
     for (const entry of entries) {
       rbx_bal -= entry.amount;
     }
-    if ((amount && (rbx_bal - amount <= 0)) || (rbx_bal <= 0)) {
+    if ((amount && (rbx_bal - amount < 0)) || (rbx_bal < 0)) {
       return interaction.editReply({
-        content: "Cannot add to queue as it will result in negative or zero balance"
+        content: "Cannot add to queue as it will result in negative balance"
       })
     }
 

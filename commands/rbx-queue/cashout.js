@@ -7,6 +7,36 @@ const {
   ButtonStyle,
 } = require("discord.js");
 const { getQueue, postPending } = require("../../utils/queue");
+const { ids } = require("../../utils/config");
+
+const PENDING_TABLE = ids.pending;
+
+function buildActionRow(order) {
+  let acc = "";
+  for (let i = 0; i < order.length; i++) {
+    const curr = order[i];
+    if (i >= order.length - 1) {
+      acc += `${curr.id}`;
+    } else {
+      acc += `${curr.id}-`;
+    }
+  }
+  const actionRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`cy-${acc}`)
+      .setLabel("Complete")
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId(`cn-${acc}`)
+      .setLabel("Cancel")
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId(`cc-${acc}`)
+      .setLabel("Change User")
+      .setStyle(ButtonStyle.Primary),
+  );
+  return actionRow;
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -40,19 +70,24 @@ module.exports = {
     let payload = [];
     for (const item of order) {
       const entry = entries[item - 1];
-      const pending_sum = entry.pendings.reduce((acc, curr) => acc + curr, 0);
+      const pending_sum = entry[PENDING_TABLE].reduce(
+        (acc, curr) => acc + curr.amount,
+        0,
+      );
       const to_add = Math.min(entry.amount - pending_sum, amount);
+      if (to_add <= 0) {
+        continue;
+      }
       amount -= to_add;
-      entry.pendings.push(to_add)
-      entry.seller_channels.push(interaction.channelId)
+      if (amount < 0) {
+        break;
+      }
       payload.push({
         id: entry.id,
-        amount: entry.amount,
-        pendings: entry.pendings,
-        seller_channels: entry.seller_channels,
-        gfsinfo: entry.gfsinfo
+        amount: to_add,
+        channel: interaction.channelId,
+        gfsinfo: entry.gfsinfo,
       });
-      if (amount <= 0) {break}
     }
     if (amount > 0) {
       return await interaction.editReply({
@@ -60,18 +95,17 @@ module.exports = {
           "There is not enough available on the specified order to cashout",
       });
     }
-    await postPending(payload)
+    payload_data = await postPending(payload);
     await interaction.editReply({
       content: "Cashout Successful",
     });
     const payout_message = payload.reduce(
-      (acc, curr) =>
-        acc +
-        `- ${curr.pendings[curr.pendings.length - 1]} to \`${curr.gfsinfo}\`\n`,
+      (acc, curr) => acc + `- ${curr.amount} to \`${curr.gfsinfo}\`\n`,
       "\n",
     );
     await interaction.channel.send({
       content: `Please payout ${payout_message}`,
+      components: [buildActionRow(payload_data)],
     });
   },
 };

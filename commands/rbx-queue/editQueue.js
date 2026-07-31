@@ -8,6 +8,8 @@ const {
 } = require("discord.js");
 const { addToQueue, getQueue, getEntries } = require("../../utils/queue");
 const { getUserBalance } = require("../../utils/balance");
+const { ids } = require("../../utils/config");
+const PENDING_TABLE = ids.pending
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -52,22 +54,22 @@ module.exports = {
     let old_amount = entry.amount;
     const sum = entries.reduce((accumulator, current) => accumulator + current, 0)
     const balance = await getUserBalance(entry.user_id)
-    if ((balance.balance_rbx - (sum - old_amount) - amount) <= 0) {
+    if ((balance.balance_rbx - (sum - old_amount) - amount) < 0) {
       return await interaction.editReply({
-        content: "Unable to edit as changing to this amount will result in a negative or zero value"
+        content: "Unable to edit as changing to this amount will result in a negative value"
       })
     }
     let amount_string = `${old_amount.toLocaleString()}`;
-    for (const pending of entry.pendings) {
-      amount_string += `-${pending.toLocaleString()}`;
-      old_amount -= pending;
+    for (const pending of entry[PENDING_TABLE]) {
+      amount_string += `-${pending.amount.toLocaleString()}`;
+      old_amount -= pending.amount;
     }
-    if (entry.pendings.length > 0) {
+    if (entry[PENDING_TABLE].length > 0) {
       amount_string += `=${old_amount.toLocaleString()}`
     }
     let channel_string = "";
-    for (const channel of entry.seller_channels) {
-      channel_string += `<#${channel}> `
+    for (const channel of entry[PENDING_TABLE]) {
+      channel_string += `<#${channel.channel}> `
     }
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
