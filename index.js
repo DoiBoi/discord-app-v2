@@ -793,6 +793,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
             ),
           );
           const matches = interaction.customId.match(CONFIRM_REGEX);
+          if (matches.length <= 0) {
+            return
+          }
           const id = matches[0];
           const amount = matches[1];
           const item = await getExchange(Number(id));

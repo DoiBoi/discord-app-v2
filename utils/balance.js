@@ -10,7 +10,7 @@ async function getUserBalance(userId) {
 }
 
 async function editBalance(userId, balance_rbx = [], balance_usd = []) {
-    
+
     const { data, error } = await supabase
         .from('balances')
         .select()
@@ -75,7 +75,7 @@ async function getPaginatedBalances(page, perPage=10, is_gfs = false, is_owe = f
         .from('balances')
         .select('*', { count: 'exact', head: true })
         .eq('is_gfs', true));
-    } else if (is_owe) { 
+    } else if (is_owe) {
         ({ data, error } = await supabase
             .from('balances')
             .select('id::text, balance_usd, balance_rbx, is_owe')
@@ -92,7 +92,7 @@ async function getPaginatedBalances(page, perPage=10, is_gfs = false, is_owe = f
             .select('id::text, balance_usd, balance_rbx, info')
             .filter('info->pay_info', 'neq', null)
             .order('balance_usd', { ascending: false })
-            .range((page - 1) * perPage, page * perPage - 1)); 
+            .range((page - 1) * perPage, page * perPage - 1));
         ({ count: countdata, error: countError } = await supabase
         .from('balances')
         .select('*', { count: 'exact', head: true })
@@ -112,18 +112,31 @@ async function getPaginatedBalances(page, perPage=10, is_gfs = false, is_owe = f
     return [data, countdata];
 }
 
+async function getBalances(balances) {
+  const { data, error } = await supabase
+    .from("balances")
+    .select()
+    .in("id", balances.map((item) => {
+      return String(item)
+    }))
+
+  if (error) { throw new Error(`An error occured ${error.message}`) }
+
+  return data
+}
+
 function getUserInfo(info, flags = {
     gfs_toggle: false,
     owe_toggle: false,
     info_toggle: false,
     new_line: true
 }) {
-    
+
     if (info == undefined) {
         return ''
     }
     let ret = ''
-    
+
     if (flags.gfs_toggle) {
         ret += info.gfs_info ? `**User:** \`${info.gfs_info}\`${flags.new_line ? "\n" : ''}` : ''
     }
@@ -144,5 +157,6 @@ module.exports = {
     editBalance,
     clearBalance,
     getPaginatedBalances,
-    getUserInfo
+    getUserInfo,
+    getBalances
 };

@@ -1,3 +1,4 @@
+const { getBalances } = require('./balance.js');
 const { ids } = require('./config.js');
 const { supabase } = require('./supabase/supabase_client.js')
 
@@ -38,6 +39,7 @@ async function getQueue() {
   const { data, error } = await supabase
     .from(TABLE)
     .select(`*, buyer_channel, user_id::text, ${PENDING_TABLE} (*)`)
+    .order("date_created", { ascending: true });
 
   if (error) { throw new Error(error.message) }
 
@@ -115,13 +117,17 @@ async function getEntries(ids) {
 }
 
 async function finalizeCashout(items) {
-  const ret = await supabase.rpc(CASHOUT_RPC, {
+  const { data, error } = await supabase.rpc(CASHOUT_RPC, {
     pending_ids: items.map((item) => {
       return item.id
     })
   })
-  console.log(ret)
-  return ret
+  if (error) { throw new Error(error.message) }
+  const balances = await getBalances(data.map((item) => {
+    return item.balance_id
+  }))
+  console.log(data)
+  return data
 }
 
 module.exports = {
