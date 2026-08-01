@@ -722,7 +722,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isModalSubmit()) {
       if (interaction.customId.includes("temp-popup")) {
         const item = await getExchange(interaction.customId.match(/\d+/gm)[0]);
-        const input = parseFloat(
+        let input = parseFloat(
           interaction.fields.getTextInputValue("temp-input"),
         );
 
@@ -732,6 +732,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
             flags: MessageFlags.Ephemeral,
           });
         }
+        // if ((item.currency === "PayPal") &&
+        //   (input < item.amount))
 
         const amount = item["amount"] - item["pending"];
         if (
@@ -827,6 +829,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
             content: "Done"
           })
           try {
+            if (item.currency === "PayPal" && item.amount > 0) {
+              item.fee += 1
+            }
             await interaction.channel.send({
               embeds: [
                 new EmbedBuilder().setDescription(
