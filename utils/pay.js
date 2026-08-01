@@ -1,12 +1,10 @@
 const { supabase } = require('./supabase/supabase_client.js');
 
 async function setPay(userId, info = null) {
-
     const { data: get_data, error: get_error } = await supabase
         .from('balances')
         .select('info')
         .eq('id', userId)
-    
 
     let json = {}
     if (get_data[0].info) {
@@ -20,7 +18,7 @@ async function setPay(userId, info = null) {
         .update({ info: json })
         .eq('id', userId)
         .select()
-    
+
     if (error || get_error) {
         throw new Error(`There was an error running this ${error.message}`)
     }
