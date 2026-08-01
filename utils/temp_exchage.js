@@ -1,4 +1,5 @@
 const { ids } = require("./config.js");
+const { setPay } = require("./pay.js");
 const { supabase } = require("./supabase/supabase_client.js");
 const TABLE = ids.table;
 
@@ -39,7 +40,7 @@ async function updateExchange(item) {
   if (get_error)
     return console.error("An error occured in get", get_error.message);
 
-  item["info"] = get_data[0]["info"]["pay_info"] ?? "";
+  item["info"] = get_data[0]["info"] ? get_data[0]["info"]["pay_info"] : "";
   item["amount"] = Math.round(item["amount"] * 100) / 100;
   const { data, error } = await supabase.from(TABLE).upsert(item);
 
@@ -62,11 +63,12 @@ async function finalizeTemp(id, input) {
   const new_amt = Math.round((old_data[0]["amount"] - input) * 100) / 100;
   const new_pend = Math.round((old_data[0]["pending"] - input) * 100) / 100;
 
-  if (new_amt == 0.0) {
+  if (new_amt <= 0.0) {
     const { data: delete_data, error: delete_error } = await supabase
       .from(TABLE)
       .delete()
       .eq("id", num_id);
+    await setPay(old_data[0].user_id, null);
   } else {
     const { data, error } = await supabase
       .from(TABLE)
@@ -156,24 +158,24 @@ async function removeMessage(id, url) {
   const { data: fetchData, error: fetchError } = await supabase
     .from(TABLE)
     .select("message_links")
-    .eq("id", id)
-    .single();
+    .eq("id", id);
 
   if (fetchError) {
     throw new Error(fetchError.message);
   }
 
-  const newArray = fetchData.message_links.filter(
-    (item) => item.url !== url,
-  );
+  let newArray = [];
+  if (fetchData[0].message_links.length > 0) {
+    newArray = fetchData[0].message_links.filter((item) => item.url !== url);
+  }
   const { data, error } = await supabase
     .from(TABLE)
     .update({
-      message_links: newArray
+      message_links: newArray,
     })
-    .eq('id', id)
+    .eq("id", id);
 
-  return
+  return;
 }
 
 module.exports = {
@@ -185,5 +187,5 @@ module.exports = {
   removeExchange,
   removeMessage,
   addMessage,
-  getAvailableTransaction
+  getAvailableTransaction,
 };
