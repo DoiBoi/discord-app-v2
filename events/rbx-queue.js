@@ -1,6 +1,20 @@
-const { MessageFlags, ActionRowBuilder, ButtonStyle } = require("discord.js");
-const { getEntries, finalizeCashout, cancelCashout } = require("../utils/queue");
-const { ButtonBuilder } = require("discord.js");
+const {
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonStyle,
+  ButtonBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  LabelBuilder,
+  TextInputStyle,
+} = require("discord.js");
+const {
+  getEntries,
+  finalizeCashout,
+  deletePendings,
+  showQueue,
+} = require("../utils/queue");
+const { disableButtonRow } = require("../utils/build");
 
 const REGEX = /\d+/gm;
 
@@ -70,24 +84,8 @@ async function handlePendingYes(interaction) {
           content: "Please send the correct proof then click complete again",
         });
       }
-      await i.message.edit({
-        components: [
-          new ActionRowBuilder().addComponents(
-            i.message.components[0].components.map((button) =>
-              ButtonBuilder.from(button).setDisabled(true),
-            ),
-          ),
-        ],
-      });
-      await interaction.message.edit({
-        components: [
-          new ActionRowBuilder().addComponents(
-            interaction.message.components[0].components.map((button) =>
-              ButtonBuilder.from(button).setDisabled(true),
-            ),
-          ),
-        ],
-      });
+      await disableButtonRow(i);
+      await disableButtonRow(interaction);
       await i.deferUpdate();
       const forwarded_channels = [];
       await finalizeCashout(data);
@@ -127,12 +125,46 @@ async function handlePendingYes(interaction) {
 }
 
 async function handlePendingNo(interaction) {
+  await disableButtonRow(interaction);
+  await interaction.deferReply();
   const matches = interaction.customId.match(REGEX);
+  const data = await deletePendings(matches);
 
-  return;
+  await interaction.editReply({
+    content: "Interaction cancelled",
+  });
 }
 
 async function handlePendingChange(interaction) {
+  // TODO: implement
+  const matches = interaction.customId.match(REGEX);
+  const modal = new ModalBuilder()
+    .setCustomId(`c-change-user`)
+    .setTitle("Change User");
+
+  const input = new TextInputBuilder()
+    .setCustomId("c-change-input")
+    .setPlaceholder("e.g. 10")
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+
+  const label = new LabelBuilder()
+    .setLabel("What is the new order?")
+    .setTextInputComponent(input);
+
+  const list = new LabelBuilder()
+    .setLabel("For reference only:")
+    .setTextInputComponent(
+      new TextInputBuilder()
+        .setCustomId("read-reference")
+        .setValue(await showQueue(true))
+        .setRequired(false)
+        .setStyle(TextInputStyle.Paragraph)
+  )
+
+  modal.addLabelComponents(label);
+  modal.addLabelComponents(list)
+  interaction.showModal(modal);
   return;
 }
 

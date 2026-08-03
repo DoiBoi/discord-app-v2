@@ -6,6 +6,7 @@ const {
   ChannelSelectMenuBuilder,
   ActionRowBuilder,
   ChannelType,
+  ButtonBuilder
 } = require("discord.js");
 const { getExchanges } = require("./temp_exchage");
 const {
@@ -39,7 +40,9 @@ function buildTempModal(id, item) {
 
   const label = new LabelBuilder()
     .setLabel("How much are you sending?")
-    .setDescription(`Minimum: \$${min.toFixed(2)}, Maximum: \$${max.toFixed(2)}`)
+    .setDescription(
+      `Minimum: \$${min.toFixed(2)}, Maximum: \$${max.toFixed(2)}`,
+    )
     .setTextInputComponent(input);
 
   modal.addLabelComponents(label);
@@ -51,9 +54,7 @@ function buildChannelDropdown() {
   const channelMenu = new ChannelSelectMenuBuilder()
     .setCustomId("select-channel")
     .setPlaceholder("Select channel...")
-    .setChannelTypes(
-        ChannelType.GuildText
-    );
+    .setChannelTypes(ChannelType.GuildText);
 
   const row = new ActionRowBuilder().addComponents(channelMenu);
 
@@ -98,8 +99,20 @@ function buildSuccessContainer(item, amount) {
     `${OKE2}  **Exchange Completed**  ${OKE1}`,
   ).setDescription(`${BLANK}
     ${BLANK}${BLANK}${ORDER[item.currency]} **\$${Number(amount).toFixed(2)}** ${item.currency}\n-# ${BLANK}${BLANK}${BLANK}${BLANK}${BLANK}to
-    ${BLANK}${BLANK}<:crypto:${emojis.crypto}> **\$${((Number(amount)*(100-item.fee)/100)).toFixed(2)}** Crypto`);
+    ${BLANK}${BLANK}<:crypto:${emojis.crypto}> **\$${((Number(amount) * (100 - item.fee)) / 100).toFixed(2)}** Crypto`);
   return embed;
+}
+
+async function disableButtonRow(interaction) {
+  await interaction.message.edit({
+    components: [
+      new ActionRowBuilder().addComponents(
+        interaction.message.components[0].components.map((button) =>
+          ButtonBuilder.from(button).setDisabled(true),
+        ),
+      ),
+    ],
+  });
 }
 
 module.exports = {
@@ -107,4 +120,5 @@ module.exports = {
   buildChannelDropdown,
   updateBoard,
   buildSuccessContainer,
+  disableButtonRow
 };
