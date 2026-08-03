@@ -47,7 +47,7 @@ function buildMessage(item) {
 
 function buildResponse(exchanges, ping) {
   let message =
-    `${ping ? "<@&1474255029241249913>\n" : ""}[  <:pinkpin:${emojis.pinkpin}>  ]  Use the hidden text in brackets (first 3 letters of the payment details) to keep track of the amount left\n`;
+    `${ping ? "<@&1474255029241249913>\n" : ""}`;
   for (const [currency, emoji] of Object.entries(ORDER)) {
     message += `# ${currency} ${emoji}\n`;
     if (currency == "PayPal") {
@@ -56,7 +56,7 @@ function buildResponse(exchanges, ping) {
     }
     const items = exchanges[currency];
     if (items == null) {
-      message += "> none atm\n";
+      message += "> none at the moment\n";
       continue;
     }
     const visibleItems = items.filter((item) => {
