@@ -179,6 +179,9 @@ async function handlePendingChange(interaction) {
 
     const entries = await getQueue();
     let payload = [];
+    const amount = entries.filter((item) => {
+
+    })
     for (let i = 0; i < newOrder.length; i++) {
       const item = newOrder[i];
       const entry = entries[item - 1];
@@ -186,7 +189,7 @@ async function handlePendingChange(interaction) {
         (acc, curr) => acc + curr.amount,
         0,
       );
-      const to_add = Math.min(entry.amount - pending_sum);
+      const to_add = Math.min(entry.amount - pending_sum, amount);
       if (to_add <= 0) {
         continue;
       }
