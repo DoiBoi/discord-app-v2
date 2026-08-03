@@ -5,8 +5,7 @@ const { supabase } = require("./supabase/supabase_client.js");
 const TABLE = ids.queue;
 const PENDING_TABLE = ids.pending;
 const CASHOUT_RPC = ids.cashout_rpc;
-async function showQueue(basic = false) {
-  console.log(basic)
+async function showQueue(matches = []) {
   const { data, error } = await supabase
     .from(TABLE)
     .select(`*, ${PENDING_TABLE} ( * )`)
@@ -17,33 +16,14 @@ async function showQueue(basic = false) {
   }
   let string = "# QUEUE\n";
 
-  if (basic) {
-    string = ""
-    for (let i = 0; i < data.length; i++) {
-      const entry = data[i];
-      let amount = entry.amount;
-      let amount_string = `${amount.toLocaleString()}`;
-      let channel_string = "";
-      for (const pending of entry[PENDING_TABLE]) {
-        amount_string += `-${pending.amount.toLocaleString()}`;
-        amount -= pending.amount;
-      }
-      if (entry[PENDING_TABLE].length > 0) {
-        amount_string += `=${amount.toLocaleString()}`;
-      }
-      for (const pending of entry[PENDING_TABLE]) {
-        channel_string += `<#${pending.channel}> `;
-      }
-      string += `${i + 1}: ${entry.gfsinfo} ${amount_string}\n`;
-    }
-    console.log(string)
-    return string;
-  }
   for (let i = 0; i < data.length; i++) {
     const entry = data[i];
     let amount = entry.amount;
     let amount_string = `${amount.toLocaleString()}`;
     let channel_string = "";
+    entry[PENDING_TABLE] = entry[PENDING_TABLE].filter((item) => {
+      return !matches.includes(String(item.id))
+    })
     for (const pending of entry[PENDING_TABLE]) {
       amount_string += `-${pending.amount.toLocaleString()}`;
       amount -= pending.amount;
@@ -180,7 +160,6 @@ async function finalizeCashout(items) {
       return item.balance_id;
     }),
   );
-  console.log(data);
   return data;
 }
 

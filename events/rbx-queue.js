@@ -7,16 +7,21 @@ const {
   TextInputBuilder,
   LabelBuilder,
   TextInputStyle,
+  TextDisplayBuilder,
 } = require("discord.js");
 const {
   getEntries,
   finalizeCashout,
   deletePendings,
   showQueue,
+  postPending,
+  getQueue,
 } = require("../utils/queue");
 const { disableButtonRow } = require("../utils/build");
+const { ids } = require("../utils/config");
 
 const REGEX = /\d+/gm;
+const PENDING_TABLE = ids.pending
 
 async function handlePendingYes(interaction) {
   const matches = interaction.customId.match(REGEX);
@@ -152,19 +157,70 @@ async function handlePendingChange(interaction) {
     .setLabel("What is the new order?")
     .setTextInputComponent(input);
 
-  const list = new LabelBuilder()
-    .setLabel("For reference only:")
-    .setTextInputComponent(
-      new TextInputBuilder()
-        .setCustomId("read-reference")
-        .setValue(await showQueue(true))
-        .setRequired(false)
-        .setStyle(TextInputStyle.Paragraph)
-  )
+  const text = new TextDisplayBuilder().setContent(await showQueue(matches));
 
+  modal.addTextDisplayComponents(text);
   modal.addLabelComponents(label);
-  modal.addLabelComponents(list)
   interaction.showModal(modal);
+
+  const filter = (i) =>
+    i.customId === "c-change-user" && i.user.id === interaction.user.id;
+
+  try {
+    const submission = await interaction.awaitModalSubmit({
+      filter,
+      time: 60_000,
+    });
+    await submission.deferReply()
+    const newOrder = submission.fields
+      .getTextInputValue("c-change-input")
+      .split(" ")
+      .map((item) => parseInt(item));
+
+    const entries = await getQueue();
+    let payload = [];
+    for (let i = 0; i < newOrder.length; i++) {
+      const item = newOrder[i];
+      const entry = entries[item - 1];
+      const pending_sum = entry[PENDING_TABLE].reduce(
+        (acc, curr) => acc + curr.amount,
+        0,
+      );
+      const to_add = Math.min(entry.amount - pending_sum);
+      if (to_add <= 0) {
+        continue;
+      }
+      amount -= to_add;
+      if (amount < 0) {
+        break;
+      }
+      const payload_item = {
+        id: entry.id,
+        amount: to_add,
+        channel: interaction.channelId,
+        gfsinfo: entry.gfsinfo,
+      }
+      if (matches[i]) {
+        payload_item.pending_id = matches[i]
+      }
+      payload.push(payload_item);
+    }
+    if (amount > 0) {
+      return await interaction.editReply({
+        content:
+          "There is not enough available on the specified order to cashout",
+      });
+    }
+    // await disableButtonRow(interaction);
+    // payload_data = await postPending(payload);
+
+    await submission.editReply({
+      content: `New order: ${newOrder}`,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+
   return;
 }
 
