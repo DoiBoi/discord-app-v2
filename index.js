@@ -829,7 +829,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             content: "Done"
           })
           try {
-            if (item.currency === "PayPal" && item.amount > 0) {
+            if (item.currency === "PayPal" && ((item.amount) - Number(amount)) > 0) {
               item.fee += 1
             }
             await interaction.channel.send({
