@@ -6,9 +6,9 @@ async function setGfs(userId, gfs_bool, info = null) {
         .select('info')
         .eq('id', userId)
 
-
+    console.log(get_data)
     let json = {}
-    if (get_data[0].info) {
+    if (get_data[0]) {
         json = get_data[0].info
     }
 
@@ -23,7 +23,7 @@ async function setGfs(userId, gfs_bool, info = null) {
         .select()
 
     if (error) {
-        throw new Error(`There was an error running this ${error.message}`)
+        throw new Error(`There was an error running this ${error}`)
     }
 
     return data;

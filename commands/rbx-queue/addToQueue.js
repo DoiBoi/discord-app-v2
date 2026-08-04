@@ -56,7 +56,7 @@ module.exports = {
       amount ?? rbx_bal,
     );
     await interaction.editReply({
-      content: `Added to queue: \`${info ?? balance.info?.gfsinfo}\`: ${amount ?? rbx_bal} `,
+      content: `Added to queue: \`${info ?? balance.info?.gfs_info}\`: ${amount ?? rbx_bal} `,
     });
     await updateQueue(interaction)
     return;

@@ -70,7 +70,7 @@ module.exports = {
     }
     let channel_string = "";
     for (const channel of entry[PENDING_TABLE]) {
-      channel_string += `<#${channel.channel}> `
+      channel_string += `${channel.channel} `
     }
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()

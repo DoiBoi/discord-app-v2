@@ -22,6 +22,8 @@ const { disableButtonRow, updateQueue } = require("../utils/build");
 const { ids } = require("../utils/config");
 const { buildActionRow } = require("../commands/rbx-queue/cashout");
 const { getUserInfo } = require("../utils/balance");
+const { setGfs } = require("../utils/gfs");
+const { appendUserHistory } = require("../utils/history");
 
 const REGEX = /\d+/gm;
 const PENDING_TABLE = ids.pending;
@@ -36,10 +38,6 @@ async function handlePendingYes(interaction) {
   const matches = interaction.customId.match(REGEX);
   const data = await getEntries(matches);
   await interaction.deferUpdate();
-  // interaction.reply({
-  //   content: data,
-  //   flags: MessageFlags.Ephemeral
-  // })
   try {
     const messages = await interaction.channel.messages.fetch({ limit: 5 });
     const hasImage = messages.find((msg) => {
@@ -67,8 +65,9 @@ async function handlePendingYes(interaction) {
       });
     }
 
-    const response = await hasImage.reply({
-      content: "Is this the correct item to forward?",
+    const response = await interaction.followUp({
+      content: `Is ${hasImage.url} the correct item to forward?`,
+      flags: MessageFlags.Ephemeral,
       components: [
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
@@ -100,15 +99,13 @@ async function handlePendingYes(interaction) {
       }
       await disableButtonRow(i);
       await disableButtonRow(interaction);
-      await i.deferUpdate();
+      // await i.deferUpdate();
       const forwarded_channels = [];
       const cashoutResult = await finalizeCashout(data);
-      console.log(cashoutResult)
       for (let i = 0; i < data.length; i++) {
-        const item = data[i]
-        const cashoutItem = cashoutResult[i]
-        const result = cashoutItem.balances
-        console.log(result)
+        const item = data[i];
+        const cashoutItem = cashoutResult[i];
+        const result = cashoutItem.balances;
         try {
           const forward_channel = await interaction.client.channels.fetch(
             String(item.queue_id.buyer_channel),
@@ -116,11 +113,19 @@ async function handlePendingYes(interaction) {
           const forwarded = await hasImage.forward(forward_channel);
           forwarded_channels.push(forwarded.url);
           await forward_channel.send({
-            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${item.amount} from ${result.id ? `<@${cashoutItem.balance_id}>` :  ""}'s balance\n||-# (**Previous balance:** \$${cashoutItem.prev_rbx} RBX${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
-            flags: [MessageFlags.SuppressNotifications]
-          })
+            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${item.amount} from ${cashoutItem.balance_id ? `<@${cashoutItem.balance_id}>` : ""}'s balance\n||-# (**Previous balance:** \$${cashoutItem.prev_rbx} RBX${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
+            flags: [MessageFlags.SuppressNotifications],
+          });
+          if (item.queue_id.amount - item.amount <= 0) {
+            await setGfs(cashoutItem.balance_id, false);
+            await interaction.followUp({
+              content: "GFS removed",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+          await appendUserHistory(cashoutItem.balance_id, "rbx", [-item.amount]);
         } catch (error) {
-          console.error(`An error occured in handlePendingYes\n${error}`)
+          console.error(`An error occured in handlePendingYes\n${error}`);
         }
       }
       if (forwarded_channels.length <= 0) {
@@ -136,7 +141,7 @@ async function handlePendingYes(interaction) {
         }, "Image forwarded in "),
         flags: MessageFlags.Ephemeral,
       });
-      await updateQueue(interaction)
+      await updateQueue(interaction);
     });
   } catch (error) {
     console.error(error.message);
@@ -237,7 +242,7 @@ async function handlePendingChange(interaction) {
       payload.push(payload_item);
     }
     if (amount > 0) {
-      return await interaction.editReply({
+      return await submission.editReply({
         content:
           "There is not enough available on the specified order to cashout",
       });
@@ -248,10 +253,10 @@ async function handlePendingChange(interaction) {
       await deletePendings(remaining);
     }
     payload_data = await postPending(payload);
-    let payout_message = ""
+    let payout_message = "";
     if (payload.length <= 1) {
-      const payload_item = payload[0]
-      payout_message = `${payload_item.amount} to \`${payload_item.gfsinfo}\``
+      const payload_item = payload[0];
+      payout_message = `${payload_item.amount} to \`${payload_item.gfsinfo}\``;
     } else {
       payout_message = payload.reduce(
         (acc, curr) => acc + `- ${curr.amount} to \`${curr.gfsinfo}\`\n`,
@@ -260,11 +265,11 @@ async function handlePendingChange(interaction) {
     }
     const response = await submission.editReply({
       content: `Please payout ${payout_message}`,
-      components: [buildActionRow(payload_data)]
+      components: [buildActionRow(payload_data)],
     });
 
-    await updateURL(payload_data, response.url)
-    await updateQueue(interaction)
+    await updateURL(payload_data, response.url);
+    await updateQueue(interaction);
   } catch (error) {
     // console.error(error);
   }

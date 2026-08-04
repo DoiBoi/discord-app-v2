@@ -90,6 +90,7 @@ module.exports = {
         gfsinfo: entry.gfsinfo,
       });
     }
+    console.log(amount)
     if (amount > 0) {
       return await interaction.editReply({
         content:

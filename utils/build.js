@@ -107,15 +107,27 @@ function buildSuccessContainer(item, amount) {
 }
 
 async function disableButtonRow(interaction) {
-  await interaction.message.edit({
-    components: [
-      new ActionRowBuilder().addComponents(
-        interaction.message.components[0].components.map((button) =>
-          ButtonBuilder.from(button).setDisabled(true),
+  try {
+    await interaction.message.edit({
+      components: [
+        new ActionRowBuilder().addComponents(
+          interaction.message.components[0].components.map((button) =>
+            ButtonBuilder.from(button).setDisabled(true),
+          ),
         ),
-      ),
-    ],
-  });
+      ],
+    });
+  } catch {
+    await interaction.update({
+      components: [
+        new ActionRowBuilder().addComponents(
+          interaction.message.components[0].components.map((button) =>
+            ButtonBuilder.from(button).setDisabled(true),
+          ),
+        ),
+      ],
+    });
+  }
 }
 
 async function updateQueue(interaction) {
