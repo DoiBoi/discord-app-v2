@@ -6,8 +6,9 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
-const { getQueue, postPending } = require("../../utils/queue");
+const { getQueue, postPending, updateURL } = require("../../utils/queue");
 const { ids } = require("../../utils/config");
+const { updateQueue } = require("../../utils/build");
 
 const PENDING_TABLE = ids.pending;
 
@@ -95,18 +96,26 @@ module.exports = {
           "There is not enough available on the specified order to cashout",
       });
     }
-    payload_data = await postPending(payload);
     await interaction.editReply({
       content: "Cashout Successful",
     });
-    const payout_message = payload.reduce(
-      (acc, curr) => acc + `- ${curr.amount} to \`${curr.gfsinfo}\`\n`,
-      "\n",
-    );
-    await interaction.channel.send({
+    let payout_message = "";
+    if (payload.length <= 1) {
+      const payload_item = payload[0]
+      payout_message = `${payload_item.amount} to \`${payload_item.gfsinfo}\``
+    } else {
+      payout_message = payload.reduce(
+        (acc, curr) => acc + `- ${curr.amount} to \`${curr.gfsinfo}\`\n`,
+        "\n",
+      );
+    }
+    payload_data = await postPending(payload);
+    const response = await interaction.channel.send({
       content: `Please payout ${payout_message}`,
       components: [buildActionRow(payload_data)],
     });
+    await updateURL(payload_data, response.url);
+    await updateQueue(interaction);
   },
   buildActionRow,
 };

@@ -16,13 +16,21 @@ const {
   showQueue,
   postPending,
   getQueue,
+  updateURL,
 } = require("../utils/queue");
-const { disableButtonRow, updateBoard, updateQueue } = require("../utils/build");
+const { disableButtonRow, updateQueue } = require("../utils/build");
 const { ids } = require("../utils/config");
 const { buildActionRow } = require("../commands/rbx-queue/cashout");
+const { getUserInfo } = require("../utils/balance");
 
 const REGEX = /\d+/gm;
 const PENDING_TABLE = ids.pending;
+const FLAGS = {
+  gfs_toggle: true,
+  owe_toggle: false,
+  info_toggle: false,
+  new_line: false,
+};
 
 async function handlePendingYes(interaction) {
   const matches = interaction.customId.match(REGEX);
@@ -94,16 +102,25 @@ async function handlePendingYes(interaction) {
       await disableButtonRow(interaction);
       await i.deferUpdate();
       const forwarded_channels = [];
-      await finalizeCashout(data);
-      for (const item of data) {
+      const cashoutResult = await finalizeCashout(data);
+      console.log(cashoutResult)
+      for (let i = 0; i < data.length; i++) {
+        const item = data[i]
+        const cashoutItem = cashoutResult[i]
+        const result = cashoutItem.balances
+        console.log(result)
         try {
           const forward_channel = await interaction.client.channels.fetch(
             String(item.queue_id.buyer_channel),
           );
           const forwarded = await hasImage.forward(forward_channel);
           forwarded_channels.push(forwarded.url);
-        } catch {
-          console.log("Channel not found");
+          await forward_channel.send({
+            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${item.amount} from ${result.id ? `<@${cashoutItem.balance_id}>` :  ""}'s balance\n||-# (**Previous balance:** \$${cashoutItem.prev_rbx} RBX${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
+            flags: [MessageFlags.SuppressNotifications]
+          })
+        } catch (error) {
+          console.error(`An error occured in handlePendingYes\n${error}`)
         }
       }
       if (forwarded_channels.length <= 0) {
@@ -231,14 +248,23 @@ async function handlePendingChange(interaction) {
       await deletePendings(remaining);
     }
     payload_data = await postPending(payload);
-    const payout_message = payload.reduce(
-      (acc, curr) => acc + `- ${curr.amount} to \`${curr.gfsinfo}\`\n`,
-      "\n",
-    );
-    await submission.editReply({
+    let payout_message = ""
+    if (payload.length <= 1) {
+      const payload_item = payload[0]
+      payout_message = `${payload_item.amount} to \`${payload_item.gfsinfo}\``
+    } else {
+      payout_message = payload.reduce(
+        (acc, curr) => acc + `- ${curr.amount} to \`${curr.gfsinfo}\`\n`,
+        "\n",
+      );
+    }
+    const response = await submission.editReply({
       content: `Please payout ${payout_message}`,
       components: [buildActionRow(payload_data)]
     });
+
+    await updateURL(payload_data, response.url)
+    await updateQueue(interaction)
   } catch (error) {
     // console.error(error);
   }

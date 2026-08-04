@@ -19,7 +19,6 @@ const { getId, upsertId } = require("./id");
 const { emojis, ids } = require("./config");
 const { EmbedBuilder } = require("discord.js");
 const { showQueue } = require("./queue");
-const { supabase } = require("./supabase/supabase_client");
 const CHANNEL = ids.channel_id;
 const MESSAGE = ids.message_id;
 const QUEUE_CHANNEL = ids.queue_channel;
@@ -132,7 +131,7 @@ async function updateQueue(interaction) {
         content: text,
       });
     } catch {
-      const sent_message = channel.send({
+      const sent_message = await channel.send({
         content: text,
       });
       await upsertId(QUEUE_MESSAGE, sent_message.id);

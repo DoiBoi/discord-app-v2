@@ -22,8 +22,8 @@ async function showQueue(matches = []) {
     let amount_string = `${amount.toLocaleString()}`;
     let channel_string = "";
     entry[PENDING_TABLE] = entry[PENDING_TABLE].filter((item) => {
-      return !matches.includes(String(item.id))
-    })
+      return !matches.includes(String(item.id));
+    });
     for (const pending of entry[PENDING_TABLE]) {
       amount_string += `-${pending.amount.toLocaleString()}`;
       amount -= pending.amount;
@@ -32,7 +32,7 @@ async function showQueue(matches = []) {
       amount_string += `=${amount.toLocaleString()}`;
     }
     for (const pending of entry[PENDING_TABLE]) {
-      channel_string += `<#${pending.channel}> `;
+      channel_string += `${pending.channel} `;
     }
     string += `${i + 1}: <#${entry.buyer_channel}> \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
   }
@@ -115,26 +115,41 @@ async function deletePendings(ids) {
 }
 
 async function postPending(order) {
-  const formatted_order = order.map((item) => {
+  const upsert = [];
+  const insert = [];
+
+  order.forEach((item) => {
     const json = {
       queue_id: item.id,
       amount: item.amount,
       channel: item.channel,
     };
+
     if (item.pending_id) {
-      json.id = item.pending_id
+      json.id = item.pending_id;
+      upsert.push(json);
+    } else {
+      insert.push(json);
     }
-    return json
   });
-  const { data, error } = await supabase
+  const { data: upsertData, error: upsertError } = await supabase
     .from(PENDING_TABLE)
-    .upsert(formatted_order)
+    .upsert(upsert)
     .select();
-  if (error) {
-    throw new Error(`An error occured ${error.message}`);
+  if (upsertError) {
+    throw new Error(`An error occured ${upsertError.message}`);
   }
 
-  return data;
+  const { data: insertData, error: insertError } = await supabase
+    .from(PENDING_TABLE)
+    .insert(insert)
+    .select()
+
+  if (insertError) {
+    throw new Error(`An error occured ${insertError.message}`);
+  }
+
+  return [...upsertData, ...insertData];
 }
 
 async function getEntries(ids) {
@@ -159,11 +174,35 @@ async function finalizeCashout(items) {
   if (error) {
     throw new Error(error.message);
   }
-  const balances = await getBalances(
-    data.map((item) => {
-      return item.balance_id;
-    }),
-  );
+  return data;
+}
+
+async function updateURL(items, url) {
+  const { data: fetchData, error: fetchError } = await supabase
+    .from(PENDING_TABLE)
+    .select()
+    .in(
+      "id",
+      items.map((item) => item.id),
+    );
+
+  if (fetchError) {
+    throw new Error(fetchError.message);
+  }
+  for (const item of items) {
+    const fetchItem = fetchData.find((findItem) => findItem.id === item.id);
+    fetchItem.channel = url;
+  }
+
+  const { data, error } = await supabase
+    .from(PENDING_TABLE)
+    .upsert(fetchData)
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
   return data;
 }
 
@@ -176,4 +215,5 @@ module.exports = {
   getEntries,
   finalizeCashout,
   deletePendings,
+  updateURL,
 };
