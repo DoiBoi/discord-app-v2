@@ -55,7 +55,10 @@
       "table": "temp_exchanges",
       "rpc": "update_temp_pending",
       "queue": "rbx_queue",
-      "pending": "rbx_pending"
+      "pending": "rbx_pending",
+      "cashout_rpc": "handle_cashout",
+      "queue_channel": "queue_channel",
+      "queue_message": "queue_message"
     }
   }
 }
