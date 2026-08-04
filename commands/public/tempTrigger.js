@@ -11,10 +11,10 @@ const {
 } = require("discord.js");
 const { getId, upsertId } = require("../../utils/id.js");
 const { getUserBalance } = require("../../utils/balance.js");
-const { emojis, ids } = require("../../utils/config.js")
+const { emojis, ids } = require("../../utils/config.js");
 const { getExchanges, updateExchange } = require("../../utils/temp_exchage.js");
-const CHANNEL = ids.channel_id
-const MESSAGE = ids.message_id
+const CHANNEL = ids.channel_id;
+const MESSAGE = ids.message_id;
 
 const ORDER = {
   CashApp: `<:cashapp:${emojis.cashapp}>`,
@@ -42,12 +42,14 @@ function buildMessage(item) {
       ret += `\n> min \$${item["min"]}`;
     }
   }
+  if (item.additional_info) {
+    ret += `, ${item.additional_info}`;
+  }
   return ret;
 }
 
 function buildResponse(exchanges, ping) {
-  let message =
-    `${ping ? "<@&1474255029241249913>\n" : ""}`;
+  let message = `${ping ? "<@&1474255029241249913>\n" : ""}`;
   for (const [currency, emoji] of Object.entries(ORDER)) {
     message += `# ${currency} ${emoji}\n`;
     if (currency == "PayPal") {
@@ -171,11 +173,16 @@ module.exports = {
     .addBooleanOption((option) =>
       option
         .setName("fnf")
-        .setDescription("If FNF fee for a Paypal exchange should be covered or not"),
-  ).addBooleanOption((option) =>
-    option
-      .setName("ping")
-      .setDescription("To ping or not")),
+        .setDescription(
+          "If FNF fee for a Paypal exchange should be covered or not",
+        ),
+    )
+    .addBooleanOption((option) =>
+      option.setName("ping").setDescription("To ping or not"),
+    )
+    .addStringOption((option) =>
+      option.setName("info").setDescription("Additional optional info"),
+    ),
   async execute(interaction) {
     const user = interaction.options.getUser("user");
     const recieving = interaction.options.getString("recieving");
@@ -183,7 +190,7 @@ module.exports = {
     const min = interaction.options.getNumber("min");
     const fnf = interaction.options.getBoolean("fnf");
     const ping = interaction.options.getBoolean("ping") ?? true;
-
+    const add_info = interaction.options.getString("info");
     await interaction.deferReply({ ephemeral: true });
     if (recieving == "PayPal" && fnf === null) {
       return await interaction.editReply({
@@ -210,7 +217,7 @@ module.exports = {
       message = await channel.messages.fetch(String(message_id));
       await message.delete();
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
 
     await updateExchange({
@@ -221,6 +228,7 @@ module.exports = {
       fnf: fnf,
       min: min,
       channel: interaction.channelId,
+      additional_info: add_info,
     });
 
     const exchanges = await getExchanges();
@@ -244,5 +252,5 @@ module.exports = {
   buildDropdown,
   buildMessage,
   buildResponse,
-  ORDER
+  ORDER,
 };
