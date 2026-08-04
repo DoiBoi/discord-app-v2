@@ -9,6 +9,7 @@ const {
 const { addToQueue, getQueue, getEntries } = require("../../utils/queue");
 const { getUserBalance } = require("../../utils/balance");
 const { ids } = require("../../utils/config");
+const { updateQueue } = require("../../utils/build");
 const PENDING_TABLE = ids.pending
 
 module.exports = {
@@ -82,7 +83,7 @@ module.exports = {
         .setStyle(ButtonStyle.Secondary)
     )
 
-    const string = `${i + 1}: <#${entry.buyer_channel}> \`${entry.info}\` ${amount_string} ${channel_string}\n`;
+    const string = `${i + 1}: <#${entry.buyer_channel}> \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
     const response = await interaction.editReply({
       content: `Is this the correct entry to edit?\n${string}`,
       components: [row]
@@ -104,6 +105,7 @@ module.exports = {
           content: `Successfully edited`,
           components: []
         })
+        await updateQueue(i)
       } else {
         await i.update({
           content: "Please check /queue and select the correct one",

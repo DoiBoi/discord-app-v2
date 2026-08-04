@@ -6,7 +6,7 @@ const {
   ChannelSelectMenuBuilder,
   ActionRowBuilder,
   ChannelType,
-  ButtonBuilder
+  ButtonBuilder,
 } = require("discord.js");
 const { getExchanges } = require("./temp_exchage");
 const {
@@ -15,11 +15,15 @@ const {
   ORDER,
 } = require("../commands/public/tempTrigger");
 
-const { getId } = require("./id");
+const { getId, upsertId } = require("./id");
 const { emojis, ids } = require("./config");
 const { EmbedBuilder } = require("discord.js");
+const { showQueue } = require("./queue");
+const { supabase } = require("./supabase/supabase_client");
 const CHANNEL = ids.channel_id;
 const MESSAGE = ids.message_id;
+const QUEUE_CHANNEL = ids.queue_channel;
+const QUEUE_MESSAGE = ids.queue_message;
 const BLANK = `<:BLANK:${emojis.blank}>`;
 const OKE1 = `<:zzmilkoke1:${emojis.oke1}>`;
 const OKE2 = `<:zzmilkoke2:${emojis.oke2}>`;
@@ -115,10 +119,32 @@ async function disableButtonRow(interaction) {
   });
 }
 
+async function updateQueue(interaction) {
+  const text = await showQueue();
+  const channel_id = await getId(QUEUE_CHANNEL);
+  const message_id = await getId(QUEUE_MESSAGE);
+
+  try {
+    const channel = await interaction.client.channels.fetch(String(channel_id));
+    try {
+      const message = await channel.messages.fetch(String(message_id));
+      await message.edit({
+        content: text,
+      });
+    } catch {
+      const sent_message = channel.send({
+        content: text,
+      });
+      await upsertId(QUEUE_MESSAGE, sent_message.id);
+    }
+  } catch {}
+}
+
 module.exports = {
   buildTempModal,
   buildChannelDropdown,
   updateBoard,
   buildSuccessContainer,
-  disableButtonRow
+  disableButtonRow,
+  updateQueue,
 };

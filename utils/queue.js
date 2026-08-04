@@ -116,11 +116,15 @@ async function deletePendings(ids) {
 
 async function postPending(order) {
   const formatted_order = order.map((item) => {
-    return {
+    const json = {
       queue_id: item.id,
       amount: item.amount,
       channel: item.channel,
     };
+    if (item.pending_id) {
+      json.id = item.pending_id
+    }
+    return json
   });
   const { data, error } = await supabase
     .from(PENDING_TABLE)

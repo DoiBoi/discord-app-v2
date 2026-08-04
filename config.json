@@ -25,7 +25,9 @@
       "rpc": "update_dummy_temp_pending",
       "queue": "dummy_rbx_queue",
       "pending": "dummy_rbx_pending",
-      "cashout_rpc": "handle_cashout_dummy"
+      "cashout_rpc": "handle_cashout_dummy",
+      "queue_channel": "dummy_queue_channel",
+      "queue_message": "dummy_queue_message"
     }
   },
   "production": {

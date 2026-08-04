@@ -108,4 +108,5 @@ module.exports = {
       components: [buildActionRow(payload_data)],
     });
   },
+  buildActionRow,
 };

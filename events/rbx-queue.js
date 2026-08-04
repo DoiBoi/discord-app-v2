@@ -17,11 +17,12 @@ const {
   postPending,
   getQueue,
 } = require("../utils/queue");
-const { disableButtonRow } = require("../utils/build");
+const { disableButtonRow, updateBoard, updateQueue } = require("../utils/build");
 const { ids } = require("../utils/config");
+const { buildActionRow } = require("../commands/rbx-queue/cashout");
 
 const REGEX = /\d+/gm;
-const PENDING_TABLE = ids.pending
+const PENDING_TABLE = ids.pending;
 
 async function handlePendingYes(interaction) {
   const matches = interaction.customId.match(REGEX);
@@ -118,6 +119,7 @@ async function handlePendingYes(interaction) {
         }, "Image forwarded in "),
         flags: MessageFlags.Ephemeral,
       });
+      await updateQueue(interaction)
     });
   } catch (error) {
     console.error(error.message);
@@ -171,7 +173,7 @@ async function handlePendingChange(interaction) {
       filter,
       time: 60_000,
     });
-    await submission.deferReply()
+    await submission.deferReply();
     const newOrder = submission.fields
       .getTextInputValue("c-change-input")
       .split(" ")
@@ -179,9 +181,17 @@ async function handlePendingChange(interaction) {
 
     const entries = await getQueue();
     let payload = [];
-    const amount = entries.filter((item) => {
-
-    })
+    let ids = [];
+    let amount = entries.reduce((acc, entry) => {
+      const pendings = entry[PENDING_TABLE];
+      acc += pendings.reduce((pending_acc, pending) => {
+        if (matches.includes(String(pending.id))) {
+          pending_acc += pending.amount;
+        }
+        return pending_acc;
+      }, 0);
+      return acc;
+    }, 0);
     for (let i = 0; i < newOrder.length; i++) {
       const item = newOrder[i];
       const entry = entries[item - 1];
@@ -198,13 +208,14 @@ async function handlePendingChange(interaction) {
         break;
       }
       const payload_item = {
-        id: entry.id,
+        id: Number(entry.id),
         amount: to_add,
         channel: interaction.channelId,
         gfsinfo: entry.gfsinfo,
-      }
+      };
       if (matches[i]) {
-        payload_item.pending_id = matches[i]
+        payload_item.pending_id = matches[i];
+        ids.push(matches[i]);
       }
       payload.push(payload_item);
     }
@@ -214,14 +225,22 @@ async function handlePendingChange(interaction) {
           "There is not enough available on the specified order to cashout",
       });
     }
-    // await disableButtonRow(interaction);
-    // payload_data = await postPending(payload);
-
+    await disableButtonRow(interaction);
+    const remaining = matches.filter((item) => !ids.includes(item));
+    if (remaining.length > 0) {
+      await deletePendings(remaining);
+    }
+    payload_data = await postPending(payload);
+    const payout_message = payload.reduce(
+      (acc, curr) => acc + `- ${curr.amount} to \`${curr.gfsinfo}\`\n`,
+      "\n",
+    );
     await submission.editReply({
-      content: `New order: ${newOrder}`,
+      content: `Please payout ${payout_message}`,
+      components: [buildActionRow(payload_data)]
     });
   } catch (error) {
-    console.error(error);
+    // console.error(error);
   }
 
   return;

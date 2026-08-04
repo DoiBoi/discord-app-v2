@@ -8,6 +8,7 @@ const {
 } = require("discord.js");
 const { addToQueue, getEntry } = require("../../utils/queue");
 const { getUserBalance } = require("../../utils/balance");
+const { updateQueue } = require("../../utils/build");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -57,6 +58,7 @@ module.exports = {
     await interaction.editReply({
       content: `Added to queue: \`${info ?? balance.info?.gfsinfo}\`: ${amount ?? rbx_bal} `,
     });
+    await updateQueue(interaction)
     return;
   },
 };
