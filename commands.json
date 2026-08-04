@@ -28,6 +28,10 @@
         "evo",
         "upub",
         "temptrigger",
+        "queue",
+        "addentry",
+        "editentry",
+        "cashout",
         "remtrigger",
         "gettemp"
     ],

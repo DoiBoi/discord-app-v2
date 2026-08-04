@@ -32,6 +32,7 @@ const { ids, emojis } = require("./utils/config.js");
 const { appendUserHistory } = require("./utils/history");
 const { EmbedBuilder } = require("discord.js");
 const { Embed } = require("discord.js");
+const { handleButtonInput } = require("./handler/buttonEvents.js");
 const RPC = ids.rpc;
 const LOG = ids.log;
 
@@ -794,6 +795,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
             ),
           );
           const matches = interaction.customId.match(CONFIRM_REGEX);
+          if (matches.length <= 0) {
+            return
+          }
           const id = matches[0];
           const amount = matches[1];
           const item = await getExchange(Number(id));
@@ -902,7 +906,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
             content: `Your balance remains at \$${(item["amount"] - item["pending"]).toFixed(2)}`,
           });
         } catch {}
+      } else {
+        handleButtonInput(interaction)
       }
+
     }
     if (interaction.isCommand()) {
       const command = client.commands.get(interaction.commandName);

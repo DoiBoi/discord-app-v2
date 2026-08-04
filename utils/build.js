@@ -6,6 +6,7 @@ const {
   ChannelSelectMenuBuilder,
   ActionRowBuilder,
   ChannelType,
+  ButtonBuilder,
 } = require("discord.js");
 const { getExchanges } = require("./temp_exchage");
 const {
@@ -14,11 +15,14 @@ const {
   ORDER,
 } = require("../commands/public/tempTrigger");
 
-const { getId } = require("./id");
+const { getId, upsertId } = require("./id");
 const { emojis, ids } = require("./config");
 const { EmbedBuilder } = require("discord.js");
+const { showQueue } = require("./queue");
 const CHANNEL = ids.channel_id;
 const MESSAGE = ids.message_id;
+const QUEUE_CHANNEL = ids.queue_channel;
+const QUEUE_MESSAGE = ids.queue_message;
 const BLANK = `<:BLANK:${emojis.blank}>`;
 const OKE1 = `<:zzmilkoke1:${emojis.oke1}>`;
 const OKE2 = `<:zzmilkoke2:${emojis.oke2}>`;
@@ -39,7 +43,9 @@ function buildTempModal(id, item) {
 
   const label = new LabelBuilder()
     .setLabel("How much are you sending?")
-    .setDescription(`Minimum: \$${min.toFixed(2)}, Maximum: \$${max.toFixed(2)}`)
+    .setDescription(
+      `Minimum: \$${min.toFixed(2)}, Maximum: \$${max.toFixed(2)}`,
+    )
     .setTextInputComponent(input);
 
   modal.addLabelComponents(label);
@@ -51,9 +57,7 @@ function buildChannelDropdown() {
   const channelMenu = new ChannelSelectMenuBuilder()
     .setCustomId("select-channel")
     .setPlaceholder("Select channel...")
-    .setChannelTypes(
-        ChannelType.GuildText
-    );
+    .setChannelTypes(ChannelType.GuildText);
 
   const row = new ActionRowBuilder().addComponents(channelMenu);
 
@@ -98,8 +102,53 @@ function buildSuccessContainer(item, amount) {
     `${OKE2}  **Exchange Completed**  ${OKE1}`,
   ).setDescription(`${BLANK}
     ${BLANK}${BLANK}${ORDER[item.currency]} **\$${Number(amount).toFixed(2)}** ${item.currency}\n-# ${BLANK}${BLANK}${BLANK}${BLANK}${BLANK}to
-    ${BLANK}${BLANK}<:crypto:${emojis.crypto}> **\$${((Number(amount)*(100-item.fee)/100)).toFixed(2)}** Crypto`);
+    ${BLANK}${BLANK}<:crypto:${emojis.crypto}> **\$${((Number(amount) * (100 - item.fee)) / 100).toFixed(2)}** Crypto`);
   return embed;
+}
+
+async function disableButtonRow(interaction) {
+  try {
+    await interaction.message.edit({
+      components: [
+        new ActionRowBuilder().addComponents(
+          interaction.message.components[0].components.map((button) =>
+            ButtonBuilder.from(button).setDisabled(true),
+          ),
+        ),
+      ],
+    });
+  } catch {
+    await interaction.update({
+      components: [
+        new ActionRowBuilder().addComponents(
+          interaction.message.components[0].components.map((button) =>
+            ButtonBuilder.from(button).setDisabled(true),
+          ),
+        ),
+      ],
+    });
+  }
+}
+
+async function updateQueue(interaction) {
+  const text = await showQueue();
+  const channel_id = await getId(QUEUE_CHANNEL);
+  const message_id = await getId(QUEUE_MESSAGE);
+
+  try {
+    const channel = await interaction.client.channels.fetch(String(channel_id));
+    try {
+      const message = await channel.messages.fetch(String(message_id));
+      await message.edit({
+        content: text,
+      });
+    } catch {
+      const sent_message = await channel.send({
+        content: text,
+      });
+      await upsertId(QUEUE_MESSAGE, sent_message.id);
+    }
+  } catch {}
 }
 
 module.exports = {
@@ -107,4 +156,6 @@ module.exports = {
   buildChannelDropdown,
   updateBoard,
   buildSuccessContainer,
+  disableButtonRow,
+  updateQueue,
 };

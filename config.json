@@ -22,7 +22,12 @@
       "message_id": "dummy_message_id",
       "log": "dummy_log",
       "table": "dummy_temp_exchanges",
-      "rpc": "update_dummy_temp_pending"
+      "rpc": "update_dummy_temp_pending",
+      "queue": "dummy_rbx_queue",
+      "pending": "dummy_rbx_pending",
+      "cashout_rpc": "handle_cashout_dummy",
+      "queue_channel": "dummy_queue_channel",
+      "queue_message": "dummy_queue_message"
     }
   },
   "production": {
@@ -48,7 +53,12 @@
       "message_id": "message_id",
       "log": "log",
       "table": "temp_exchanges",
-      "rpc": "update_temp_pending"
+      "rpc": "update_temp_pending",
+      "queue": "rbx_queue",
+      "pending": "rbx_pending",
+      "cashout_rpc": "handle_cashout",
+      "queue_channel": "queue_channel",
+      "queue_message": "queue_message"
     }
   }
 }
