@@ -103,12 +103,14 @@ module.exports = {
     let payout_message = "";
     if (payload.length <= 1) {
       const payload_item = payload[0]
-      payout_message = `${payload_item.amount} to \`${payload_item.gfsinfo}\``
+      payout_message = `${payload_item.amount} to \`${payload_item.gfsinfo}\`\n-# ss audit log once done & ignore buttons below (it's for Mal)`
+
     } else {
       payout_message = payload.reduce(
         (acc, curr) => acc + `- ${curr.amount} to \`${curr.gfsinfo}\`\n`,
         "\n",
       );
+      payout_message += `-# ss audit log once done & ignore buttons below (it's for Mal)`
     }
     payload_data = await postPending(payload);
     const response = await interaction.channel.send({
