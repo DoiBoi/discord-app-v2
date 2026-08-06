@@ -56,9 +56,10 @@ module.exports = {
     await addToQueue(
       user.id,
       info ?? balance.info?.gfs_info,
-      interaction.channel.url,
+      interaction.channelId,
       amount ?? rbx_bal,
-      interaction.channel.name
+      interaction.channel.name,
+      interaction.channel.url,
     );
     await interaction.editReply({
       content: `Added to queue: \`${info ?? balance.info?.gfs_info}\`: ${amount ?? rbx_bal} `,

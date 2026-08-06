@@ -63,9 +63,9 @@ module.exports = {
       amount_string += `=${old_amount.toLocaleString()}`;
     }
     let channel_string = "";
-    // for (const channel of entry[PENDING_TABLE]) {
-    //   channel_string += `${channel.channel} `;
-    // }
+    for (const channel of entry[PENDING_TABLE]) {
+      channel_string += `${channel.channel_name } `;
+    }
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("yes")
@@ -77,7 +77,7 @@ module.exports = {
         .setStyle(ButtonStyle.Secondary),
     );
 
-    const string = `${i + 1}: ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.buyer_channel})`: `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
+    const string = `${i + 1}: ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.channel_url})`: `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
     const response = await interaction.editReply({
       content: `Is this the correct entry to edit?\n${string}`,
       components: [row],
@@ -97,9 +97,10 @@ module.exports = {
         await addToQueue(
           entry.user_id,
           info ?? entry.gfsinfo,
-          (!amount && !info) ? interaction.channel.url : entry.buyer_channel,
+          entry.buyer_channel,
           amount ?? entry.amount,
           (!amount && !info) ? interaction.channel.name : entry.channel_name,
+          (!amount && !info) ? interaction.channel.url : entry.channel_url,
           entry.id,
           entry.date_created,
         );

@@ -41,7 +41,7 @@ async function showQueue(matches = [], page = -1) {
     for (const pending of entry[PENDING_TABLE]) {
       channel_string += `${pending.channel_name !== "" ? pending.channel_name : ""} `;
     }
-    string += `${page >= 0 ? i + 1 + (page*PERPAGE): i + 1}. ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.buyer_channel})` : `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
+    string += `${page >= 0 ? i + 1 + (page*PERPAGE): i + 1}. ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.channel_url})` : `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
   }
   return {
     content: string,
@@ -81,6 +81,7 @@ async function addToQueue(
   channelId,
   balance,
   channel_name,
+  channel_url,
   id = null,
   date = null,
 ) {
@@ -91,6 +92,7 @@ async function addToQueue(
     amount: balance,
     gfsinfo: info,
     channel_name: channel_name,
+    channel_url: channel_url
   };
   if (id) {
     payload.id = id;

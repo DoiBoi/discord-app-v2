@@ -130,10 +130,26 @@ async function disableButtonRow(interaction) {
   }
 }
 
-async function updateQueue(interaction) {
-  const text = await showQueue();
+async function updateQueue(interaction, page = 0) {
+  const {content: text, maxPage} = await showQueue([], page);
   const channel_id = await getId(QUEUE_CHANNEL);
   const message_id = await getId(QUEUE_MESSAGE);
+  const leftButton = new ButtonBuilder()
+    .setCustomId("left")
+    .setStyle(ButtonStyle.Primary)
+    .setEmoji("⬅️")
+  if (page - 1 > 0) {
+    leftButton.setDisabled(true)
+  }
+
+  const rightButton = new ButtonBuilder()
+    .setCustomId("right")
+    .setStyle(ButtonStyle.Primary)
+    .setEmoji("➡️");
+
+  if (page + 1 >= maxPage) {
+    rightButton.setDisabled(true)
+  }
 
   try {
     const channel = await interaction.client.channels.fetch(String(channel_id));
@@ -141,10 +157,18 @@ async function updateQueue(interaction) {
       const message = await channel.messages.fetch(String(message_id));
       await message.edit({
         content: text,
+        components: [
+          new ActionRowBuilder()
+            .setComponents(leftButton, rightButton)
+        ]
       });
     } catch {
       const sent_message = await channel.send({
         content: text,
+        components: [
+          new ActionRowBuilder()
+            .setComponents(leftButton, rightButton)
+        ]
       });
       await upsertId(QUEUE_MESSAGE, sent_message.id);
     }

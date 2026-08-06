@@ -113,7 +113,7 @@ async function handlePendingYes(interaction) {
           const channelId = match ? match[1] : null;
 
           const forward_channel = await interaction.client.channels.fetch(
-            String(channelId),
+            channelId ? String(channelId) : String(item.queue_id.buyer_channel),
           );
           const forwarded = await hasImage.forward(forward_channel);
           forwarded_channels.push(forwarded.url);
