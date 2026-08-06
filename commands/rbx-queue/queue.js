@@ -57,7 +57,7 @@ module.exports = {
 
       if (i.customId == "left") {
         currentPage -= 1;
-        if (currentPage - 1 <= 0) {
+        if (currentPage - 1 < 0) {
           leftButton.setDisabled(true);
         }
       } else if (i.customId == "right") {
