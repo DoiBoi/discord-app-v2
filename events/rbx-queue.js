@@ -107,8 +107,13 @@ async function handlePendingYes(interaction) {
         const cashoutItem = cashoutResult[i];
         const result = cashoutItem.balances;
         try {
+          // HOTFIX
+          const url = String(item.queue_id.buyer_channel)
+          const match = url.match(/\/channels\/(?:@me|\d+)\/(\d+)/);
+          const channelId = match ? match[1] : null;
+
           const forward_channel = await interaction.client.channels.fetch(
-            String(item.queue_id.buyer_channel),
+            String(channelId),
           );
           const forwarded = await hasImage.forward(forward_channel);
           forwarded_channels.push(forwarded.url);
