@@ -16,8 +16,9 @@ async function showQueue(matches = [], page = -1) {
     throw new Error(`Something went wrong ${error.message}`);
   }
 
+  const totalPages = Math.ceil(data.length / PERPAGE)
   if (page >= 0) {
-    data = data.slice(page * PERPAGE, (page + 1) * PERPAGE + 1)
+    data = data.slice(page * PERPAGE, (page + 1) * PERPAGE)
   }
 
   let string = "# QUEUE\n";
@@ -40,11 +41,11 @@ async function showQueue(matches = [], page = -1) {
     for (const pending of entry[PENDING_TABLE]) {
       channel_string += `${pending.channel_name !== "" ? pending.channel_name : pending.amount} `;
     }
-    string += `${i + 1}. ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.buyer_channel})` : `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
+    string += `${page >= 0 ? i + 1 + (page*PERPAGE): i + 1}. ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.buyer_channel})` : `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
   }
   return {
     content: string,
-    maxPage: Math.ceil(data.length / PERPAGE)
+    maxPage: totalPages
   };
 }
 

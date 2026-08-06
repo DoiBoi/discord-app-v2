@@ -20,7 +20,7 @@ module.exports = {
     ),
   async execute(interaction) {
     let currentPage = 0;
-    const { content, maxPage } = await showQueue([], currentPage);
+    const { content, maxPage: totalPages } = await showQueue([], currentPage);
     const leftButton = new ButtonBuilder()
       .setCustomId("left")
       .setStyle(ButtonStyle.Primary)
@@ -32,7 +32,7 @@ module.exports = {
       .setStyle(ButtonStyle.Primary)
       .setEmoji("➡️");
 
-    if (currentPage + 1 >= maxPage) {
+    if (currentPage + 1 >= totalPages) {
       rightButton.setDisabled(true)
     }
 
@@ -54,7 +54,6 @@ module.exports = {
     collector.on("collect", async (i) => {
       rightButton.setDisabled(false);
       leftButton.setDisabled(false);
-      const { content, maxPage } = await showQueue([], currentPage);
 
       if (i.customId == "left") {
         currentPage -= 1;
@@ -63,11 +62,11 @@ module.exports = {
         }
       } else if (i.customId == "right") {
         currentPage += 1;
-        if (currentPage + 1 >= maxPage) {
+        if (currentPage + 1 >= totalPages) {
           rightButton.setDisabled(true);
         }
       }
-      console.log(currentPage);
+      const { content, maxPage } = await showQueue([], currentPage);
 
       await i.update({
         content: content,
