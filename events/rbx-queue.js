@@ -181,7 +181,7 @@ async function handlePendingChange(interaction) {
     .setLabel("What is the new order?")
     .setTextInputComponent(input);
 
-  const text = new TextDisplayBuilder().setContent(await showQueue(matches));
+  const text = new TextDisplayBuilder().setContent((await showQueue(matches)).content);
 
   modal.addTextDisplayComponents(text);
   modal.addLabelComponents(label);

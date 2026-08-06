@@ -5,8 +5,9 @@ const { supabase } = require("./supabase/supabase_client.js");
 const TABLE = ids.queue;
 const PENDING_TABLE = ids.pending;
 const CASHOUT_RPC = ids.cashout_rpc;
-async function showQueue(matches = []) {
-  const { data, error } = await supabase
+const PERPAGE = 5
+async function showQueue(matches = [], page = -1) {
+  let { data, error } = await supabase
     .from(TABLE)
     .select(`*, ${PENDING_TABLE} ( * )`)
     .order("date_created", { ascending: true });
@@ -14,6 +15,11 @@ async function showQueue(matches = []) {
   if (error) {
     throw new Error(`Something went wrong ${error.message}`);
   }
+
+  if (page >= 0) {
+    data = data.slice(page * PERPAGE, (page + 1) * PERPAGE + 1)
+  }
+
   let string = "# QUEUE\n";
 
   for (let i = 0; i < data.length; i++) {
@@ -31,12 +37,15 @@ async function showQueue(matches = []) {
     if (entry[PENDING_TABLE].length > 0) {
       amount_string += `=${amount.toLocaleString()}`;
     }
-    // for (const pending of entry[PENDING_TABLE]) {
-    //   channel_string += `[${pending.channel_name !== "" ? pending.channel_name : pending.amount}](${pending.channel}) `;
-    // }
+    for (const pending of entry[PENDING_TABLE]) {
+      channel_string += `${pending.channel_name !== "" ? pending.channel_name : pending.amount} `;
+    }
     string += `${i + 1}. ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.buyer_channel})` : `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
   }
-  return string;
+  return {
+    content: string,
+    maxPage: Math.ceil(data.length / PERPAGE)
+  };
 }
 
 async function getQueue() {
