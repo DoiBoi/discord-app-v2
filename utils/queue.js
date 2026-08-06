@@ -39,7 +39,7 @@ async function showQueue(matches = [], page = -1) {
       amount_string += `=${amount.toLocaleString()}`;
     }
     for (const pending of entry[PENDING_TABLE]) {
-      channel_string += `${pending.channel_name !== "" ? pending.channel_name : pending.amount} `;
+      channel_string += `${pending.channel_name !== "" ? pending.channel_name : ""} `;
     }
     string += `${page >= 0 ? i + 1 + (page*PERPAGE): i + 1}. ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.buyer_channel})` : `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
   }
@@ -135,6 +135,7 @@ async function postPending(order) {
       queue_id: item.id,
       amount: item.amount,
       channel: item.channel,
+      channel_name: item.channel_name
     };
 
     if (item.pending_id) {

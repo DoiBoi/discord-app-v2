@@ -88,6 +88,7 @@ module.exports = {
         amount: to_add,
         channel: interaction.channelId,
         gfsinfo: entry.gfsinfo,
+        channel_name: interaction.channel.name
       });
     }
     console.log(amount)
