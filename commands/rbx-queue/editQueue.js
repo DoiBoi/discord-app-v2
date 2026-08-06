@@ -77,7 +77,7 @@ module.exports = {
         .setStyle(ButtonStyle.Secondary),
     );
 
-    const string = `${i + 1}: [${entry.channel_name}](${entry.buyer_channel}) \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
+    const string = `${i + 1}: ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.buyer_channel})`: `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
     const response = await interaction.editReply({
       content: `Is this the correct entry to edit?\n${string}`,
       components: [row],
