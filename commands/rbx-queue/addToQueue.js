@@ -28,9 +28,7 @@ module.exports = {
         .setDescription("(optional) the info to put on the listing"),
     )
     .setContexts(
-      InteractionContextType.Guild,
-      InteractionContextType.BotDM,
-      InteractionContextType.PrivateChannel,
+      InteractionContextType.Guild
     ),
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
@@ -49,11 +47,18 @@ module.exports = {
       })
     }
 
+    if (!interaction.channel) {
+      await interaction.editReply({
+        content: "No channel name or url was found! Please use this command in a channel where the bot is in"
+      })
+    }
+
     await addToQueue(
       user.id,
       info ?? balance.info?.gfs_info,
-      interaction.channelId,
+      interaction.channel.url,
       amount ?? rbx_bal,
+      interaction.channel.name
     );
     await interaction.editReply({
       content: `Added to queue: \`${info ?? balance.info?.gfs_info}\`: ${amount ?? rbx_bal} `,

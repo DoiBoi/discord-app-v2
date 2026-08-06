@@ -4,74 +4,68 @@ const {
   MessageFlags,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
 } = require("discord.js");
 const { addToQueue, getQueue, getEntries } = require("../../utils/queue");
 const { getUserBalance } = require("../../utils/balance");
 const { ids } = require("../../utils/config");
 const { updateQueue } = require("../../utils/build");
-const PENDING_TABLE = ids.pending
+const PENDING_TABLE = ids.pending;
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("editentry")
     .setDescription("updates an entry in the queue")
     .addNumberOption((option) =>
-      option.setName("position")
-        .setDescription("the position of the entry to be edited")
-        .setRequired(true)
-  )
-    .addNumberOption((option) =>
       option
-        .setName("amount")
-        .setDescription("the new amount")
+        .setName("position")
+        .setDescription("the position of the entry to be edited")
+        .setRequired(true),
+    )
+    .addNumberOption((option) =>
+      option.setName("amount").setDescription("the new amount"),
     )
     .addStringOption((option) =>
-      option
-        .setName("info")
-        .setDescription("the new info")
+      option.setName("info").setDescription("the new info"),
     )
     .setContexts(
-      InteractionContextType.Guild,
-      InteractionContextType.BotDM,
-      InteractionContextType.PrivateChannel,
+      InteractionContextType.Guild
     ),
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const amount = interaction.options.getNumber("amount");
     const info = interaction.options.getString("info");
-    if (!amount && !info) {
-      return await interaction.editReply({
-        content: "Please specify either amount or number!"
-      })
-    }
     const i = interaction.options.getNumber("position") - 1;
     const queue = await getQueue();
-    let entry = queue[i]
+    let entry = queue[i];
     let entries = await getEntries(entry.user_id);
-    entries = entries.map(item => {
-      return item.amount
-    })
+    entries = entries.map((item) => {
+      return item.amount;
+    });
     let old_amount = entry.amount;
-    const sum = entries.reduce((accumulator, current) => accumulator + current, 0)
-    const balance = await getUserBalance(entry.user_id)
-    if ((balance.balance_rbx - (sum - old_amount) - amount) < 0) {
+    const sum = entries.reduce(
+      (accumulator, current) => accumulator + current,
+      0,
+    );
+    const balance = await getUserBalance(entry.user_id);
+    if (balance.balance_rbx - (sum - old_amount) - amount < 0) {
       return await interaction.editReply({
-        content: "Unable to edit as changing to this amount will result in a negative value"
-      })
+        content:
+          "Unable to edit as changing to this amount will result in a negative value",
+      });
     }
     let amount_string = `${old_amount.toLocaleString()}`;
     for (const pending of entry[PENDING_TABLE]) {
-      amount_string += `-${pending.amount.toLocaleString()}`;
+      amount_string += `-[${pending.amount.toLocaleString()}](${pending.channel})`;
       old_amount -= pending.amount;
     }
     if (entry[PENDING_TABLE].length > 0) {
-      amount_string += `=${old_amount.toLocaleString()}`
+      amount_string += `=${old_amount.toLocaleString()}`;
     }
     let channel_string = "";
-    for (const channel of entry[PENDING_TABLE]) {
-      channel_string += `${channel.channel} `
-    }
+    // for (const channel of entry[PENDING_TABLE]) {
+    //   channel_string += `${channel.channel} `;
+    // }
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("yes")
@@ -80,14 +74,14 @@ module.exports = {
       new ButtonBuilder()
         .setCustomId("no")
         .setLabel("No")
-        .setStyle(ButtonStyle.Secondary)
-    )
+        .setStyle(ButtonStyle.Secondary),
+    );
 
-    const string = `${i + 1}: <#${entry.buyer_channel}> \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
+    const string = `${i + 1}: [${entry.channel_name}](${entry.buyer_channel}) \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
     const response = await interaction.editReply({
       content: `Is this the correct entry to edit?\n${string}`,
-      components: [row]
-    })
+      components: [row],
+    });
 
     const filter = (i) =>
       interaction.user.id === i.user.id &&
@@ -100,18 +94,26 @@ module.exports = {
 
     collector.on("collect", async (i) => {
       if (i.customId == "yes") {
-        await addToQueue(entry.user_id, info ?? entry.gfsinfo, entry.buyer_channel, amount ?? entry.amount, entry.id, entry.date_created)
+        await addToQueue(
+          entry.user_id,
+          info ?? entry.gfsinfo,
+          (!amount && !info) ? interaction.channel.url : entry.buyer_channel,
+          amount ?? entry.amount,
+          (!amount && !info) ? interaction.channel.name : entry.channel_name,
+          entry.id,
+          entry.date_created,
+        );
         await i.update({
-          content: `Successfully edited`,
-          components: []
-        })
-        await updateQueue(i)
+          content: `Successfully edited ${(!amount && !info) ? "(Only channel was updated)" : ""}`,
+          components: [],
+        });
+        await updateQueue(i);
       } else {
         await i.update({
           content: "Please check /queue and select the correct one",
-          components: []
-        })
+          components: [],
+        });
       }
-    })
+    });
   },
 };

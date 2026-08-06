@@ -25,16 +25,16 @@ async function showQueue(matches = []) {
       return !matches.includes(String(item.id));
     });
     for (const pending of entry[PENDING_TABLE]) {
-      amount_string += `-${pending.amount.toLocaleString()}`;
+      amount_string += `-[${pending.amount.toLocaleString()}](${pending.channel})`;
       amount -= pending.amount;
     }
     if (entry[PENDING_TABLE].length > 0) {
       amount_string += `=${amount.toLocaleString()}`;
     }
-    for (const pending of entry[PENDING_TABLE]) {
-      channel_string += `${pending.channel} `;
-    }
-    string += `${i + 1}: <#${entry.buyer_channel}> \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
+    // for (const pending of entry[PENDING_TABLE]) {
+    //   channel_string += `[${pending.channel_name !== "" ? pending.channel_name : pending.amount}](${pending.channel}) `;
+    // }
+    string += `${i + 1}. ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.buyer_channel})` : `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
   }
   return string;
 }
@@ -70,6 +70,7 @@ async function addToQueue(
   info,
   channelId,
   balance,
+  channel_name,
   id = null,
   date = null,
 ) {
@@ -79,6 +80,7 @@ async function addToQueue(
     date_created: new Date().toISOString(),
     amount: balance,
     gfsinfo: info,
+    channel_name: channel_name,
   };
   if (id) {
     payload.id = id;
@@ -143,7 +145,7 @@ async function postPending(order) {
   const { data: insertData, error: insertError } = await supabase
     .from(PENDING_TABLE)
     .insert(insert)
-    .select()
+    .select();
 
   if (insertError) {
     throw new Error(`An error occured ${insertError.message}`);
