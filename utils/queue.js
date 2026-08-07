@@ -5,7 +5,7 @@ const { supabase } = require("./supabase/supabase_client.js");
 const TABLE = ids.queue;
 const PENDING_TABLE = ids.pending;
 const CASHOUT_RPC = ids.cashout_rpc;
-const PERPAGE = 5
+const PERPAGE = 5;
 async function showQueue(matches = [], page = -1) {
   let { data, error } = await supabase
     .from(TABLE)
@@ -16,9 +16,9 @@ async function showQueue(matches = [], page = -1) {
     throw new Error(`Something went wrong ${error.message}`);
   }
 
-  const totalPages = Math.ceil(data.length / PERPAGE)
+  const totalPages = Math.ceil(data.length / PERPAGE);
   if (page >= 0) {
-    data = data.slice(page * PERPAGE, (page + 1) * PERPAGE)
+    data = data.slice(page * PERPAGE, (page + 1) * PERPAGE);
   }
 
   let string = "# QUEUE\n";
@@ -41,12 +41,12 @@ async function showQueue(matches = [], page = -1) {
     for (const pending of entry[PENDING_TABLE]) {
       channel_string += `${pending.channel_name !== "" ? pending.channel_name : ""} `;
     }
-    string += `${page >= 0 ? i + 1 + (page*PERPAGE): i + 1}. ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.channel_url})` : `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
+    string += `${page >= 0 ? i + 1 + page * PERPAGE : i + 1}. ${entry.channel_name !== "" ? `[${entry.channel_name}](${entry.channel_url})` : `<#${entry.buyer_channel}>`} \`${entry.gfsinfo}\` ${amount_string} ${channel_string}\n`;
   }
   return {
     content: string,
     maxPage: totalPages,
-    page: page
+    page: page,
   };
 }
 
@@ -93,7 +93,7 @@ async function addToQueue(
     amount: balance,
     gfsinfo: info,
     channel_name: channel_name,
-    channel_url: channel_url
+    channel_url: channel_url,
   };
   if (id) {
     payload.id = id;
@@ -129,6 +129,19 @@ async function deletePendings(ids) {
   return data;
 }
 
+async function deleteQueue(id) {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .delete()
+    .eq("id", id)
+    .select(`*, ${PENDING_TABLE} (*)`)
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
+
 async function postPending(order) {
   const upsert = [];
   const insert = [];
@@ -138,7 +151,7 @@ async function postPending(order) {
       queue_id: item.id,
       amount: item.amount,
       channel: item.channel,
-      channel_name: item.channel_name
+      channel_name: item.channel_name,
     };
 
     if (item.pending_id) {
@@ -232,4 +245,5 @@ module.exports = {
   finalizeCashout,
   deletePendings,
   updateURL,
+  deleteQueue,
 };

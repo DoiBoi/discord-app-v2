@@ -7,7 +7,7 @@ const {
   ActionRowBuilder,
   ChannelType,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
 } = require("discord.js");
 const { getExchanges } = require("./temp_exchage");
 const {
@@ -107,7 +107,19 @@ function buildSuccessContainer(item, amount) {
   return embed;
 }
 
-async function disableButtonRow(interaction) {
+async function disableButtonRow(interaction, message = null) {
+  if (message && message.components && message.components.length > 0) {
+    return await message.edit({
+      components: [
+        new ActionRowBuilder().addComponents(
+          message.components[0].components.map((button) =>
+            ButtonBuilder.from(button).setDisabled(true),
+          ),
+        ),
+      ],
+    });
+  }
+
   try {
     await interaction.message.edit({
       components: [
@@ -139,7 +151,7 @@ async function updateQueue(interaction, page = 0) {
     .setCustomId(`c-left-${queuePage}`)
     .setStyle(ButtonStyle.Primary)
     .setEmoji("⬅️");
-  if ((page - 1) < 0) {
+  if (page - 1 < 0) {
     leftButton.setDisabled(true);
   }
 
@@ -172,7 +184,7 @@ async function updateQueue(interaction, page = 0) {
       await upsertId(QUEUE_MESSAGE, sent_message.id);
     }
   } catch (error) {
-    console.error(error.message)
+    console.error(error.message);
   }
 }
 
