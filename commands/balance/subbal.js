@@ -69,7 +69,7 @@ module.exports = {
                     });
                     break;
             }
-        } catch {
+        } catch (error) {
             console.log(error.message);
             await interaction.reply({
                 content: "An error occured!",
