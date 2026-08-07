@@ -7,6 +7,7 @@ const {
   ActionRowBuilder,
   ChannelType,
   ButtonBuilder,
+  ButtonStyle
 } = require("discord.js");
 const { getExchanges } = require("./temp_exchage");
 const {
@@ -131,24 +132,24 @@ async function disableButtonRow(interaction) {
 }
 
 async function updateQueue(interaction, page = 0) {
-  const {content: text, maxPage} = await showQueue([], page);
+  const { content: text, maxPage, page: queuePage } = await showQueue([], page);
   const channel_id = await getId(QUEUE_CHANNEL);
   const message_id = await getId(QUEUE_MESSAGE);
   const leftButton = new ButtonBuilder()
-    .setCustomId("left")
+    .setCustomId(`c-left-${queuePage}`)
     .setStyle(ButtonStyle.Primary)
-    .setEmoji("⬅️")
-  if (page - 1 > 0) {
-    leftButton.setDisabled(true)
+    .setEmoji("⬅️");
+  if ((page - 1) < 0) {
+    leftButton.setDisabled(true);
   }
 
   const rightButton = new ButtonBuilder()
-    .setCustomId("right")
+    .setCustomId(`c-right-${queuePage}`)
     .setStyle(ButtonStyle.Primary)
     .setEmoji("➡️");
 
   if (page + 1 >= maxPage) {
-    rightButton.setDisabled(true)
+    rightButton.setDisabled(true);
   }
 
   try {
@@ -158,21 +159,21 @@ async function updateQueue(interaction, page = 0) {
       await message.edit({
         content: text,
         components: [
-          new ActionRowBuilder()
-            .setComponents(leftButton, rightButton)
-        ]
+          new ActionRowBuilder().setComponents(leftButton, rightButton),
+        ],
       });
     } catch {
       const sent_message = await channel.send({
         content: text,
         components: [
-          new ActionRowBuilder()
-            .setComponents(leftButton, rightButton)
-        ]
+          new ActionRowBuilder().setComponents(leftButton, rightButton),
+        ],
       });
       await upsertId(QUEUE_MESSAGE, sent_message.id);
     }
-  } catch {}
+  } catch (error) {
+    console.error(error.message)
+  }
 }
 
 module.exports = {

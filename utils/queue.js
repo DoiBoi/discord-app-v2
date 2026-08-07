@@ -45,7 +45,8 @@ async function showQueue(matches = [], page = -1) {
   }
   return {
     content: string,
-    maxPage: totalPages
+    maxPage: totalPages,
+    page: page
   };
 }
 

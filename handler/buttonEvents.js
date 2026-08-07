@@ -1,4 +1,4 @@
-const { handlePendingYes, handlePendingNo, handlePendingChange } = require("../events/rbx-queue");
+const { handlePendingYes, handlePendingNo, handlePendingChange, handlePageIncrement, handlePageDecrement } = require("../events/rbx-queue");
 const { auth } = require("../utils/supabase/supabase_client");
 
 async function handleButtonInput(interaction) {
@@ -14,6 +14,13 @@ async function handleButtonInput(interaction) {
     if (interaction.customId.includes("cc")) {
       await handlePendingChange(interaction);
       return;
+    }
+    if (interaction.customId.includes("c-right")) {
+      await handlePageIncrement(interaction);
+      return;
+    }
+    if (interaction.customId.includes("c-left")) {
+      await handlePageDecrement(interaction);
     }
   }
 }

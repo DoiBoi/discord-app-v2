@@ -108,7 +108,7 @@ async function handlePendingYes(interaction) {
         const result = cashoutItem.balances;
         try {
           // HOTFIX
-          const url = String(item.queue_id.buyer_channel)
+          const url = String(item.queue_id.buyer_channel);
           const match = url.match(/\/channels\/(?:@me|\d+)\/(\d+)/);
           const channelId = match ? match[1] : null;
 
@@ -118,7 +118,7 @@ async function handlePendingYes(interaction) {
           const forwarded = await hasImage.forward(forward_channel);
           forwarded_channels.push(forwarded.url);
           await forward_channel.send({
-            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, ${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted ${item.amount} RBX from ${cashoutItem.balance_id ? `<@${cashoutItem.balance_id}>` : ""}'s balance\n||-# (**Previous balance:** \$${cashoutItem.prev_rbx} RBX${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
+            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, ${result.balance_rbx.toLocaleString()} RBX\n-# :red_circle: Subtracted ${item.amount} RBX from ${cashoutItem.balance_id ? `<@${cashoutItem.balance_id}>` : ""}'s balance\n||-# (**Previous balance:** \$${cashoutItem.prev_rbx} RBX${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
             flags: [MessageFlags.SuppressNotifications],
           });
           if (item.queue_id.amount - item.amount <= 0) {
@@ -128,7 +128,9 @@ async function handlePendingYes(interaction) {
               flags: MessageFlags.Ephemeral,
             });
           }
-          await appendUserHistory(cashoutItem.balance_id, "rbx", [-item.amount]);
+          await appendUserHistory(cashoutItem.balance_id, "rbx", [
+            -item.amount,
+          ]);
         } catch (error) {
           console.error(`An error occured in handlePendingYes\n${error}`);
         }
@@ -186,7 +188,9 @@ async function handlePendingChange(interaction) {
     .setLabel("What is the new order?")
     .setTextInputComponent(input);
 
-  const text = new TextDisplayBuilder().setContent((await showQueue(matches)).content);
+  const text = new TextDisplayBuilder().setContent(
+    (await showQueue(matches)).content,
+  );
 
   modal.addTextDisplayComponents(text);
   modal.addLabelComponents(label);
@@ -282,8 +286,22 @@ async function handlePendingChange(interaction) {
   return;
 }
 
+async function handlePageIncrement(interaction) {
+  await interaction.deferUpdate();
+  const match = interaction.customId.match(REGEX)[0];
+  await updateQueue(interaction, Number(match) + 1);
+}
+
+async function handlePageDecrement(interaction) {
+  await interaction.deferUpdate();
+  const match = interaction.customId.match(REGEX)[0];
+  await updateQueue(interaction, Number(match) - 1);
+}
+
 module.exports = {
   handlePendingChange,
   handlePendingNo,
   handlePendingYes,
+  handlePageIncrement,
+  handlePageDecrement,
 };
