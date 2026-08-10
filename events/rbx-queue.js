@@ -118,7 +118,7 @@ async function handlePendingYes(interaction) {
           const forwarded = await hasImage.forward(forward_channel);
           forwarded_channels.push(forwarded.url);
           await forward_channel.send({
-            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, ${result.balance_rbx.toLocaleString()} RBX\n-# :red_circle: Subtracted ${item.amount} RBX from ${cashoutItem.balance_id ? `<@${cashoutItem.balance_id}>` : ""}'s balance\n||-# (**Previous balance:** \$${cashoutItem.prev_rbx} RBX${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
+            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, ${result.balance_rbx.toLocaleString({ maximumFractionDigits: 0 })} RBX\n-# :red_circle: Subtracted ${item.amount} RBX from ${cashoutItem.balance_id ? `<@${cashoutItem.balance_id}>` : ""}'s balance\n||-# (**Previous balance:** \$${cashoutItem.prev_rbx} RBX${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
             flags: [MessageFlags.SuppressNotifications],
           });
           if (item.queue_id.amount - item.amount <= 0) {

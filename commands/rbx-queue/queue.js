@@ -52,6 +52,7 @@ module.exports = {
     });
 
     collector.on("collect", async (i) => {
+      await i.deferUpdate()
       rightButton.setDisabled(false);
       leftButton.setDisabled(false);
 
