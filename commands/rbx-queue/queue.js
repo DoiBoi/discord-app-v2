@@ -69,7 +69,7 @@ module.exports = {
       }
       const { content, maxPage } = await showQueue([], currentPage);
 
-      await i.update({
+      await i.editReply({
         content: content,
         components: [
           new ActionRowBuilder().setComponents(leftButton, rightButton),
