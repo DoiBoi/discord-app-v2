@@ -44,9 +44,13 @@ module.exports = {
     const weekBoolean = interaction.options.getBoolean("week");
 
     let rightButton, leftButton;
-    const params = {
-      index: index
+    const params = {}
+    if (weekBoolean) {
+      params.week = index
+    } else {
+      params.index = index
     }
+
     let { data, count } = await getLog(params);
 
     leftButton = new ButtonBuilder()
@@ -63,14 +67,6 @@ module.exports = {
     if (index + 1 > count) {
       rightButton.setDisabled(true);
     }
-
-    if (weekBoolean) {
-      return await interaction.reply({
-        content: "Not yet implemented",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
     const response = await interaction.reply({
       content: formatLog(data),
       flags: MessageFlags.Ephemeral,

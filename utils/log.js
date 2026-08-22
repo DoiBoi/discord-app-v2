@@ -1,4 +1,4 @@
-const { subWeeks, startOfWeek, endOfWeek } = require("date-fns/fp");
+const { subWeeks, startOfWeek, endOfWeek } = require("date-fns");
 const { ids } = require("./config");
 const { supabase } = require("./supabase/supabase_client");
 
@@ -23,24 +23,27 @@ async function appendLog(amount) {
 }
 
 async function getLog(params = {}) {
-  let query = supabase.from(LOGTABLE).select("*", { count: 'exact' });
+  let query = supabase.from(LOGTABLE);
 
-  if (Object.hasOwn(params, "weekindex")) {
-    const targetDate = subWeeks(new Date(), params.weekindex);
-    query
+  if (Object.hasOwn(params, "week")) {
+    query = query.select("*, date, daily_sum:amount.sum()", { count: 'exact' })
+    const targetDate = subWeeks(new Date(), params.week);
+    query = query
       .gt("date", startOfWeek(targetDate).toISOString())
       .lt("date", endOfWeek(targetDate).toISOString());
+  } else {
+    query = query.select("*", { count: 'exact' })
   }
 
   if (Object.hasOwn(params, "date")) {
-    query.eq("date", params.date);
+    query = query.eq("date", params.date);
   }
 
   if (Object.hasOwn(params, "index")) {
-    query.range(params.index * PERPAGE, (params.index + 1) * PERPAGE);
+    query = query.range(params.index * PERPAGE, (params.index + 1) * PERPAGE);
   }
 
-  query.order("date", { ascending: true });
+  query = query.order("date", { ascending: true });
 
   const { data, count, error } = await query;
 
