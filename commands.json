@@ -35,7 +35,9 @@
     "remtrigger",
     "gettemp",
     "rementry",
-    "queuestats"
+    "queuestats",
+    "addlog",
+    "getlog"
   ],
   "PublicCommands": ["exchange"]
 }
