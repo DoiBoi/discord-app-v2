@@ -3,8 +3,8 @@ const { appendLog } = require("../../utils/log");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("addlog")
-    .setDescription("Add's entry to the log")
+    .setName("addprofit")
+    .setDescription("Add's profit to the log")
     .addNumberOption((option) =>
       option
         .setName("amount")

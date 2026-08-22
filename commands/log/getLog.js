@@ -19,8 +19,8 @@ function formatLog(log) {
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("getlog")
-    .setDescription("Gets log")
+    .setName("getprofit")
+    .setDescription("Gets log of profit")
     .addStringOption((option) =>
       option
         .setName("date")
