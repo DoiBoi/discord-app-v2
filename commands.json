@@ -36,8 +36,8 @@
     "gettemp",
     "rementry",
     "queuestats",
-    "addlog",
-    "getlog"
+    "addprofit",
+    "getprofit"
   ],
   "PublicCommands": ["exchange"]
 }
