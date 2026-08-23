@@ -29,7 +29,7 @@ module.exports = {
       return acc
     }, 0)
     await interaction.reply({
-      content: `The total amount buying is ${totalBuying.toLocaleString()} RBX and the total amount pending is ${totalPending.toLocaleString()} RBX`
+      content: `The total amount buying is ${totalBuying.toLocaleString()} RBX and the total amount pending is ${totalPending.toLocaleString()} RBX and ${queue.length} entries`
     })
   }
-}
+  }
