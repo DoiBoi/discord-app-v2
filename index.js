@@ -455,7 +455,7 @@ async function handleTOS(interaction, row, item, input) {
     const embed = new EmbedBuilder()
       .setDescription(
         `### Please send \$${input.toFixed(2)} to \`${item["info"]}\`
-      <:8blackarrow:${emojis["8blackarrow"]}>  Send proof of payment below, then click "Complete"`,
+      <:8blackarrow:${emojis["8blackarrow"]}>  Send proof of payment below, ping <@1471335455621386445> then click "Complete"`,
       )
       .setThumbnail(
         "https://cdn.discordapp.com/attachments/853109872698982451/1530447011503931563/bdb94f56d0ff74a8a3d1f2748d69921a_1.png?ex=6a659b59&is=6a6449d9&hm=8b4c308fc1184679271939af2188932c396a268e285ac4862190e9fc42720395&",

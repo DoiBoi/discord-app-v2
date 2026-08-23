@@ -92,11 +92,13 @@ async function updateBoard(interaction) {
   const updatedMessage = await message.edit({
     content: buildResponse(
       exchanges,
-      interaction.message.mentions.roles.size > 0,
+      true,
     ),
     components: dropdownRow,
   });
   await upsertId(MESSAGE, updatedMessage.id);
+
+  return updatedMessage
 }
 
 function buildSuccessContainer(item, amount) {

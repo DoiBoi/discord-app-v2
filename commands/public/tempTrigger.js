@@ -45,7 +45,7 @@ function buildMessage(item) {
   return ret;
 }
 
-function buildResponse(exchanges, ping) {
+function buildResponse(exchanges, ping = true) {
   let message = `${ping ? "<@&1474255029241249913>\n" : ""}`;
   for (const [currency, emoji] of Object.entries(ORDER)) {
     message += `# ${currency} ${emoji}\n`;
@@ -201,22 +201,6 @@ module.exports = {
     const message_id = await getId(MESSAGE);
     const userBalance = (await getUserBalance(user.id)) ?? 0;
 
-    try {
-      channel = await interaction.client.channels.fetch(String(channel_id));
-    } catch {
-      return await interaction.editReply({
-        content: "Could not find the target channel.",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    try {
-      message = await channel.messages.fetch(String(message_id));
-      await message.delete();
-    } catch (error) {
-      console.error(error);
-    }
-
     await updateExchange({
       amount: userBalance ? userBalance["balance_usd"] : 0,
       user_id: user.id,
@@ -234,11 +218,41 @@ module.exports = {
       ? [new ActionRowBuilder().addComponents(dropdown)]
       : [];
 
-    const response = await channel.send({
-      content: buildResponse(exchanges, ping),
-      components,
-    });
+    let response;
+    if (ping) {
+      try {
+        channel = await interaction.client.channels.fetch(String(channel_id));
+      } catch {
+        return await interaction.editReply({
+          content: "Could not find the target channel.",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
 
+      try {
+        message = await channel.messages.fetch(String(message_id));
+        await message.delete();
+      } catch (error) {
+        console.error(error);
+      }
+      response = await channel.send({
+        content: buildResponse(exchanges),
+        components,
+      });
+    } else {
+      try {
+        channel = await interaction.client.channels.fetch(String(channel_id));
+        message = await channel.messages.fetch(String(message_id));
+        response = await message.edit({
+          content: buildResponse(exchanges),
+          components,
+        });
+      } catch {
+        return await interaction.editReply(
+          "Something happened in tempTrigger!",
+        );
+      }
+    }
     await upsertId(MESSAGE, response.id);
 
     return await interaction.editReply({
