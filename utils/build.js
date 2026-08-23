@@ -90,15 +90,12 @@ async function updateBoard(interaction) {
     : [];
 
   const updatedMessage = await message.edit({
-    content: buildResponse(
-      exchanges,
-      true,
-    ),
+    content: buildResponse(exchanges),
     components: dropdownRow,
   });
   await upsertId(MESSAGE, updatedMessage.id);
 
-  return updatedMessage
+  return updatedMessage;
 }
 
 function buildSuccessContainer(item, amount) {

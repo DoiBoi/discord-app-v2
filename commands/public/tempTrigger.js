@@ -20,6 +20,13 @@ const ORDER = {
   PayPal: `<:paypal:${emojis.paypal}>`,
 };
 
+const PING = {
+  CashApp: `<@&1541225161640910848>`,
+  Zelle: `<@&1541225227214917692>`,
+  Venmo: `<@&1541225121111609405>`,
+  PayPal: `<@&1541225194000093194>`,
+}
+
 function buildMessage(item) {
   const amount = Math.round((item["amount"] - item["pending"]) * 100) / 100;
   const calculated_fee = ((amount * (100 - item["fee"])) / 100).toFixed(2);
@@ -45,8 +52,8 @@ function buildMessage(item) {
   return ret;
 }
 
-function buildResponse(exchanges, ping = true) {
-  let message = `${ping ? "<@&1474255029241249913>\n" : ""}`;
+function buildResponse(exchanges, ping = null) {
+  let message = `${ping ? ping + " " : ""}<@&1474255029241249913>\n`;
   for (const [currency, emoji] of Object.entries(ORDER)) {
     message += `# ${currency} ${emoji}\n`;
     if (currency == "PayPal") {
@@ -236,7 +243,7 @@ module.exports = {
         console.error(error);
       }
       response = await channel.send({
-        content: buildResponse(exchanges),
+        content: buildResponse(exchanges, PING[recieving]),
         components,
       });
     } else {
@@ -244,7 +251,7 @@ module.exports = {
         channel = await interaction.client.channels.fetch(String(channel_id));
         message = await channel.messages.fetch(String(message_id));
         response = await message.edit({
-          content: buildResponse(exchanges),
+          content: buildResponse(exchanges, PING[recieving]),
           components,
         });
       } catch {
