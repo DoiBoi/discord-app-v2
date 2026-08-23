@@ -4,11 +4,23 @@ const {
   MessageFlags,
   ButtonStyle,
 } = require("discord.js");
-const { getLog } = require("../../utils/log");
+const { getLog, getWeekReport } = require("../../utils/log");
 const { ButtonBuilder } = require("discord.js");
 const { ActionRowBuilder } = require("discord.js");
 
-function formatLog(log) {
+function formatLog(log, weekBool = false) {
+  if (weekBool) {
+    return (
+      "```" +
+      log.reduce(
+        (acc, curr) =>
+          acc + `${new Date(curr.date).toDateString()}: ${curr.amount}\n`,
+        "",
+      ) +
+      `Total for this week: ${log.reduce((acc, curr) => acc + curr.amount, 0)}` +
+      "```"
+    );
+  }
   return log.reduce(
     (acc, curr, index) =>
       acc +
@@ -43,11 +55,29 @@ module.exports = {
     const date = interaction.options.getString("date");
     const weekBoolean = interaction.options.getBoolean("week");
 
-    let rightButton, leftButton;
-    const params = {
-      index: index
+    if (date) {
+      const [day, month, year] = date.split("/").map(Number);
+
+      const dateObject = new Date(year, month - 1, day);
     }
-    let { data, count } = await getLog(params);
+
+    let rightButton, leftButton;
+    const params = {};
+    if (weekBoolean) {
+      params.week = index;
+    } else {
+      params.index = index;
+    }
+    if (date) {
+      params.date = date
+    }
+    let { data, count } = {};
+
+    if (weekBoolean) {
+      ({ data, count } = await getWeekReport(index));
+    } else {
+      ({ data, count } = await getLog(params));
+    }
 
     leftButton = new ButtonBuilder()
       .setCustomId("left")
@@ -64,15 +94,8 @@ module.exports = {
       rightButton.setDisabled(true);
     }
 
-    if (weekBoolean) {
-      return await interaction.reply({
-        content: "Not yet implemented",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
     const response = await interaction.reply({
-      content: formatLog(data),
+      content: formatLog(data, weekBoolean),
       flags: MessageFlags.Ephemeral,
       components: [
         new ActionRowBuilder().setComponents(leftButton, rightButton),
@@ -99,16 +122,20 @@ module.exports = {
         }
       }
 
-      ({ data, count } = await getLog(params))
+      if (weekBoolean) {
+        ({ data, count } = await getWeekReport(index));
+      } else {
+        ({ data, count } = await getLog(params));
+      }
 
       await i.update({
-        content: formatLog(data),
+        content: formatLog(data, weekBoolean),
         flags: MessageFlags.Ephemeral,
         components: [
           new ActionRowBuilder().setComponents(leftButton, rightButton),
         ],
       });
-      console.log(index)
+      console.log(index);
     });
   },
 };
