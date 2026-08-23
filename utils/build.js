@@ -96,7 +96,7 @@ async function updateBoard(interaction) {
     ),
     components: dropdownRow,
   });
-  await upsertId(MESSAGE, updatedMessage.id)
+  await upsertId(MESSAGE, updatedMessage.id);
 }
 
 function buildSuccessContainer(item, amount) {
@@ -152,17 +152,29 @@ async function updateQueue(interaction, page = 0) {
     .setCustomId(`c-left-${queuePage}`)
     .setStyle(ButtonStyle.Primary)
     .setEmoji("⬅️");
-  if (page - 1 < 0) {
-    leftButton.setDisabled(true);
-  }
+
+  const firstPageButton = new ButtonBuilder()
+    .setCustomId(`c-fpage`)
+    .setStyle(ButtonStyle.Primary)
+    .setEmoji("⏪");
 
   const rightButton = new ButtonBuilder()
     .setCustomId(`c-right-${queuePage}`)
     .setStyle(ButtonStyle.Primary)
     .setEmoji("➡️");
 
+  const lastPageButton = new ButtonBuilder()
+    .setCustomId(`c-lpage-${maxPage - 1}`)
+    .setStyle(ButtonStyle.Primary)
+    .setEmoji("⏩");
+
+  if (page - 1 < 0) {
+    leftButton.setDisabled(true);
+    firstPageButton.setDisabled(true);
+  }
   if (page + 1 >= maxPage) {
     rightButton.setDisabled(true);
+    lastPageButton.setDisabled(true);
   }
 
   try {
@@ -172,14 +184,24 @@ async function updateQueue(interaction, page = 0) {
       await message.edit({
         content: text,
         components: [
-          new ActionRowBuilder().setComponents(leftButton, rightButton),
+          new ActionRowBuilder().setComponents(
+            firstPageButton,
+            leftButton,
+            rightButton,
+            lastPageButton,
+          ),
         ],
       });
     } catch {
       const sent_message = await channel.send({
         content: text,
         components: [
-          new ActionRowBuilder().setComponents(leftButton, rightButton),
+          new ActionRowBuilder().setComponents(
+            firstPageButton,
+            leftButton,
+            rightButton,
+            lastPageButton,
+          ),
         ],
       });
       await upsertId(QUEUE_MESSAGE, sent_message.id);

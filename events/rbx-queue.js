@@ -118,7 +118,7 @@ async function handlePendingYes(interaction) {
           const forwarded = await hasImage.forward(forward_channel);
           forwarded_channels.push(forwarded.url);
           await forward_channel.send({
-            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, ${result.balance_rbx.toLocaleString({ maximumFractionDigits: 0 })} RBX\n-# :red_circle: Subtracted ${item.amount} RBX from ${cashoutItem.balance_id ? `<@${cashoutItem.balance_id}>` : ""}'s balance\n||-# (**Previous balance:** \$${cashoutItem.prev_rbx} RBX${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
+            content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, ${result.balance_rbx.toLocaleString()} RBX\n-# :red_circle: Subtracted ${item.amount} RBX from ${cashoutItem.balance_id ? `<@${cashoutItem.balance_id}>` : ""}'s balance\n||-# (**Previous balance:** \$${cashoutItem.prev_rbx} RBX${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
             flags: [MessageFlags.SuppressNotifications],
           });
           if (item.queue_id.amount - item.amount <= 0) {
@@ -169,6 +169,7 @@ async function handlePendingNo(interaction) {
   await interaction.editReply({
     content: "Interaction cancelled",
   });
+  await updateQueue(interaction);
 }
 
 async function handlePendingChange(interaction) {
@@ -298,10 +299,23 @@ async function handlePageDecrement(interaction) {
   await updateQueue(interaction, Number(match) - 1);
 }
 
+async function handleLastPage(interaction) {
+  await interaction.deferUpdate();
+  const match = interaction.customId.match(REGEX)[0];
+  await updateQueue(interaction, Number(match));
+}
+
+async function handleFirstPage(interaction) {
+  await interaction.deferUpdate();
+  await updateQueue(interaction, 0);
+}
+
 module.exports = {
   handlePendingChange,
   handlePendingNo,
   handlePendingYes,
   handlePageIncrement,
   handlePageDecrement,
+  handleLastPage,
+  handleFirstPage
 };

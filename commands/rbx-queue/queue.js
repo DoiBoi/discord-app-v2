@@ -20,11 +20,16 @@ module.exports = {
     ),
   async execute(interaction) {
     let currentPage = 0;
-    const { content, maxPage: totalPages } = await showQueue([], currentPage);
+    let { content, maxPage } = await showQueue([], currentPage);
     const leftButton = new ButtonBuilder()
       .setCustomId("left")
       .setStyle(ButtonStyle.Primary)
       .setEmoji("⬅️")
+      .setDisabled(true);
+    const firstPageButton = new ButtonBuilder()
+      .setCustomId("fpage")
+      .setStyle(ButtonStyle.Primary)
+      .setEmoji("⏪")
       .setDisabled(true);
 
     const rightButton = new ButtonBuilder()
@@ -32,14 +37,24 @@ module.exports = {
       .setStyle(ButtonStyle.Primary)
       .setEmoji("➡️");
 
-    if (currentPage + 1 >= totalPages) {
-      rightButton.setDisabled(true)
+    const lastPageButton = new ButtonBuilder()
+      .setCustomId("lpage")
+      .setStyle(ButtonStyle.Primary)
+      .setEmoji("⏩");
+
+    if (currentPage + 1 >= maxPage) {
+      rightButton.setDisabled(true);
     }
 
     const response = await interaction.reply({
       content: content,
       components: [
-        new ActionRowBuilder().setComponents(leftButton, rightButton),
+        new ActionRowBuilder().setComponents(
+          firstPageButton,
+          leftButton,
+          rightButton,
+          lastPageButton,
+        ),
       ],
       flags: MessageFlags.Ephemeral,
     });
@@ -52,27 +67,44 @@ module.exports = {
     });
 
     collector.on("collect", async (i) => {
-      await i.deferUpdate()
+      await i.deferUpdate();
       rightButton.setDisabled(false);
       leftButton.setDisabled(false);
+      firstPageButton.setDisabled(false);
+      lastPageButton.setDisabled(false);
 
-      if (i.customId == "left") {
-        currentPage -= 1;
-        if (currentPage - 1 < 0) {
-          leftButton.setDisabled(true);
-        }
-      } else if (i.customId == "right") {
-        currentPage += 1;
-        if (currentPage + 1 >= totalPages) {
-          rightButton.setDisabled(true);
-        }
+      switch (i.customId) {
+        case "left":
+          currentPage -= 1;
+          break;
+        case "right":
+          currentPage += 1;
+          break;
+        case "fpage":
+          currentPage = 0;
+          break;
+        case "lpage":
+          currentPage = maxPage - 1;
       }
-      const { content, maxPage } = await showQueue([], currentPage);
+      if (currentPage - 1 < 0) {
+        leftButton.setDisabled(true);
+        firstPageButton.setDisabled(true);
+      }
+      if (currentPage + 1 >= maxPage) {
+        rightButton.setDisabled(true);
+        lastPageButton.setDisabled(true);
+      }
+      ({ content, maxPage } = await showQueue([], currentPage));
 
       await i.editReply({
         content: content,
         components: [
-          new ActionRowBuilder().setComponents(leftButton, rightButton),
+          new ActionRowBuilder().setComponents(
+            firstPageButton,
+            leftButton,
+            rightButton,
+            lastPageButton,
+          ),
         ],
       });
     });
