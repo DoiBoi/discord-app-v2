@@ -52,13 +52,14 @@ function buildMessage(item) {
   return ret;
 }
 
+
 function buildResponse(exchanges, ping = null) {
   let message = `${ping ? ping + " " : ""}<@&1474255029241249913>\n`;
   for (const [currency, emoji] of Object.entries(ORDER)) {
     message += `# ${currency} ${emoji}\n`;
     if (currency == "PayPal") {
       message +=
-        "> - can exchange __any amount lower than amounts stated__, but custom amounts = +1%\n\n";
+        "> - can exchange custom amount __above min & under the amount stated__ for +1%\n\n";
     }
     const items = exchanges[currency];
     if (items == null) {
