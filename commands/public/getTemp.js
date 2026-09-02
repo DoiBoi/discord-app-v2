@@ -39,7 +39,6 @@ module.exports = {
       )}\n`;
       return acc;
     }, "Here the the current temps:\n");
-    console.log(message);
     await interaction.reply({
       content: message,
       flags: MessageFlags.Ephemeral,
