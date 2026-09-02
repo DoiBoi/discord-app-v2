@@ -3,7 +3,10 @@ const {
   InteractionContextType,
   MessageFlags,
 } = require("discord.js");
-const { getAvailableTransaction } = require("../../utils/temp_exchage");
+const {
+  getAvailableTransaction,
+  getExchanges,
+} = require("../../utils/temp_exchage");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -15,7 +18,7 @@ module.exports = {
       InteractionContextType.PrivateChannel,
     ),
   async execute(interaction) {
-    const exchanges = await getAvailableTransaction();
+    const exchanges = Object.values(await getExchanges()).flat();
     if (exchanges.length <= 0) {
       return await interaction.reply({
         content: "There are no active transactions!",
@@ -23,7 +26,7 @@ module.exports = {
       });
     }
     const message = exchanges.reduce((acc, exchange) => {
-      acc += `\`${exchange.info}\`: \$${exchange.pending} ${exchange.message_links.reduce(
+      acc += `<#${exchange.channel}> \`${exchange.info}\`: \$${exchange.pending > 0 ? `${exchange.amount}-${exchange.pending}=${exchange.amount - exchange.pending}` : exchange.amount} ${exchange.message_links.reduce(
         (acc, message, idx, arr) => {
           if (idx === arr.length - 1) {
             acc += `${message.url}`;
@@ -35,7 +38,8 @@ module.exports = {
         " ",
       )}\n`;
       return acc;
-    }, "Here the the current active temps:\n");
+    }, "Here the the current temps:\n");
+    console.log(message);
     await interaction.reply({
       content: message,
       flags: MessageFlags.Ephemeral,

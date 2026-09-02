@@ -4,7 +4,7 @@ const { supabase } = require("./supabase/supabase_client.js");
 const TABLE = ids.table;
 
 async function getExchanges() {
-  const { data, error } = await supabase.from(TABLE).select("*");
+  const { data, error } = await supabase.from(TABLE).select("*, channel::text");
 
   if (error) return console.error("An error occured", error.message);
   const ret = {};
