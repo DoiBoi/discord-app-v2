@@ -736,7 +736,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         // if ((item.currency === "PayPal") &&
         //   (input < item.amount))
 
-        const amount = item["amount"] - item["pending"];
+        const amount = +(item["amount"] - item["pending"]).toFixed(2);
         if (
           (amount > item["min"] && (input < item["min"] || input > amount)) ||
           (amount <= item["min"] && input != amount)
