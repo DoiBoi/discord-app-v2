@@ -28,7 +28,8 @@
       "cashout_rpc": "handle_cashout_dummy",
       "log_rpc": "get_week_report_dummy",
       "queue_channel": "dummy_queue_channel",
-      "queue_message": "dummy_queue_message"
+      "queue_message": "dummy_queue_message",
+      "message_link": "dummy_message_links"
     }
   },
   "production": {

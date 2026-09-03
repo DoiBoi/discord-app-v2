@@ -1,4 +1,16 @@
-const { handlePendingYes, handlePendingNo, handlePendingChange, handlePageIncrement, handlePageDecrement, handleLastPage, handleFirstPage } = require("../events/rbx-queue");
+const {
+  handlePendingYes,
+  handlePendingNo,
+  handlePendingChange,
+  handlePageIncrement,
+  handlePageDecrement,
+  handleLastPage,
+  handleFirstPage,
+} = require("../events/rbx-queue");
+const {
+  handlePaymentCancel,
+  handlePaymentPaid,
+} = require("../events/temp-events");
 const { auth } = require("../utils/supabase/supabase_client");
 
 async function handleButtonInput(interaction) {
@@ -21,16 +33,28 @@ async function handleButtonInput(interaction) {
     }
     if (interaction.customId.includes("c-left")) {
       await handlePageDecrement(interaction);
+      return;
     }
     if (interaction.customId == "c-fpage") {
-      await handleFirstPage(interaction)
+      await handleFirstPage(interaction);
+      return;
     }
     if (interaction.customId.includes("c-lpage")) {
-      await handleLastPage(interaction)
+      await handleLastPage(interaction);
+      return;
     }
+    return;
+  }
+  if (interaction.customId.includes("tcancel")) {
+    await handlePaymentCancel(interaction);
+    return;
+  }
+  if (interaction.customId.includes("tpaid")) {
+    await handlePaymentPaid(interaction);
+    return;
   }
 }
 
 module.exports = {
-  handleButtonInput
-}
+  handleButtonInput,
+};

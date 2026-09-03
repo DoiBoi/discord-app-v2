@@ -2,6 +2,7 @@ const { ids } = require("./config.js");
 const { setPay } = require("./pay.js");
 const { supabase } = require("./supabase/supabase_client.js");
 const TABLE = ids.table;
+const MESSAGES_TABLE = ids.message_link;
 
 async function getExchanges() {
   const { data, error } = await supabase.from(TABLE).select("*, channel::text");
@@ -114,68 +115,94 @@ async function addToPending(id, input) {
 }
 
 async function addMessage(id, url, userId) {
-  const { data: fetchData, error: fetchError } = await supabase
-    .from(TABLE)
-    .select("message_links")
-    .eq("id", id)
-    .single();
-  if (fetchError) {
-    throw new Error(fetchError.message);
-  }
-
-  const messages = fetchData.message_links;
-  messages.push({
-    id: userId,
-    url: url,
-  });
-
   const { data, error } = await supabase
-    .from(TABLE)
-    .update({
-      message_links: [...new Set(messages)],
+    .from(MESSAGES_TABLE)
+    .insert({
+      tempId: id,
+      url: url,
     })
-    .eq("id", id)
     .select()
     .single();
+
   if (error) {
-    throw new Error(error.message);
+    throw new Error(`An error occured! ${error.message}`);
   }
-  return data;
+
+  return data
+
+  // const { data: fetchData, error: fetchError } = await supabase
+  //   .from(TABLE)
+  //   .select("message_links")
+  //   .eq("id", id)
+  //   .single();
+  // if (fetchError) {
+  //   throw new Error(fetchError.message);
+  // }
+
+  // const messages = fetchData.message_links;
+  // messages.push({
+  //   id: userId,
+  //   url: url,
+  // });
+
+  // const { data, error } = await supabase
+  //   .from(TABLE)
+  //   .update({
+  //     message_links: [...new Set(messages)],
+  //   })
+  //   .eq("id", id)
+  //   .select()
+  //   .single();
+  // if (error) {
+  //   throw new Error(error.message);
+  // }
+  // return data;
 }
 
 async function getAvailableTransaction() {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("info, message_links, pending")
-    .gt("pending", 0);
-  if (error) {
-    throw new Error(error.message);
-  }
-  return data;
+  // const { data, error } = await supabase
+  //   .from(TABLE)
+  //   .select("info, message_links, pending")
+  //   .gt("pending", 0);
+  // if (error) {
+  //   throw new Error(error.message);
+  // }
+  // return data;
+  return []
 }
 
 async function removeMessage(id, url) {
-  const { data: fetchData, error: fetchError } = await supabase
-    .from(TABLE)
-    .select("message_links")
-    .eq("id", id);
+  const { data, error } = await supabase.from(MESSAGES_TABLE)
+    .delete()
+    .eq("tempId", id)
+    .select()
+    .single()
 
-  if (fetchError) {
-    throw new Error(fetchError.message);
-  }
+  if (error) { throw new Error(`An error occured in removeMessage ${error.message}`)}
+  // const { data: fetchData, error: fetchError } = await supabase
+  //   .from(TABLE)
+  //   .select("id, message_links")
+  //   .eq("id", id);
 
-  let newArray = [];
-  if (fetchData[0].message_links.length > 0) {
-    newArray = fetchData[0].message_links.filter((item) => item.url !== url);
-  }
-  const { data, error } = await supabase
-    .from(TABLE)
-    .update({
-      message_links: newArray,
-    })
-    .eq("id", id);
+  // if (fetchError) {
+  //   throw new Error(fetchError.message);
+  // }
 
-  return;
+  // let newArray = [];
+  // let item;
+  // console.log(fetchData[0].message_links, url);
+  // if (fetchData[0].message_links.length > 0) {
+  //   newArray = fetchData[0].message_links.filter((item) => item.url !== url);
+  //   item = fetchData[0].message_links.find((item) => item.url == url);
+  // }
+  // const { data, error } = await supabase
+  //   .from(TABLE)
+  //   .update({
+  //     message_links: newArray,
+  //   })
+  //   .eq("id", id);
+
+  return data;
 }
 
 module.exports = {

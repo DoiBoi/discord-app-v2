@@ -26,7 +26,7 @@ module.exports = {
       });
     }
     const message = exchanges.reduce((acc, exchange) => {
-      acc += `<#${exchange.channel}> \`${exchange.info}\`: \$${exchange.pending > 0 ? `${exchange.amount}-${exchange.pending}=${exchange.amount - exchange.pending}` : exchange.amount} ${exchange.message_links.reduce(
+      acc += `<#${exchange.channel}> \`${exchange.info}\`: \$${exchange.pending > 0 ? `${exchange.amount}-${exchange.pending}=${(exchange.amount - exchange.pending).toFixed(2)}` : exchange.amount.toFixed(2)} ${exchange.message_links.reduce(
         (acc, message, idx, arr) => {
           if (idx === arr.length - 1) {
             acc += `${message.url}`;

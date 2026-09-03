@@ -3,7 +3,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 const adminCommands = require("./commands.json");
 const { auth, supabase } = require("./utils/supabase/supabase_client.js");
-const { getExchange, finalizeTemp, addMessage, removeMessage } = require("./utils/temp_exchage.js");
+const {
+  getExchange,
+  finalizeTemp,
+  addMessage,
+  removeMessage,
+} = require("./utils/temp_exchage.js");
 const { editBalance, getUserInfo } = require("./utils/balance");
 const { getId } = require("./utils/id.js");
 const {
@@ -27,7 +32,6 @@ const {
   ChannelType,
   ContainerBuilder,
 } = require("discord.js");
-const { ORDER } = require("./commands/public/tempTrigger");
 const { ids, emojis } = require("./utils/config.js");
 const { appendUserHistory } = require("./utils/history");
 const { EmbedBuilder } = require("discord.js");
@@ -44,11 +48,10 @@ const FLAGS = {
 };
 
 const ARROW = `<:arrow:${emojis.arrow}>`;
-const cancelEmbed = new EmbedBuilder()
-  .setAuthor({
-    name: "Exchange Cancelled",
-    iconURL: "https://cdn.discordapp.com/emojis/950076641667846224.webp?size=128"
-  })
+const cancelEmbed = new EmbedBuilder().setAuthor({
+  name: "Exchange Cancelled",
+  iconURL: "https://cdn.discordapp.com/emojis/950076641667846224.webp?size=128",
+});
 
 const client = new Client({
   intents: [
@@ -181,6 +184,7 @@ function calculateTimeStamp(seconds) {
 }
 
 const CONFIRM_REGEX = /\d+\.\d+|\d+/gm;
+const DISCORD_REGEX = /channels\/([^\/]+)\/(\d+)\/(\d+)/;
 
 async function handleSendComplete(
   interaction,
@@ -205,8 +209,11 @@ async function handleSendComplete(
         (embed) => embed.video || embed.data.video,
       );
       const hasEmbed = msg.embeds.some((emb) => emb.image || emb.thumbnail);
-      const notSelf = msg.author.id !== interaction.guild.members.me.id
-      return (hasAttachment || hasEmbed || hasUploadedVideo || hasEmbeddedVideo) && notSelf;
+      const notSelf = msg.author.id !== interaction.guild.members.me.id;
+      return (
+        (hasAttachment || hasEmbed || hasUploadedVideo || hasEmbeddedVideo) &&
+        notSelf
+      );
     });
     let response;
 
@@ -231,8 +238,8 @@ async function handleSendComplete(
       const embed = new EmbedBuilder()
         .setTitle("⚠️ Is this the correct proof of payment?")
         .setDescription(
-        `- <:green:${emojis.green}> Click "Yes" to forward proof to receiver to ask for confirmation\n- <:red:${emojis.red}> Click "No" to resend correct proof`
-      );
+          `- <:green:${emojis.green}> Click "Yes" to forward proof to receiver to ask for confirmation\n- <:red:${emojis.red}> Click "No" to resend correct proof`,
+        );
       response = await hasImage.reply({
         embeds: [embed],
         components: [row],
@@ -250,11 +257,11 @@ async function handleSendComplete(
         const confirmRow = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`confirm-${item["id"]}-${input}`)
-            .setLabel("Confirm")
-            .setStyle(ButtonStyle.Primary),
+            .setLabel("Pay Exchange")
+            .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId(`reject-${item["id"]}-${input}`)
-            .setLabel("Reject")
+            .setLabel("Incorrect Proof")
             .setStyle(ButtonStyle.Danger),
         );
         const disabledRow = new ActionRowBuilder().addComponents(
@@ -286,23 +293,32 @@ async function handleSendComplete(
               //   ),
               // ],
               content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}`,
+              components: [confirmRow],
             });
             const confirm_msg = await i.editReply({
               embeds: [
+                new EmbedBuilder().setAuthor({
+                  name: `Your payment proof has been forwarded to the receiver to ask for confirmation.`,
+                  iconURL: `https://cdn.discordapp.com/emojis/950076600869871676.webp?size=56`,
+                }),
                 new EmbedBuilder()
-                  .setAuthor({
-                    name: `Your payment proof has been forwarded to the receiver to ask for confirmation.`,
-                    iconURL: `https://cdn.discordapp.com/emojis/950076600869871676.webp?size=56`
-                  }),
-                new EmbedBuilder()
-                  .setTitle(`<a:loading:${emojis.loading}>  Please wait for confirmation to get paid`)
-                  .setDescription(`Send your crypto address and specify the coin you wanted\n> Ignore the buttons below (It is for Mal)`)
-                  .setThumbnail("https://cdn.discordapp.com/attachments/853109872698982451/1530452978920587376/79ea6ffa1ca3345b59042a9ce9638dfc.gif?ex=6a65a0e8&is=6a644f68&hm=e98d52a9f5ba97466e72494f0217c254d7fc65ca65c2c8b446dc4e32c30c95f8&")
+                  .setTitle(
+                    `<a:loading:${emojis.loading}>  Please wait for confirmation to get paid`,
+                  )
+                  .setDescription(
+                    `Send your crypto address and specify the coin you wanted\n> Ignore the buttons below (It is for Mal)`,
+                  )
+                  .setThumbnail(
+                    "https://cdn.discordapp.com/attachments/853109872698982451/1530452978920587376/79ea6ffa1ca3345b59042a9ce9638dfc.gif?ex=6a65a0e8&is=6a644f68&hm=e98d52a9f5ba97466e72494f0217c254d7fc65ca65c2c8b446dc4e32c30c95f8&",
+                  ),
               ],
               content: `-# <@1474220722665558066> ||${forwarded.url}||`,
-              components: [confirmRow]
             });
-            await addMessage(Number(item.id), confirm_msg.url, i.user.id)
+            const msg = await addMessage(
+              Number(item.id),
+              confirm_msg.url,
+              i.user.id,
+            );
           } catch (error) {
             console.error(error);
             const confirmRow = new ActionRowBuilder().addComponents(
@@ -387,7 +403,7 @@ async function handleSendCancel(
     });
     return;
   }
-  await removeMessage(Number(id), interaction.user.id)
+  await removeMessage(Number(id), interaction.user.id);
   await interaction.message.edit({
     components: [
       new ActionRowBuilder().addComponents(
@@ -593,7 +609,7 @@ async function handleChannelDropdown(interaction, item, input) {
     // embeds: [embed],
     embeds: buildTOSMessage(item["currency"], input, interaction.user.id),
     components: [row],
-    fetchReply: true
+    fetchReply: true,
   });
 
   const filter = (i) => interaction.user.id === i.user.id;
@@ -780,14 +796,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isButton()) {
       if (interaction.customId.includes("confirm")) {
         await interaction.deferReply({
-          flags: MessageFlags.Ephemeral
+          flags: MessageFlags.Ephemeral,
         });
-        if (!(await auth(interaction.user.id))) {
-          return await interaction.reply({
-            content: "Not Authorized",
-            flags: MessageFlags.Ephemeral,
-          });
-        }
+        // if (!(await auth(interaction.user.id))) {
+        //   return await interaction.reply({
+        //     content: "Not Authorized",
+        //     flags: MessageFlags.Ephemeral,
+        //   });
+        // }
         try {
           const disabledRow = new ActionRowBuilder().addComponents(
             interaction.message.components[0].components.map((button) =>
@@ -796,55 +812,63 @@ client.on(Events.InteractionCreate, async (interaction) => {
           );
           const matches = interaction.customId.match(CONFIRM_REGEX);
           if (matches.length <= 0) {
-            return
+            return;
           }
           const id = matches[0];
           const amount = matches[1];
           const item = await getExchange(Number(id));
-          await removeMessage(Number(id), interaction.message.url);
-          const user_id = await finalizeTemp(id, amount);
-          const calculatedAmount = item["amount"] - item["pending"];
-          const amountMinusFee = (calculatedAmount * (100 - item["fee"])) / 100;
-          [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(
-            user_id,
-            [],
-            [-Number(amount)],
-          );
-          const user = await client.users.fetch(user_id);
-          await appendUserHistory(user_id, "usd", [-Number(amount)]);
-          try {
-            const forward_channel = await interaction.client.channels.fetch(
-              String(item["channel"]),
-            );
-            await forward_channel.send({
-              // embeds: [
-              //   new EmbedBuilder().setDescription(
-              //     `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${Number(amount).toFixed(2)} from ${user ? user.username : ""}'s balance\n||-# (**Previous balance:** \$${oldBalanceUsd} USD${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
-              //   ),
-              // ],
-              content: `**New Balance:** \$${result.balance_usd.toFixed(2)} USD, \$${result.balance_rbx.toFixed(2)} RBX\n-# :red_circle: Subtracted \$${Number(amount).toFixed(2)} from ${user ? user.username : ""}'s balance\n||-# (**Previous balance:** \$${oldBalanceUsd} USD${getUserInfo(result.info, FLAGS) !== "" ? `, ${getUserInfo(result.info, FLAGS)}` : ""})||`,
+          if (!(
+            String(interaction.user.id) === item.userId ||
+            (await auth(interaction.user.id))
+          )) {
+            return await interaction.editReply({
+              content: "Not Authorized",
+              flags: MessageFlags.Ephemeral,
             });
-          } catch {}
+          }
+          const removedChannel = (
+            await removeMessage(Number(id), interaction.message.url)
+          )?.url.match(DISCORD_REGEX)[2];
           await interaction.message.edit({
             components: [disabledRow],
           });
           await updateBoard(interaction);
           await interaction.editReply({
-            content: "Done"
-          })
+            content: "Confirmed, you may close this",
+          });
           try {
-            if (item.currency === "PayPal" && ((item.amount) - Number(amount)) > 0) {
-              item.fee += 1
+            if (
+              item.currency === "PayPal" &&
+              item.amount - Number(amount) > 0
+            ) {
+              item.fee += 1;
             }
-            await interaction.channel.send({
+            const confirmed_channel = await interaction.client.channels.fetch(
+              String(removedChannel),
+            );
+            await confirmed_channel.send({
               embeds: [
-                new EmbedBuilder().setDescription(
-                  `\$${Number(amount).toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == true ? " (cover fnf)" : " (minus fnf)") : ""} ${item["currency"]} for \$${(Number(amount)*((100-item["fee"])/100)).toFixed(2)} Crypto, ${item["fee"]}% fee`
-                )
+                new EmbedBuilder()
+                  .setDescription(
+                    `\$${Number(amount).toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == true ? " (cover fnf)" : " (minus fnf)") : ""} ${item["currency"]} for \$${(Number(amount) * ((100 - item["fee"]) / 100)).toFixed(2)} Crypto, ${item["fee"]}% fee`,
+                  )
                   .setAuthor({
                     name: "Receiver Confirmed",
-                    iconURL: "https://cdn.discordapp.com/emojis/950076600869871676.webp?size=128"
-                  })
+                    iconURL:
+                      "https://cdn.discordapp.com/emojis/950076600869871676.webp?size=128",
+                  }),
+              ],
+              components: [
+                new ActionRowBuilder().addComponents(
+                  new ButtonBuilder()
+                    .setCustomId(`tpaid-${id}-${amount}`)
+                    .setLabel("Mark as Paid")
+                    .setStyle(ButtonStyle.Premium),
+                ),
+                new ButtonBuilder()
+                  .setCustomId(`tcancel-${id}-${amount}`)
+                  .setLabel("Cancel Payment")
+                  .setStyle(ButtonStyle.Danger)
               ],
               // content: "Finalized Transaction",
             });
@@ -862,15 +886,28 @@ client.on(Events.InteractionCreate, async (interaction) => {
           console.log(e);
         }
       } else if (interaction.customId.includes("reject")) {
-        if (!(await auth(interaction.user.id))) {
-          return await interaction.reply({
+        // if (!(await auth(interaction.user.id))) {
+        //   return await interaction.reply({
+        //     content: "Not Authorized",
+        //     flags: MessageFlags.Ephemeral,
+        //   });
+        // }
+        await interaction.deferReply();
+        const matches = interaction.customId.match(CONFIRM_REGEX);
+        const id = matches[0];
+        const item = await getExchange(Number(id));
+        if (!(
+          String(interaction.user.id) === item.userId ||
+          (await auth(interaction.user.id))
+        )) {
+          return await interaction.editReply({
             content: "Not Authorized",
             flags: MessageFlags.Ephemeral,
           });
         }
-        await interaction.deferReply();
-        const matches = interaction.customId.match(CONFIRM_REGEX);
-        const id = matches[0];
+        const removedChannel = (
+          await removeMessage(Number(id), interaction.message.url)
+        )?.url.match(DISCORD_REGEX)[2];
         const amount = matches[1];
         const ok = await supabase.rpc(RPC, {
           p_id: Number(id),
@@ -888,28 +925,34 @@ client.on(Events.InteractionCreate, async (interaction) => {
             ButtonBuilder.from(button).setDisabled(true),
           ),
         );
-        await removeMessage(Number(id), interaction.message.url)
+        await removeMessage(Number(id), interaction.message.url);
         await interaction.editReply({
           // embeds: [new EmbedBuilder().setDescription("Cancelled Transaction")],
-          embeds: [cancelEmbed],
+          content: "Successfully rejected",
         });
-        const item = await getExchange(Number(id));
         await interaction.message.edit({
           components: [disabledRow],
         });
         await updateBoard(interaction);
         try {
+          const removedChannel = await interaction.client.channels.fetch(
+            String(removedChannel),
+          );
+          await removeMessage.send({
+            embeds: [cancelEmbed],
+          });
           const forward_channel = await interaction.client.channels.fetch(
             String(item["channel"]),
           );
           await forward_channel.send({
             content: `Your balance remains at \$${(item["amount"] - item["pending"]).toFixed(2)}`,
           });
-        } catch {}
+        } catch (error) {
+          console.error(error);
+        }
       } else {
-        handleButtonInput(interaction)
+        handleButtonInput(interaction);
       }
-
     }
     if (interaction.isCommand()) {
       const command = client.commands.get(interaction.commandName);
