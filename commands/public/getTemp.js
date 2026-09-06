@@ -28,7 +28,6 @@ module.exports = {
         flags: MessageFlags.Ephemeral,
       });
     }
-    console.log(exchanges)
     const message = exchanges.reduce((acc, exchange) => {
       acc += `<#${exchange.channel}> \`${exchange.info}\`: \$${exchange.pending > 0 ? `${exchange.amount}-${exchange.pending}=${(exchange.amount - exchange.pending).toFixed(2)}` : exchange.amount.toFixed(2)} ${exchange[
         MESSAGES_TABLE
