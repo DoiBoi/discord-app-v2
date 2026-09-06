@@ -7,6 +7,9 @@ const {
   getAvailableTransaction,
   getExchanges,
 } = require("../../utils/temp_exchage");
+const { ids } = require("../../utils/config");
+
+const MESSAGES_TABLE = ids.message_link;
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -25,18 +28,18 @@ module.exports = {
         flags: MessageFlags.Ephemeral,
       });
     }
+    console.log(exchanges)
     const message = exchanges.reduce((acc, exchange) => {
-      acc += `<#${exchange.channel}> \`${exchange.info}\`: \$${exchange.pending > 0 ? `${exchange.amount}-${exchange.pending}=${(exchange.amount - exchange.pending).toFixed(2)}` : exchange.amount.toFixed(2)} ${exchange.message_links.reduce(
-        (acc, message, idx, arr) => {
-          if (idx === arr.length - 1) {
-            acc += `${message.url}`;
-          } else {
-            acc += `${message.url}, `;
-          }
-          return acc;
-        },
-        " ",
-      )}\n`;
+      acc += `<#${exchange.channel}> \`${exchange.info}\`: \$${exchange.pending > 0 ? `${exchange.amount}-${exchange.pending}=${(exchange.amount - exchange.pending).toFixed(2)}` : exchange.amount.toFixed(2)} ${exchange[
+        MESSAGES_TABLE
+      ].reduce((acc, message, idx, arr) => {
+        if (idx === arr.length - 1) {
+          acc += `${message.url}`;
+        } else {
+          acc += `${message.url}, `;
+        }
+        return acc;
+      }, " ")}\n`;
       return acc;
     }, "Here the the current temps:\n");
     await interaction.reply({

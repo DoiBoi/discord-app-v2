@@ -43,15 +43,14 @@ async function handleButtonInput(interaction) {
       await handleLastPage(interaction);
       return;
     }
-    return;
-  }
-  if (interaction.customId.includes("tcancel")) {
-    await handlePaymentCancel(interaction);
-    return;
-  }
-  if (interaction.customId.includes("tpaid")) {
-    await handlePaymentPaid(interaction);
-    return;
+    if (interaction.customId.includes("tcancel")) {
+      await handlePaymentCancel(interaction);
+      return;
+    }
+    if (interaction.customId.includes("tpaid")) {
+      await handlePaymentPaid(interaction);
+      return;
+    }
   }
 }
 

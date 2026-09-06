@@ -5,7 +5,7 @@ const TABLE = ids.table;
 const MESSAGES_TABLE = ids.message_link;
 
 async function getExchanges() {
-  const { data, error } = await supabase.from(TABLE).select("*, channel::text");
+  const { data, error } = await supabase.from(TABLE).select(`*, channel::text, ${MESSAGES_TABLE} ( * )`);
 
   if (error) return console.error("An error occured", error.message);
   const ret = {};
@@ -174,9 +174,8 @@ async function getAvailableTransaction() {
 async function removeMessage(id, url) {
   const { data, error } = await supabase.from(MESSAGES_TABLE)
     .delete()
-    .eq("tempId", id)
+    .eq("id", id)
     .select()
-    .single()
 
   if (error) { throw new Error(`An error occured in removeMessage ${error.message}`)}
   // const { data: fetchData, error: fetchError } = await supabase
@@ -202,7 +201,7 @@ async function removeMessage(id, url) {
   //   })
   //   .eq("id", id);
 
-  return data;
+  return data[0];
 }
 
 module.exports = {

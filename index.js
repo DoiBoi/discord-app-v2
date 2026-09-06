@@ -5,17 +5,13 @@ const adminCommands = require("./commands.json");
 const { auth, supabase } = require("./utils/supabase/supabase_client.js");
 const {
   getExchange,
-  finalizeTemp,
   addMessage,
   removeMessage,
 } = require("./utils/temp_exchage.js");
-const { editBalance, getUserInfo } = require("./utils/balance");
-const { getId } = require("./utils/id.js");
 const {
   buildTempModal,
   buildChannelDropdown,
   updateBoard,
-  buildSuccessContainer,
 } = require("./utils/build.js");
 const {
   Client,
@@ -30,22 +26,11 @@ const {
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
-  ContainerBuilder,
 } = require("discord.js");
 const { ids, emojis } = require("./utils/config.js");
-const { appendUserHistory } = require("./utils/history");
 const { EmbedBuilder } = require("discord.js");
-const { Embed } = require("discord.js");
 const { handleButtonInput } = require("./handler/buttonEvents.js");
 const RPC = ids.rpc;
-const LOG = ids.log;
-
-const FLAGS = {
-  gfs_toggle: false,
-  owe_toggle: false,
-  info_toggle: true,
-  new_line: false,
-};
 
 const ARROW = `<:arrow:${emojis.arrow}>`;
 const cancelEmbed = new EmbedBuilder().setAuthor({
@@ -254,7 +239,7 @@ async function handleSendComplete(
       });
 
       collector.on("collect", async (i) => {
-        const confirmRow = new ActionRowBuilder().addComponents(
+        let confirmRow = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`confirm-${item["id"]}-${input}`)
             .setLabel("Pay Exchange")
@@ -286,15 +271,6 @@ async function handleSendComplete(
               String(forward_channel),
             );
             const forwarded = await hasImage.forward(forward_channel);
-            await forward_channel.send({
-              // embeds: [
-              //   new EmbedBuilder().setDescription(
-              //     `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${item["amount"] - item["pending"] - Number(input).toFixed(2)}`,
-              //   ),
-              // ],
-              content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}`,
-              components: [confirmRow],
-            });
             const confirm_msg = await i.editReply({
               embeds: [
                 new EmbedBuilder().setAuthor({
@@ -319,6 +295,25 @@ async function handleSendComplete(
               confirm_msg.url,
               i.user.id,
             );
+            confirmRow = new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+                .setCustomId(`confirm-${item["id"]}-${input}-${msg.id}`)
+                .setLabel("Pay Exchange")
+                .setStyle(ButtonStyle.Success),
+              new ButtonBuilder()
+                .setCustomId(`reject-${item["id"]}-${input}-${msg.id}`)
+                .setLabel("Incorrect Proof")
+                .setStyle(ButtonStyle.Danger),
+            );
+            await forward_channel.send({
+              // embeds: [
+              //   new EmbedBuilder().setDescription(
+              //     `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${item["amount"] - item["pending"] - Number(input).toFixed(2)}`,
+              //   ),
+              // ],
+              content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}`,
+              components: [confirmRow],
+            });
           } catch (error) {
             console.error(error);
             const confirmRow = new ActionRowBuilder().addComponents(
@@ -403,7 +398,6 @@ async function handleSendCancel(
     });
     return;
   }
-  await removeMessage(Number(id), interaction.user.id);
   await interaction.message.edit({
     components: [
       new ActionRowBuilder().addComponents(
@@ -816,6 +810,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           }
           const id = matches[0];
           const amount = matches[1];
+          const msg_id = matches[2];
           const item = await getExchange(Number(id));
           if (!(
             String(interaction.user.id) === item.userId ||
@@ -827,7 +822,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             });
           }
           const removedChannel = (
-            await removeMessage(Number(id), interaction.message.url)
+            await removeMessage(Number(msg_id), interaction.message.url)
           )?.url.match(DISCORD_REGEX)[2];
           await interaction.message.edit({
             components: [disabledRow],
@@ -863,21 +858,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
                   new ButtonBuilder()
                     .setCustomId(`tpaid-${id}-${amount}`)
                     .setLabel("Mark as Paid")
-                    .setStyle(ButtonStyle.Premium),
+                    .setStyle(ButtonStyle.Primary),
+                  new ButtonBuilder()
+                    .setCustomId(`tcancel-${id}-${amount}`)
+                    .setLabel("Cancel Payment")
+                    .setStyle(ButtonStyle.Danger),
                 ),
-                new ButtonBuilder()
-                  .setCustomId(`tcancel-${id}-${amount}`)
-                  .setLabel("Cancel Payment")
-                  .setStyle(ButtonStyle.Danger)
               ],
-              // content: "Finalized Transaction",
-            });
-            const logging = await getId(LOG);
-            const channel = await interaction.client.channels.fetch(
-              String(logging),
-            );
-            await channel.send({
-              embeds: [buildSuccessContainer(item, amount)],
             });
           } catch (e) {
             console.log(e);
@@ -895,6 +882,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await interaction.deferReply();
         const matches = interaction.customId.match(CONFIRM_REGEX);
         const id = matches[0];
+        const msg_id = matches[2];
         const item = await getExchange(Number(id));
         if (!(
           String(interaction.user.id) === item.userId ||
@@ -905,8 +893,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
             flags: MessageFlags.Ephemeral,
           });
         }
-        const removedChannel = (
-          await removeMessage(Number(id), interaction.message.url)
+        const removedChannelId = (
+          await removeMessage(Number(msg_id), interaction.message.url)
         )?.url.match(DISCORD_REGEX)[2];
         const amount = matches[1];
         const ok = await supabase.rpc(RPC, {
@@ -925,7 +913,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
             ButtonBuilder.from(button).setDisabled(true),
           ),
         );
-        await removeMessage(Number(id), interaction.message.url);
         await interaction.editReply({
           // embeds: [new EmbedBuilder().setDescription("Cancelled Transaction")],
           content: "Successfully rejected",
@@ -936,9 +923,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await updateBoard(interaction);
         try {
           const removedChannel = await interaction.client.channels.fetch(
-            String(removedChannel),
+            String(removedChannelId),
           );
-          await removeMessage.send({
+          await removedChannel.send({
             embeds: [cancelEmbed],
           });
           const forward_channel = await interaction.client.channels.fetch(
