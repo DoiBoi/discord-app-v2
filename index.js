@@ -266,7 +266,8 @@ async function handleSendComplete(
               ],
             });
             await prevCollector.stop();
-            let confirm_msg = await i.deferReply();
+            await i.deferReply();
+            let confirm_msg = await i.fetchReply();
             forward_channel = await interaction.client.channels.fetch(
               String(forward_channel),
             );
@@ -286,6 +287,7 @@ async function handleSendComplete(
                 .setLabel("No")
                 .setStyle(ButtonStyle.Danger),
             );
+            console.log(confirm_msg.url)
             confirm_msg = await i.editReply({
               embeds: [
                 new EmbedBuilder().setAuthor({
