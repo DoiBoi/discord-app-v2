@@ -73,9 +73,7 @@ async function handlePaymentCancel(interaction) {
 
 async function handlePaymentPaid(interaction) {
   await disableButtonRow(interaction);
-  await interaction.deferReply({
-    flags: MessageFlags.Ephemeral,
-  });
+  await interaction.deferReply();
   const matches = interaction.customId.match(CONFIRM_REGEX);
   const id = matches[0];
   const amount = matches[1];
@@ -107,7 +105,7 @@ async function handlePaymentPaid(interaction) {
   }
   await updateBoard(interaction);
   await interaction.editReply({
-    content: "Marked as Paid",
+    content: "Payment Sent",
   });
 }
 

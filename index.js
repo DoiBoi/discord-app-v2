@@ -266,12 +266,27 @@ async function handleSendComplete(
               ],
             });
             await prevCollector.stop();
-            await i.deferReply();
+            let confirm_msg = await i.deferReply();
             forward_channel = await interaction.client.channels.fetch(
               String(forward_channel),
             );
             const forwarded = await hasImage.forward(forward_channel);
-            const confirm_msg = await i.editReply({
+            const msg = await addMessage(
+              Number(item.id),
+              confirm_msg.url,
+              i.user.id,
+            );
+            confirmRow = new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+                .setCustomId(`confirm-${item["id"]}-${input}-${msg.id}`)
+                .setLabel("Yes")
+                .setStyle(ButtonStyle.Success),
+              new ButtonBuilder()
+                .setCustomId(`reject-${item["id"]}-${input}-${msg.id}`)
+                .setLabel("No")
+                .setStyle(ButtonStyle.Danger),
+            );
+            confirm_msg = await i.editReply({
               embeds: [
                 new EmbedBuilder().setAuthor({
                   name: `Your payment proof has been forwarded to the receiver to ask for confirmation.`,
@@ -289,22 +304,8 @@ async function handleSendComplete(
                   ),
               ],
               content: `-# <@1474220722665558066> ||${forwarded.url}||`,
+              components: [confirmRow]
             });
-            const msg = await addMessage(
-              Number(item.id),
-              confirm_msg.url,
-              i.user.id,
-            );
-            confirmRow = new ActionRowBuilder().addComponents(
-              new ButtonBuilder()
-                .setCustomId(`confirm-${item["id"]}-${input}-${msg.id}`)
-                .setLabel("Pay Exchange")
-                .setStyle(ButtonStyle.Success),
-              new ButtonBuilder()
-                .setCustomId(`reject-${item["id"]}-${input}-${msg.id}`)
-                .setLabel("Incorrect Proof")
-                .setStyle(ButtonStyle.Danger),
-            );
             await forward_channel.send({
               // embeds: [
               //   new EmbedBuilder().setDescription(
@@ -845,7 +846,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
               embeds: [
                 new EmbedBuilder()
                   .setDescription(
-                    `\$${Number(amount).toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == true ? " (cover fnf)" : " (minus fnf)") : ""} ${item["currency"]} for \$${(Number(amount) * ((100 - item["fee"]) / 100)).toFixed(2)} Crypto, ${item["fee"]}% fee`,
+                    `\$${Number(amount).toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == true ? " (cover fnf)" : " (minus fnf)") : ""} ${item["currency"]} for \$${(Number(amount) * ((100 - item["fee"]) / 100)).toFixed(2)} Crypto, ${item["fee"]}% fee\n> Mal will review your proof & pay you shortly (Ignore the buttons)`,
                   )
                   .setAuthor({
                     name: "Receiver Confirmed",
@@ -857,11 +858,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 new ActionRowBuilder().addComponents(
                   new ButtonBuilder()
                     .setCustomId(`tpaid-${id}-${amount}`)
-                    .setLabel("Mark as Paid")
+                    .setLabel("Pay Exchange")
                     .setStyle(ButtonStyle.Primary),
                   new ButtonBuilder()
                     .setCustomId(`tcancel-${id}-${amount}`)
-                    .setLabel("Cancel Payment")
+                    .setLabel("Incorrect Proof")
                     .setStyle(ButtonStyle.Danger),
                 ),
               ],
