@@ -4,6 +4,7 @@ const {
   buildSuccessContainer,
   disableButtonRow,
   updateBoard,
+  parseDiscordId,
 } = require("../utils/build");
 const { ids } = require("../utils/config");
 const { appendUserHistory } = require("../utils/history");
@@ -25,6 +26,7 @@ const FLAGS = {
   new_line: false,
 };
 const RPC = ids.rpc;
+const MESSAGES_TABLE = ids.message_link;
 
 async function handlePaymentCancel(interaction) {
   await interaction.deferReply({
@@ -34,6 +36,7 @@ async function handlePaymentCancel(interaction) {
   const matches = interaction.customId.match(CONFIRM_REGEX);
   const id = matches[0];
   const amount = matches[1];
+  const msg_id = matches[2];
   const item = await getExchange(Number(id));
   const ok = await supabase.rpc(RPC, {
     p_id: Number(id),
@@ -52,6 +55,11 @@ async function handlePaymentCancel(interaction) {
   });
   await updateBoard(interaction);
   try {
+    const removed_message = await removeMessage(String(msg_id));
+    console.log(removed_message)
+    const [f_gid, f_cid, f_mid] = parseDiscordId(
+      removed_message.forwardedMessage,
+    );
     const cancelEmbed = new EmbedBuilder().setAuthor({
       name: "Exchange Cancelled",
       iconURL:
@@ -63,8 +71,9 @@ async function handlePaymentCancel(interaction) {
     const forward_channel = await interaction.client.channels.fetch(
       String(item["channel"]),
     );
-    await forward_channel.send({
-      content: `Your balance remains at \$${(item["amount"] - item["pending"]).toFixed(2)}`,
+    const forward_message = await forward_channel.messages.fetch(String(f_mid));
+    await forward_message.reply({
+      content: `<@${item.user_id}> Mal reviewed the \$${amount} payment you received and determined that the proof provided is insufficient. To ensure full security, **please refund the \$${amount} payment**. A new payment will be issued to you by another sender once refunded.\n\nYour balance will remain at \$${(item["amount"] - item["pending"] + Number(amount)).toFixed(2)} afterwards`,
     });
   } catch (error) {
     console.error(error);
@@ -77,10 +86,9 @@ async function handlePaymentPaid(interaction) {
   const matches = interaction.customId.match(CONFIRM_REGEX);
   const id = matches[0];
   const amount = matches[1];
+  const msg_id = matches[2];
   const item = await getExchange(Number(id));
   const user_id = await finalizeTemp(id, amount);
-  const calculatedAmount = item["amount"] - item["pending"];
-  const amountMinusFee = (calculatedAmount * (100 - item["fee"])) / 100;
   [result, oldBalanceRbx, oldBalanceUsd] = await editBalance(
     user_id,
     [],
@@ -89,6 +97,7 @@ async function handlePaymentPaid(interaction) {
   const user = await interaction.client.users.fetch(user_id);
   await appendUserHistory(user_id, "usd", [-Number(amount)]);
   try {
+    const removed_channel = await removeMessage(String(msg_id));
     const forward_channel = await interaction.client.channels.fetch(
       String(item["channel"]),
     );

@@ -27,6 +27,8 @@ const QUEUE_MESSAGE = ids.queue_message;
 const BLANK = `<:BLANK:${emojis.blank}>`;
 const OKE1 = `<:zzmilkoke1:${emojis.oke1}>`;
 const OKE2 = `<:zzmilkoke2:${emojis.oke2}>`;
+const DISCORD_REGEX = /channels\/([^\/]+)\/(\d+)\/(\d+)/;
+
 
 function buildTempModal(id, item) {
   const amount = item["amount"] - item["pending"];
@@ -210,6 +212,11 @@ async function updateQueue(interaction, page = 0) {
   }
 }
 
+function parseDiscordId(url) {
+  const matches = url.match(DISCORD_REGEX)
+  return [matches[1] ?? "", matches[2] ?? "", matches[3] ?? ""]
+}
+
 module.exports = {
   buildTempModal,
   buildChannelDropdown,
@@ -217,4 +224,5 @@ module.exports = {
   buildSuccessContainer,
   disableButtonRow,
   updateQueue,
+  parseDiscordId
 };

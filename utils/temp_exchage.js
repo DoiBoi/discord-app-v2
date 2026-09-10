@@ -5,7 +5,9 @@ const TABLE = ids.table;
 const MESSAGES_TABLE = ids.message_link;
 
 async function getExchanges() {
-  const { data, error } = await supabase.from(TABLE).select(`*, channel::text, ${MESSAGES_TABLE} ( * )`);
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select(`*, channel::text, ${MESSAGES_TABLE} ( * )`);
 
   if (error) return console.error("An error occured", error.message);
   const ret = {};
@@ -24,7 +26,7 @@ async function getExchanges() {
 async function getExchange(id) {
   const { data, error } = await supabase
     .from(TABLE)
-    .select("*, channel::text, user_id::text")
+    .select(`*, channel::text, user_id::text, ${MESSAGES_TABLE} ( * )`)
     .eq("id", id);
 
   if (error) return console.error("an error occured", error.message);
@@ -48,6 +50,20 @@ async function updateExchange(item) {
   if (error) return console.error("An error occured", error.message);
 
   return;
+}
+
+async function updateMessage(id, params = {}) {
+  const { data, error } = await supabase
+    .from(MESSAGES_TABLE)
+    .update(params)
+    .eq("id", id)
+    .select();
+
+  if (error) {
+    throw new Error(`An error occured in updateMessage: ${error.message}`);
+  }
+
+  return data[0];
 }
 
 async function finalizeTemp(id, input) {
@@ -114,12 +130,19 @@ async function addToPending(id, input) {
   return;
 }
 
-async function addMessage(id, url, userId) {
+async function addMessage(
+  id,
+  url,
+  forwardedMessage = "",
+  confirmationMessage = "",
+) {
   const { data, error } = await supabase
     .from(MESSAGES_TABLE)
     .insert({
       tempId: id,
-      url: url,
+      url,
+      forwardedMessage,
+      confirmationMessage,
     })
     .select()
     .single();
@@ -128,7 +151,7 @@ async function addMessage(id, url, userId) {
     throw new Error(`An error occured! ${error.message}`);
   }
 
-  return data
+  return data;
 
   // const { data: fetchData, error: fetchError } = await supabase
   //   .from(TABLE)
@@ -168,16 +191,30 @@ async function getAvailableTransaction() {
   //   throw new Error(error.message);
   // }
   // return data;
-  return []
+  return [];
 }
 
-async function removeMessage(id, url) {
-  const { data, error } = await supabase.from(MESSAGES_TABLE)
+async function getMessage(id) {
+  const { data, error } = await supabase
+    .from(MESSAGES_TABLE)
+    .select()
+    .eq("id", id);
+
+  if (error) { throw new Error(error.message) }
+
+  return data[0]
+}
+
+async function removeMessage(id) {
+  const { data, error } = await supabase
+    .from(MESSAGES_TABLE)
     .delete()
     .eq("id", id)
-    .select()
+    .select();
 
-  if (error) { throw new Error(`An error occured in removeMessage ${error.message}`)}
+  if (error) {
+    throw new Error(`An error occured in removeMessage ${error.message}`);
+  }
   // const { data: fetchData, error: fetchError } = await supabase
   //   .from(TABLE)
   //   .select("id, message_links")
@@ -214,4 +251,6 @@ module.exports = {
   removeMessage,
   addMessage,
   getAvailableTransaction,
+  updateMessage,
+  getMessage
 };

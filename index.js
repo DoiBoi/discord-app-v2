@@ -7,11 +7,15 @@ const {
   getExchange,
   addMessage,
   removeMessage,
+  updateMessage,
+  getMessage,
 } = require("./utils/temp_exchage.js");
 const {
   buildTempModal,
   buildChannelDropdown,
   updateBoard,
+  parseDiscordId,
+  disableButtonRow,
 } = require("./utils/build.js");
 const {
   Client,
@@ -272,22 +276,35 @@ async function handleSendComplete(
               String(forward_channel),
             );
             const forwarded = await hasImage.forward(forward_channel);
-            const msg = await addMessage(
+            let msg = await addMessage(
               Number(item.id),
               confirm_msg.url,
-              i.user.id,
+              forwarded.url,
             );
+            const confirmed = await forward_channel.send({
+              content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}`,
+              components: [
+                new ActionRowBuilder().addComponents(
+                  new ButtonBuilder()
+                    .setCustomId(`confirm-${item["id"]}-${input}-${msg.id}`)
+                    .setLabel("Yes")
+                    .setStyle(ButtonStyle.Success),
+                ),
+              ],
+            });
+            msg = await updateMessage(msg.id, {
+              confirmationMessage: confirmed.url,
+            });
             confirmRow = new ActionRowBuilder().addComponents(
               new ButtonBuilder()
                 .setCustomId(`confirm-${item["id"]}-${input}-${msg.id}`)
-                .setLabel("Yes")
-                .setStyle(ButtonStyle.Success),
+                .setLabel("Confirm")
+                .setStyle(ButtonStyle.Primary),
               new ButtonBuilder()
                 .setCustomId(`reject-${item["id"]}-${input}-${msg.id}`)
-                .setLabel("No")
+                .setLabel("Reject")
                 .setStyle(ButtonStyle.Danger),
             );
-            console.log(confirm_msg.url)
             confirm_msg = await i.editReply({
               embeds: [
                 new EmbedBuilder().setAuthor({
@@ -306,15 +323,6 @@ async function handleSendComplete(
                   ),
               ],
               content: `-# <@1474220722665558066> ||${forwarded.url}||`,
-              components: [confirmRow]
-            });
-            await forward_channel.send({
-              // embeds: [
-              //   new EmbedBuilder().setDescription(
-              //     `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${item["amount"] - item["pending"] - Number(input).toFixed(2)}`,
-              //   ),
-              // ],
-              content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}`,
               components: [confirmRow],
             });
           } catch (error) {
@@ -371,7 +379,7 @@ async function handleSendComplete(
         //   ),
         // ],
         content:
-          'Image/Video has not been detected, please submit proof of payemnt before clicking "Complete"',
+          'Image/Video has not been detected, please submit proof of payment before clicking "Complete"',
         flags: MessageFlags.Ephemeral,
       });
     }
@@ -824,9 +832,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
               flags: MessageFlags.Ephemeral,
             });
           }
-          const removedChannel = (
-            await removeMessage(Number(msg_id), interaction.message.url)
-          )?.url.match(DISCORD_REGEX)[2];
+          const removedChannelItem = await getMessage(Number(msg_id));
+          const removedChannel =
+            removedChannelItem?.url.match(DISCORD_REGEX)[2];
+          const removedChannelId = removedChannelItem?.id
           await interaction.message.edit({
             components: [disabledRow],
           });
@@ -844,6 +853,23 @@ client.on(Events.InteractionCreate, async (interaction) => {
             const confirmed_channel = await interaction.client.channels.fetch(
               String(removedChannel),
             );
+            const [u_gid, u_cid, u_mid] = parseDiscordId(
+              removedChannelItem.url,
+            );
+            const [c_gid, c_cid, c_mid] = parseDiscordId(
+              removedChannelItem.confirmationMessage
+            )
+            const urlMessage = await confirmed_channel.messages.fetch(
+              String(u_mid)
+            )
+            const c_channel = await interaction.client.channels.fetch(
+              String(c_cid)
+            )
+            const c_msg = await c_channel.messages.fetch(
+              String(c_mid)
+            )
+            await disableButtonRow(interaction, c_msg)
+            await disableButtonRow(interaction, urlMessage)
             await confirmed_channel.send({
               embeds: [
                 new EmbedBuilder()
@@ -859,11 +885,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
               components: [
                 new ActionRowBuilder().addComponents(
                   new ButtonBuilder()
-                    .setCustomId(`tpaid-${id}-${amount}`)
+                    .setCustomId(`tpaid-${id}-${amount}-${removedChannelId}`)
                     .setLabel("Pay Exchange")
                     .setStyle(ButtonStyle.Primary),
                   new ButtonBuilder()
-                    .setCustomId(`tcancel-${id}-${amount}`)
+                    .setCustomId(`tcancel-${id}-${amount}-${removedChannelId}`)
                     .setLabel("Incorrect Proof")
                     .setStyle(ButtonStyle.Danger),
                 ),
@@ -885,6 +911,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await interaction.deferReply();
         const matches = interaction.customId.match(CONFIRM_REGEX);
         const id = matches[0];
+        const amount = matches[1];
         const msg_id = matches[2];
         const item = await getExchange(Number(id));
         if (!(
@@ -896,10 +923,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
             flags: MessageFlags.Ephemeral,
           });
         }
-        const removedChannelId = (
-          await removeMessage(Number(msg_id), interaction.message.url)
-        )?.url.match(DISCORD_REGEX)[2];
-        const amount = matches[1];
+
+        const removedData = await removeMessage(Number(msg_id));
+        const [c_gid, c_cid, c_mid] = parseDiscordId(
+          removedData?.confirmationMessage,
+        );
+        const removedChannelId = removedData?.url.match(DISCORD_REGEX)[2];
+
         const ok = await supabase.rpc(RPC, {
           p_id: Number(id),
           p_delta: -amount,
@@ -934,8 +964,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
           const forward_channel = await interaction.client.channels.fetch(
             String(item["channel"]),
           );
+          const forward_message = await forward_channel.messages.fetch(
+            String(c_mid),
+          );
+          await disableButtonRow(interaction, forward_message);
           await forward_channel.send({
-            content: `Your balance remains at \$${(item["amount"] - item["pending"]).toFixed(2)}`,
+            content: `Your balance remains at \$${(item["amount"] - item["pending"] + Number(amount)).toFixed(2)}`,
           });
         } catch (error) {
           console.error(error);
