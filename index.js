@@ -823,8 +823,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
           const amount = matches[1];
           const msg_id = matches[2];
           const item = await getExchange(Number(id));
+          console.log(String(interaction.user.id), item.user_id)
           if (!(
-            String(interaction.user.id) === item.userId ||
+            String(interaction.user.id) === item.user_id ||
             (await auth(interaction.user.id))
           )) {
             return await interaction.editReply({
@@ -915,7 +916,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         const msg_id = matches[2];
         const item = await getExchange(Number(id));
         if (!(
-          String(interaction.user.id) === item.userId ||
+          String(interaction.user.id) === item.user_id ||
           (await auth(interaction.user.id))
         )) {
           return await interaction.editReply({

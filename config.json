@@ -61,7 +61,8 @@
       "cashout_rpc": "handle_cashout",
       "log_rpc": "get_week_report",
       "queue_channel": "queue_channel",
-      "queue_message": "queue_message"
+      "queue_message": "queue_message",
+      "message_link": "message_links"
     }
   }
 }
