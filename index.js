@@ -282,7 +282,8 @@ async function handleSendComplete(
               forwarded.url,
             );
             const confirmed = await forward_channel.send({
-              content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}`,
+              content: `Do you confirm receiving this payment of \$${Number(input).toFixed(2)}? <@${item["user_id"]}>\n- <:yes:${emojis.yes}> Click "Yes" if you received it\n- <:no:${emojis.no}> Do not click the button if you did not get this payment, simply notify Mal\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}\n-# **Note:** If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.`,
+              // content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}`,
               components: [
                 new ActionRowBuilder().addComponents(
                   new ButtonBuilder()
