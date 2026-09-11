@@ -1,9 +1,13 @@
-const { SlashCommandBuilder, MessageFlags, InteractionContextType } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  MessageFlags,
+  InteractionContextType,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("stockugc")
-    .setDescription("")
+    .setDescription("Updates the stock on groups")
     .setContexts(
       InteractionContextType.Guild,
       InteractionContextType.BotDM,
@@ -12,7 +16,7 @@ module.exports = {
   async execute(interaction) {
     await interaction.reply({
       content: "In development",
-      flags: MessageFlags.Ephemeral
-    })
-  }
-}
+      flags: MessageFlags.Ephemeral,
+    });
+  },
+};

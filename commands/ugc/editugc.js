@@ -7,7 +7,7 @@ const {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("editugc")
-    .setDescription("")
+    .setDescription("Edits entry on queue")
     .setContexts(
       InteractionContextType.Guild,
       InteractionContextType.BotDM,

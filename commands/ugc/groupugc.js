@@ -7,7 +7,7 @@ const {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("groupugc")
-    .setDescription("")
+    .setDescription("Assign groups to entries in queue")
     .setContexts(
       InteractionContextType.Guild,
       InteractionContextType.BotDM,

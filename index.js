@@ -34,6 +34,7 @@ const {
 const { ids, emojis } = require("./utils/config.js");
 const { EmbedBuilder } = require("discord.js");
 const { handleButtonInput } = require("./handler/buttonEvents.js");
+const { handleModalFunction } = require("./handler/modalEvents.js");
 const RPC = ids.rpc;
 
 const ARROW = `<:arrow:${emojis.arrow}>`;
@@ -46,13 +47,14 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
+    // GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
-    GatewayIntentBits.GuildPresences,
-    GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.DirectMessageReactions,
+    // GatewayIntentBits.GuildPresences,
+    // GatewayIntentBits.GuildMessageReactions,
+    // GatewayIntentBits.DirectMessageReactions,
   ],
 });
+
 
 function buildTOSMessage(currency, amount, user) {
   const embeds = [];
@@ -796,6 +798,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
             });
           }
         });
+      } else {
+        await handleModalFunction(interaction)
       }
     }
 
@@ -824,7 +828,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           const amount = matches[1];
           const msg_id = matches[2];
           const item = await getExchange(Number(id));
-          console.log(String(interaction.user.id), item.user_id)
+          console.log(String(interaction.user.id), item.user_id);
           if (!(
             String(interaction.user.id) === item.user_id ||
             (await auth(interaction.user.id))
@@ -837,7 +841,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           const removedChannelItem = await getMessage(Number(msg_id));
           const removedChannel =
             removedChannelItem?.url.match(DISCORD_REGEX)[2];
-          const removedChannelId = removedChannelItem?.id
+          const removedChannelId = removedChannelItem?.id;
           await interaction.message.edit({
             components: [disabledRow],
           });
@@ -859,19 +863,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
               removedChannelItem.url,
             );
             const [c_gid, c_cid, c_mid] = parseDiscordId(
-              removedChannelItem.confirmationMessage
-            )
+              removedChannelItem.confirmationMessage,
+            );
             const urlMessage = await confirmed_channel.messages.fetch(
-              String(u_mid)
-            )
+              String(u_mid),
+            );
             const c_channel = await interaction.client.channels.fetch(
-              String(c_cid)
-            )
-            const c_msg = await c_channel.messages.fetch(
-              String(c_mid)
-            )
-            await disableButtonRow(interaction, c_msg)
-            await disableButtonRow(interaction, urlMessage)
+              String(c_cid),
+            );
+            const c_msg = await c_channel.messages.fetch(String(c_mid));
+            await disableButtonRow(interaction, c_msg);
+            await disableButtonRow(interaction, urlMessage);
             await confirmed_channel.send({
               embeds: [
                 new EmbedBuilder()
@@ -989,6 +991,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         if (await auth(interaction.user.id)) {
           await runInteraction(command, interaction);
         } else {
+          console.log("Command not in admin")
           await interaction.reply({
             content: "There was an error while executing this command!",
             flags: MessageFlags.Ephemeral,

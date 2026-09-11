@@ -7,7 +7,7 @@ const {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("payugc")
-    .setDescription("")
+    .setDescription("Pays out entries to queue")
     .setContexts(
       InteractionContextType.Guild,
       InteractionContextType.BotDM,

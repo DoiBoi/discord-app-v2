@@ -31,7 +31,9 @@
       "log_rpc": "get_week_report_dummy",
       "queue_channel": "dummy_queue_channel",
       "queue_message": "dummy_queue_message",
-      "message_link": "dummy_message_links"
+      "message_link": "dummy_message_links",
+      "groups": "dummy_groups",
+      "ugc_queue": "dummy_ugc_queue"
     }
   },
   "production": {
@@ -66,7 +68,9 @@
       "log_rpc": "get_week_report",
       "queue_channel": "queue_channel",
       "queue_message": "queue_message",
-      "message_link": "message_links"
+      "message_link": "message_links",
+      "groups": "groups",
+      "ugc_queue": "ugc_queue"
     }
   }
 }

@@ -3,7 +3,7 @@ const { SlashCommandBuilder, MessageFlags, InteractionContextType } = require("d
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("toggleugc")
-    .setDescription("")
+    .setDescription("Toggle whether an entry is logged")
     .setContexts(
       InteractionContextType.Guild,
       InteractionContextType.BotDM,

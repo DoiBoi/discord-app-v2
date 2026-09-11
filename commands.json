@@ -37,7 +37,8 @@
     "rementry",
     "queuestats",
     "addprofit",
-    "getprofit"
+    "getprofit",
+    "addugc"
   ],
   "PublicCommands": ["exchange"]
 }

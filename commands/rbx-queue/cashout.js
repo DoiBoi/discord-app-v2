@@ -111,7 +111,7 @@ module.exports = {
         (acc, curr) => acc + `- ${curr.amount} to \`${curr.gfsinfo}\`\n`,
         "\n",
       );
-      payout_message += `-# ss audit log once done & ignore buttons below (it's for Mal)`
+      payout_message += `-# ss audit log once done & ignore buttons below (it's for Mal) and please ping <@1471335455621386445> along with proof`
     }
     payload_data = await postPending(payload);
     const response = await interaction.channel.send({

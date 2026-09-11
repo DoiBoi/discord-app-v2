@@ -7,7 +7,7 @@ const {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("delugc")
-    .setDescription("")
+    .setDescription("Deletes entry on queue")
     .setContexts(
       InteractionContextType.Guild,
       InteractionContextType.BotDM,
