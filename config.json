@@ -33,7 +33,11 @@
       "queue_message": "dummy_queue_message",
       "message_link": "dummy_message_links",
       "groups": "dummy_groups",
-      "ugc_queue": "dummy_ugc_queue"
+      "ugc_queue": "dummy_ugc_queue",
+      "ugc_public_channel": "dummy_public_ugc_channel",
+      "ugc_private_channel": "dummy_private_ugc_channel",
+      "ugc_public_message": "dummy_public_ugc_message",
+      "ugc_private_message": "dummy_private_ugc_message"
     }
   },
   "production": {
@@ -70,7 +74,11 @@
       "queue_message": "queue_message",
       "message_link": "message_links",
       "groups": "groups",
-      "ugc_queue": "ugc_queue"
+      "ugc_queue": "ugc_queue",
+      "ugc_public_channel": "public_ugc_channel",
+      "ugc_private_channel": "private_ugc_channel",
+      "ugc_public_message": "public_ugc_message",
+      "ugc_private_message": "private_ugc_message"
     }
   }
 }

@@ -20,15 +20,17 @@ const { getId, upsertId } = require("./id");
 const { emojis, ids } = require("./config");
 const { EmbedBuilder } = require("discord.js");
 const { showQueue } = require("./queue");
+const { getItems, fetchItems, fetchGroups } = require("./ugc");
 const CHANNEL = ids.channel_id;
 const MESSAGE = ids.message_id;
 const QUEUE_CHANNEL = ids.queue_channel;
 const QUEUE_MESSAGE = ids.queue_message;
+const GROUP = ids.groups;
 const BLANK = `<:BLANK:${emojis.blank}>`;
 const OKE1 = `<:zzmilkoke1:${emojis.oke1}>`;
 const OKE2 = `<:zzmilkoke2:${emojis.oke2}>`;
 const DISCORD_REGEX = /channels\/([^\/]+)\/(\d+)\/(\d+)/;
-
+const TABLE = ids.ugc_queue;
 
 function buildTempModal(id, item) {
   const amount = item["amount"] - item["pending"];
@@ -213,8 +215,99 @@ async function updateQueue(interaction, page = 0) {
 }
 
 function parseDiscordId(url) {
-  const matches = url.match(DISCORD_REGEX)
-  return [matches[1] ?? "", matches[2] ?? "", matches[3] ?? ""]
+  const matches = url.match(DISCORD_REGEX);
+  return [matches[1] ?? "", matches[2] ?? "", matches[3] ?? ""];
+}
+
+async function updateUGCPublicBoard(interaction) {
+  const channel_id = await getId(ids.ugc_public_channel);
+  const message_id = await getId(ids.ugc_public_message);
+
+  if (!channel_id) {
+    console.log("channel and/or message not initiated");
+    return;
+  }
+  const entries = (await fetchGroups()).map((curr) => {
+    return {
+      name: curr.id,
+      amount: curr[TABLE].reduce((table_acc, table_curr) => {
+        table_acc -= table_curr.amount;
+        return table_acc;
+      }, curr.amount),
+      queue: curr[TABLE].length,
+    };
+  });
+  const content = entries.reduce((acc, curr, idx) => {
+    if (idx % 3 == 0) {
+      acc += `INSERT EMOJI ${idx / 3}\n`;
+    }
+    acc += `**${curr.name}** - ${curr.amount >= 0 ? curr.amount.toLocaleString() : "PRE-ORDERED"}${curr.queue > 0 ? `\nQueue: ${curr.queue} ${curr.queue == 1 ? "person" : "people"}` : ""}\n`;
+    return acc;
+  }, "");
+  try {
+    const channel = await interaction.client.channels.fetch(String(channel_id));
+    let message = await channel.messages.fetch(String(message_id));
+    await message.edit({
+      content,
+    });
+  } catch (error) {
+    const channel = await interaction.client.channels.fetch(String(channel_id));
+    const message = await channel.send({
+      content,
+    });
+    upsertId(ids.ugc_public_message, message.id);
+  }
+}
+
+async function updateUGCPrivateBoard(interaction) {
+  const channel_id = await getId(ids.ugc_private_channel);
+
+  if (!channel_id) {
+    console.log("channel not initiated");
+    return;
+  }
+
+  try {
+    const channel = await interaction.client.channels.fetch(String(channel_id));
+    for (let i = 0; i < 4; i++) {
+      // const message_id = await getId(`${ids.ugc_private_message}_${i}`);
+      // const message = await channel.messages.fetch(String(message_id));
+      const entries = (await fetchGroups())
+        .slice(i * 3, (i + 1) * 3)
+        .map((item) => {
+          return {
+            name: item.id,
+            amount: item.amount,
+            order: item.order,
+            users: item[TABLE].reduce((acc, curr) => {
+              if (!acc[curr.channel_id]) {
+                acc[curr.channel_id] = [];
+              }
+              acc[curr.channel_id].push(curr);
+              return acc;
+            }, {}),
+          };
+        });
+      const content = entries.reduce((acc, curr) => {
+        const usersText = Object.entries(curr.users).map(
+          ([channelId, rows]) => {
+            const rowsText = rows
+              .map(
+                (row) =>
+                  `- \`${row.username}\` ${row.amount} ${row.log ? "Recorded" : "Not Recorded"}`,
+              )
+              .join("\n");
+            return `<#${channelId}> (${rows[0].rate})\n${rowsText}\n`;
+          },
+        ).join("\n");
+        acc += `# ${curr.name} (${curr.order}) ${curr.amount}\n${usersText}`;
+        return acc;
+      }, `EMOJI ${i}\n`);
+      console.log(content)
+    }
+  } catch (error) {
+    console.error(error.message);
+  }
 }
 
 module.exports = {
@@ -224,5 +317,7 @@ module.exports = {
   buildSuccessContainer,
   disableButtonRow,
   updateQueue,
-  parseDiscordId
+  parseDiscordId,
+  updateUGCPrivateBoard,
+  updateUGCPublicBoard,
 };

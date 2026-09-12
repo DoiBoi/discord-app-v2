@@ -55,7 +55,6 @@ const client = new Client({
   ],
 });
 
-
 function buildTOSMessage(currency, amount, user) {
   const embeds = [];
   switch (currency) {
@@ -799,7 +798,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
           }
         });
       } else {
-        await handleModalFunction(interaction)
+        await handleModalFunction(interaction);
       }
     }
 
@@ -991,7 +990,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         if (await auth(interaction.user.id)) {
           await runInteraction(command, interaction);
         } else {
-          console.log("Command not in admin")
+          console.log("Command not in admin");
           await interaction.reply({
             content: "There was an error while executing this command!",
             flags: MessageFlags.Ephemeral,

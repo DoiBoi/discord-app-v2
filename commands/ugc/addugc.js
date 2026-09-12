@@ -1,10 +1,11 @@
-const { TextInputBuilder, TextInputStyle } = require("discord.js");
-const { ModalBuilder, LabelBuilder } = require("discord.js");
 const {
-  SlashCommandBuilder,
-  MessageFlags,
-  InteractionContextType,
+  TextInputBuilder,
+  TextInputStyle,
+  TextDisplayBuilder,
 } = require("discord.js");
+const { ModalBuilder, LabelBuilder } = require("discord.js");
+const { SlashCommandBuilder, InteractionContextType } = require("discord.js");
+const { fetchGroups } = require("../../utils/ugc");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -20,13 +21,24 @@ module.exports = {
     //   content: "In development",
     //   flags: MessageFlags.Ephemeral,
     // });
+    const groups = await fetchGroups();
     const modal = new ModalBuilder()
       .setCustomId("add-entry")
       .setTitle("Add Entries")
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          groups.reduce(
+            (acc, curr) => (acc += `${curr.id}: \`${curr.order}\`\n`),
+            "# Groups\n",
+          ),
+        ),
+      )
       .addLabelComponents(
         new LabelBuilder()
           .setLabel("Insert entries:")
-          .setDescription("Separate entries by new lines and format the entries by [user]/[amount]/[group], group is optional ")
+          .setDescription(
+            "Separate entries by new lines and format the entries by [user]/[amount]/[group], group is optional ",
+          )
           .setTextInputComponent(
             new TextInputBuilder()
               .setCustomId("entries-input")
