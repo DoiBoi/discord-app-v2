@@ -249,13 +249,29 @@ async function updateUGCPublicBoard(interaction) {
     let message = await channel.messages.fetch(String(message_id));
     await message.edit({
       content,
+      components: [
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("check-status")
+            .setLabel("Check Status")
+            .setStyle(ButtonStyle.Primary),
+        ),
+      ],
     });
   } catch (error) {
     const channel = await interaction.client.channels.fetch(String(channel_id));
     const message = await channel.send({
       content,
+      components: [
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("check-status")
+            .setLabel("Check Status")
+            .setStyle(ButtonStyle.Primary),
+        ),
+      ],
     });
-    upsertId(ids.ugc_public_message, message.id);
+    await upsertId(ids.ugc_public_message, message.id);
   }
 }
 
@@ -269,45 +285,72 @@ async function updateUGCPrivateBoard(interaction) {
 
   try {
     const channel = await interaction.client.channels.fetch(String(channel_id));
-    for (let i = 0; i < 4; i++) {
-      // const message_id = await getId(`${ids.ugc_private_message}_${i}`);
-      // const message = await channel.messages.fetch(String(message_id));
-      const entries = (await fetchGroups())
-        .slice(i * 3, (i + 1) * 3)
-        .map((item) => {
-          return {
-            name: item.id,
-            amount: item.amount,
-            order: item.order,
-            users: item[TABLE].reduce((acc, curr) => {
-              if (!acc[curr.channel_id]) {
-                acc[curr.channel_id] = [];
-              }
-              acc[curr.channel_id].push(curr);
-              return acc;
-            }, {}),
-          };
-        });
+    let index = 0;
+    const fetchEntries = await fetchGroups();
+    const chunks = [];
+    for (let i = 0; i < fetchEntries.length; i += 3) {
+      chunks.push(fetchEntries.slice(i, i + 3));
+    }
+    const last = chunks.pop();
+    chunks.push(last.slice(0, 2), last.slice(2));
+    for (const [i, chunk] of chunks.entries()) {
+      const message_id = await getId(`${ids.ugc_private_message}_${i + 1}`);
+      const entries = chunk.map((item) => {
+        return {
+          name: item.id,
+          amount: item.amount,
+          order: item.order,
+          users: item[TABLE].reduce((acc, curr) => {
+            if (!acc[curr.channel_id]) {
+              acc[curr.channel_id] = [];
+            }
+            acc[curr.channel_id].push(curr);
+            return acc;
+          }, {}),
+        };
+      });
       const content = entries.reduce((acc, curr) => {
-        const usersText = Object.entries(curr.users).map(
-          ([channelId, rows]) => {
+        let sum = 0;
+        const usersText = Object.entries(curr.users)
+          .map(([channelId, rows]) => {
             const rowsText = rows
-              .map(
-                (row) =>
-                  `- \`${row.username}\` ${row.amount} ${row.log ? "Recorded" : "Not Recorded"}`,
-              )
+              .map((row) => {
+                sum += row.amount;
+                index++;
+                return `- ${index}. \`${row.username}\` ${row.amount.toLocaleString()} ${row.log ? `:green_circle:` : `:red_circle:`}`;
+              })
               .join("\n");
             return `<#${channelId}> (${rows[0].rate})\n${rowsText}\n`;
-          },
-        ).join("\n");
-        acc += `# ${curr.name} (${curr.order}) ${curr.amount}\n${usersText}`;
+          })
+          .join("\n");
+        const remainingText =
+          curr.amount - sum > 0
+            ? `${curr.amount - sum} remaining`
+            : `${Math.abs(curr.amount - sum)} pre-ordered`;
+        acc += `# ${curr.name} (${curr.order}) ${curr.amount.toLocaleString()}\n${usersText}= ${remainingText}\n`;
         return acc;
       }, `EMOJI ${i}\n`);
-      console.log(content)
+      try {
+        const message = await channel.messages.fetch(String(message_id));
+        await message.edit({
+          content,
+        });
+      } catch {
+        console.log("Message Id does not exist, sending message instead");
+        const message = await channel.send({
+          content,
+        });
+        await upsertId(`${ids.ugc_private_message}_${i + 1}`, message.id);
+      }
     }
   } catch (error) {
-    console.error(error.message);
+    console.error(error);
   }
+}
+
+async function updateUGCBoards(interaction) {
+  await updateUGCPrivateBoard(interaction);
+  await updateUGCPublicBoard(interaction);
 }
 
 module.exports = {
@@ -318,6 +361,5 @@ module.exports = {
   disableButtonRow,
   updateQueue,
   parseDiscordId,
-  updateUGCPrivateBoard,
-  updateUGCPublicBoard,
+  updateUGCBoards,
 };

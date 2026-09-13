@@ -7,6 +7,7 @@ const {
   handleLastPage,
   handleFirstPage,
 } = require("../events/rbx-queue");
+const { handleCheckStatus } = require("../events/ugc-events")
 const {
   handlePaymentCancel,
   handlePaymentPaid,
@@ -14,6 +15,7 @@ const {
 const { auth } = require("../utils/supabase/supabase_client");
 
 async function handleButtonInput(interaction) {
+  console.log(interaction.customId)
   if (await auth(interaction.user.id)) {
     if (interaction.customId.includes("cy")) {
       await handlePendingYes(interaction);
@@ -51,6 +53,10 @@ async function handleButtonInput(interaction) {
       await handlePaymentPaid(interaction);
       return;
     }
+  }
+  if (interaction.customId == "check-status") {
+    await handleCheckStatus(interaction);
+    return
   }
 }
 

@@ -827,6 +827,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
           const amount = matches[1];
           const msg_id = matches[2];
           const item = await getExchange(Number(id));
+          if (!item) {
+            return await interaction.editReply({ content: "user not found!" });
+          }
           console.log(String(interaction.user.id), item.user_id);
           if (!(
             String(interaction.user.id) === item.user_id ||
@@ -1017,9 +1020,15 @@ async function runInteraction(command, interaction) {
     await command.execute(interaction);
   } catch (error) {
     console.error(`Error executing command ${interaction.commandName}:`, error);
-    await interaction.reply({
-      content: "There was an error while executing this command!",
-      flags: MessageFlags.Ephemeral,
-    });
+    try {
+      await interaction.reply({
+        content: "There was an error while executing this command!",
+        flags: MessageFlags.Ephemeral,
+      });
+    } catch {
+      await interaction.editReply({
+        content: "There was an error while executing this command!",
+      });
+    }
   }
 }

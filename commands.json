@@ -38,7 +38,10 @@
     "queuestats",
     "addprofit",
     "getprofit",
-    "addugc"
+    "addugc",
+    "editugc",
+    "toggleugc",
+    "groupugc"
   ],
   "PublicCommands": ["exchange"]
 }
