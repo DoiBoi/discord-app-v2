@@ -17,7 +17,12 @@
       "green": "1530451412935249920",
       "red": "1530451411555319818",
       "yes": "1548053978238034022",
-      "no":  "1548053976786935830"
+      "no": "1548053976786935830",
+      "pin": "<:pin:1548568179972907048>",
+      "bow": "<a:bow:1548568178169225258>",
+      "paw": "<a:paw:1548568177426956378>",
+      "tiara": "<:tiara:1548568174570770543>",
+      "heart": "<:heart:1548568173027135541>"
     },
     "ids": {
       "channel_id": "dummy_channel_id",
@@ -37,7 +42,8 @@
       "ugc_public_channel": "dummy_public_ugc_channel",
       "ugc_private_channel": "dummy_private_ugc_channel",
       "ugc_public_message": "dummy_public_ugc_message",
-      "ugc_private_message": "dummy_private_ugc_message"
+      "ugc_private_message": "dummy_private_ugc_message",
+      "reminder": "dummy_reminder_channel"
     }
   },
   "production": {
@@ -58,7 +64,12 @@
       "green": "1530451726715457669",
       "red": "1530451725339852973",
       "yes": "1548053417635881010",
-      "no": "1548053413693235311"
+      "no": "1548053413693235311",
+      "pin": "<:pin:1548566985242054656>",
+      "bow": "<a:bow:1548566983610470520>",
+      "paw": "<a:paw:1548566982704762980>",
+      "tiara": "<:tiara:1548566981626822656>",
+      "heart": "<:heart:1548566980137853070>"
     },
     "ids": {
       "channel_id": "channel_id",
@@ -78,7 +89,8 @@
       "ugc_public_channel": "public_ugc_channel",
       "ugc_private_channel": "private_ugc_channel",
       "ugc_public_message": "public_ugc_message",
-      "ugc_private_message": "private_ugc_message"
+      "ugc_private_message": "private_ugc_message",
+      "reminder": "reminder_channel"
     }
   }
 }

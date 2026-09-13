@@ -31,6 +31,7 @@ const OKE1 = `<:zzmilkoke1:${emojis.oke1}>`;
 const OKE2 = `<:zzmilkoke2:${emojis.oke2}>`;
 const DISCORD_REGEX = /channels\/([^\/]+)\/(\d+)\/(\d+)/;
 const TABLE = ids.ugc_queue;
+const EMOJIS = [emojis.pin, emojis.bow, emojis.paw, emojis.tiara];
 
 function buildTempModal(id, item) {
   const amount = item["amount"] - item["pending"];
@@ -237,41 +238,39 @@ async function updateUGCPublicBoard(interaction) {
       queue: curr[TABLE].length,
     };
   });
-  const content = entries.reduce((acc, curr, idx) => {
-    if (idx % 3 == 0) {
-      acc += `INSERT EMOJI ${idx / 3}\n`;
-    }
-    acc += `**${curr.name}** - ${curr.amount >= 0 ? curr.amount.toLocaleString() : "PRE-ORDERED"}${curr.queue > 0 ? `\nQueue: ${curr.queue} ${curr.queue == 1 ? "person" : "people"}` : ""}\n`;
-    return acc;
-  }, "");
   try {
     const channel = await interaction.client.channels.fetch(String(channel_id));
-    let message = await channel.messages.fetch(String(message_id));
-    await message.edit({
-      content,
-      components: [
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("check-status")
-            .setLabel("Check Status")
-            .setStyle(ButtonStyle.Primary),
-        ),
-      ],
-    });
+    const components = [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("check-status")
+          .setLabel("Check Status")
+          .setStyle(ButtonStyle.Primary),
+      ),
+    ];
+    const content = entries.reduce((acc, curr, idx, arr) => {
+      if (idx % 3 == 0 || idx == arr.length - 1) {
+        acc += `# ${EMOJIS[Math.ceil(idx / 3)]}\n`;
+      }
+      acc += `**${curr.name}** ${emojis.heart} ${curr.amount >= 0 ? curr.amount.toLocaleString() : "PRE-ORDERED"}${curr.queue > 0 ? `\nQueue: ${curr.queue} ${curr.queue == 1 ? "person" : "people"}` : ""}\n`;
+      return acc;
+    }, "");
+    try {
+      let message = await channel.messages.fetch(String(message_id));
+      await message.edit({
+        content,
+        components,
+      });
+    } catch (error) {
+      console.log("Message Id does not exist, sending new message");
+      const message = await channel.send({
+        content,
+        components,
+      });
+      await upsertId(ids.ugc_public_message, message.id);
+    }
   } catch (error) {
-    const channel = await interaction.client.channels.fetch(String(channel_id));
-    const message = await channel.send({
-      content,
-      components: [
-        new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("check-status")
-            .setLabel("Check Status")
-            .setStyle(ButtonStyle.Primary),
-        ),
-      ],
-    });
-    await upsertId(ids.ugc_public_message, message.id);
+    console.error("Error" + error.message)
   }
 }
 
@@ -329,7 +328,7 @@ async function updateUGCPrivateBoard(interaction) {
             : `${Math.abs(curr.amount - sum)} pre-ordered`;
         acc += `# ${curr.name} (${curr.order}) ${curr.amount.toLocaleString()}\n${usersText}= ${remainingText}\n`;
         return acc;
-      }, `EMOJI ${i}\n`);
+      }, ``);
       try {
         const message = await channel.messages.fetch(String(message_id));
         await message.edit({

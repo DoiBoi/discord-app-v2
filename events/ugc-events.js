@@ -1,10 +1,20 @@
 const { MessageFlags, ButtonStyle, ChannelType } = require("discord.js");
-const { fetchGroups, addItems, getItemByChannel, getItems, assignGroups } = require("../utils/ugc");
+const {
+  fetchGroups,
+  addItems,
+  getItemByChannel,
+  getItems,
+  assignGroups,
+  editStock,
+  subtractEntries,
+  removeItems,
+} = require("../utils/ugc");
 const { ActionRowBuilder } = require("discord.js");
 const { ButtonBuilder } = require("discord.js");
-const { updateUGCBoards } = require("../utils/build");
+const { updateUGCBoards, disableButtonRow } = require("../utils/build");
 const { ChannelSelectMenuBuilder } = require("discord.js");
 const { ids } = require("../utils/config");
+const { getId } = require("../utils/id");
 
 const TABLE = ids.ugc_queue;
 
@@ -148,7 +158,11 @@ async function handleAssignGroup(interaction) {
         group: groups[text_split[0]],
         ids: text_split[1]
           .split(" ")
-          .map((item) => fetchEntries[Number(item) - 1] ? fetchEntries[Number(item) - 1] : null)
+          .map((item) =>
+            fetchEntries[Number(item) - 1]
+              ? fetchEntries[Number(item) - 1]
+              : null,
+          )
           .filter((ids) => ids),
       };
     });
@@ -166,7 +180,7 @@ async function handleAssignGroup(interaction) {
   const response = await interaction.reply({
     content: `Please confirm that you are assigning:\n${entries.reduce(
       (acc, curr) => {
-        acc += `${curr.ids.map((item) => `\`${item.username}\`: ${item.group} to ${curr.group}`).join("\n")}\n`
+        acc += `${curr.ids.map((item) => `\`${item.username}\`: ${item.group} to ${curr.group}`).join("\n")}\n`;
         return acc;
       },
       "",
@@ -195,7 +209,7 @@ async function handleAssignGroup(interaction) {
       ],
     });
     if (i.customId == "ugc-edit-y") {
-      console.log(entries)
+      console.log(entries);
       await assignGroups(entries);
       await i.editReply({
         content: "Successfully assigned",
@@ -211,8 +225,185 @@ async function handleAssignGroup(interaction) {
   return;
 }
 
+async function handleStockGroup(interaction) {
+  await interaction.deferReply({
+    flags: MessageFlags.Ephemeral,
+  });
+  const groups = (await fetchGroups()).reduce((acc, curr) => {
+    acc[curr.order] = curr;
+    return acc;
+  }, {});
+  const entries = interaction.fields
+    .getTextInputValue("entries-input")
+    .split("\n")
+    .map((item) => {
+      const [gr, amount] = item.split("/");
+      return {
+        group: groups[gr],
+        amount: Number(amount),
+      };
+    });
+
+  const response = await interaction.editReply({
+    content: `Please confirm these are the new values you want:\n${entries
+      .map((item) => {
+        return `${item.group.id}: ${item.group.amount} to ${item.amount}`;
+      })
+      .join("\n")}`,
+    components: [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("ugc-stock-y")
+          .setLabel("Yes")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId("ugc-stock-n")
+          .setLabel("No")
+          .setStyle(ButtonStyle.Danger),
+      ),
+    ],
+  });
+
+  const filter = (i) => i.user.id == interaction.user.id;
+  const collector = response.createMessageComponentCollector({
+    filter,
+    time: 60_000,
+  });
+
+  collector.on("collect", async (i) => {
+    if (i.customId == "ugc-stock-n") {
+      return await i.reply({
+        content: "Stocking cancelled, please retry with updated numbers",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    if (i.customId == "ugc-stock-y") {
+      await i.deferReply({
+        flags: MessageFlags.Ephemeral,
+      });
+      const data = await editStock(entries);
+      await i.editReply({
+        content: `Updated ${data.length} entries`,
+      });
+      await updateUGCBoards(i);
+    }
+  });
+}
+
+async function handlePayUGC(interaction) {
+  await interaction.deferReply({
+    flags: MessageFlags.Ephemeral,
+  });
+  const fetchEntries = await getItems();
+  const entries = interaction.fields
+    .getTextInputValue("entries-input")
+    .split("\n")
+    .map((item) => {
+      const [position, amount] = item.split("/");
+      return {
+        entry: fetchEntries[Number(position) - 1],
+        amount: Number(amount),
+      };
+    });
+  const response = await interaction.editReply({
+    content: `Please confirm these are the entries you want to pay:\n${entries
+      .map((item) => {
+        return `\`${item.entry.username}\`: ${item.entry.amount}-${item.amount}=${item.entry.amount - item.amount}`;
+      })
+      .join("\n")}`,
+    components: [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("ugc-pay-y")
+          .setLabel("Yes")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId("ugc-pay-n")
+          .setLabel("No")
+          .setStyle(ButtonStyle.Danger),
+      ),
+    ],
+  });
+
+  const filter = (i) => i.user.id == interaction.user.id;
+  const collector = response.createMessageComponentCollector({
+    filter,
+    time: 60_000,
+  });
+
+  collector.on("collect", async (i) => {
+    if (i.customId == "ugc-pay-n") {
+      return await i.reply({
+        content: "Payment cancelled, please retry with new amount",
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+    if (i.customId == "ugc-pay-y") {
+      await i.deferReply({
+        flags: MessageFlags.Ephemeral,
+      });
+      let messageURL;
+      const toRemove = entries.filter(
+        (item) => item.entry.amount - item.amount <= 0,
+      );
+      if (toRemove.length > 0) {
+        try {
+          const channel = await i.client.channels.fetch(
+            String(await getId(ids.reminder)),
+          );
+
+          const message = await channel.send({
+            content: `Make sure to update the spreadsheet for:\n${toRemove
+              .map((item) => {
+                return `\`${item.entry.username}\`: ${item.entry.amount}-${item.amount}=${item.entry.amount - item.amount}`;
+              })
+              .join("\n")}`,
+            components: [
+              new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                  .setCustomId("spreadsheet-u")
+                  .setLabel("I updated")
+                  .setStyle(ButtonStyle.Success),
+              ),
+            ],
+          });
+          messageURL = message.id;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      const data = await subtractEntries(entries, messageURL);
+      await i.editReply({
+        content: `Updated ${data.length} entries`,
+      });
+      await updateUGCBoards(i);
+    }
+  });
+}
+
+async function handleUpdatedSpreadsheet(interaction) {
+  await disableButtonRow(interaction);
+  await interaction.deferReply({
+    flags: MessageFlags.Ephemeral,
+  });
+  const entries = (await getItems())
+    .filter((item) => item.reminder_message == String(interaction.message.id))
+    .map((item) => item.id);
+  const data = await removeItems({
+    ids: entries,
+  });
+  console.log(entries);
+  await interaction.editReply({
+    content: `Successfully removed ${data.length} item${data.length > 1 ? "s" : ""}`,
+  });
+  await updateUGCBoards(interaction);
+}
+
 module.exports = {
   handleEntriesAdd,
   handleCheckStatus,
   handleAssignGroup,
+  handleStockGroup,
+  handlePayUGC,
+  handleUpdatedSpreadsheet,
 };

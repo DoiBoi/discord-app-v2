@@ -7,7 +7,7 @@ const {
   handleLastPage,
   handleFirstPage,
 } = require("../events/rbx-queue");
-const { handleCheckStatus } = require("../events/ugc-events")
+const { handleCheckStatus, handleUpdatedSpreadsheet } = require("../events/ugc-events")
 const {
   handlePaymentCancel,
   handlePaymentPaid,
@@ -52,6 +52,9 @@ async function handleButtonInput(interaction) {
     if (interaction.customId.includes("tpaid")) {
       await handlePaymentPaid(interaction);
       return;
+    }
+    if (interaction.customId == "spreadsheet-u") {
+      return await handleUpdatedSpreadsheet(interaction)
     }
   }
   if (interaction.customId == "check-status") {

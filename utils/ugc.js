@@ -20,7 +20,8 @@ async function fetchGroups() {
     .select(`*, ${TABLE} (*)`)
     .order("order", { ascending: true })
     .order("channel_id", { referencedTable: TABLE, ascending: true })
-    .order("date", { referencedTable: TABLE, ascending: false });
+    .order("date", { referencedTable: TABLE, ascending: false })
+    .order("username", { referencedTable: TABLE, ascending: true });
 
   if (error) {
     throw new Error(error.message);
@@ -29,8 +30,23 @@ async function fetchGroups() {
   return data;
 }
 
-async function removeItems() {
-  return;
+async function removeItems(params = null) {
+  if (!params) {
+    throw new Error("Need to supply params at removeitems");
+  }
+  let client = supabase.from(TABLE).delete();
+  if (params.id) {
+    client = client.eq("id", params.id);
+  } else if (params.channel) {
+    client = client.eq("channel_id", params.channel);
+  } else if (params.ids) {
+    client = client.in("id", params.ids);
+  }
+  const { data, error } = await client.select();
+  if (error) {
+    throw new Error("An error occured " + error.message);
+  }
+  return data;
 }
 
 async function editItems(payload) {
@@ -124,6 +140,40 @@ async function assignGroups(entries) {
   return data;
 }
 
+async function editStock(entries) {
+  const payload = entries.map((item) => {
+    const { [TABLE]: _, ...group } = item.group;
+    return {
+      ...group,
+      amount: item.amount,
+    };
+  });
+  const { data, error } = await supabase.from(GROUPS).upsert(payload).select();
+  if (error) {
+    throw new Error("An error occured " + error.message);
+  }
+
+  return data;
+}
+
+async function subtractEntries(entries, reminder_message = "") {
+  const payload = entries.map((item) => {
+    return {
+      ...item.entry,
+      amount: item.entry.amount - item.amount,
+      reminder_message,
+    };
+  });
+
+  const { data, error } = await supabase.from(TABLE).upsert(payload).select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
 module.exports = {
   addItems,
   removeItems,
@@ -134,4 +184,6 @@ module.exports = {
   getItemByChannel,
   toggleLogged,
   assignGroups,
+  editStock,
+  subtractEntries,
 };

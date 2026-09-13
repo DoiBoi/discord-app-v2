@@ -28,7 +28,7 @@ module.exports = {
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           groups.reduce(
-            (acc, curr) => (acc += `${curr.id}: \`${curr.order}\`\n`),
+            (acc, curr) => (acc += `${curr.id} (\`${curr.order}\`): ${curr.amount}\n`),
             "# Groups\n",
           ),
         ),

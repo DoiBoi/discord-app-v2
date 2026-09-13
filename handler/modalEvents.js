@@ -1,4 +1,4 @@
-const { handleEntriesAdd, handleAssignGroup } = require("../events/ugc-events")
+const { handleEntriesAdd, handleAssignGroup, handleStockGroup, handlePayUGC } = require("../events/ugc-events")
 const { auth } = require("../utils/supabase/supabase_client")
 
 async function handleModalFunction(interaction) {
@@ -8,6 +8,12 @@ async function handleModalFunction(interaction) {
     }
     if (interaction.customId == "group-ugc") {
       return await handleAssignGroup(interaction)
+    }
+    if (interaction.customId == "stock-groups") {
+      return await handleStockGroup(interaction)
+    }
+    if (interaction.customId == "pay-ugc") {
+      return await handlePayUGC(interaction)
     }
   }
 }

@@ -21,14 +21,15 @@ async function upsertId(name, id) {
 
   if (get_error) console.error("error fetching names", error.message);
 
-  const { data, error } = await supabase
-    .from("ids")
-    .upsert({
-      id: get_data[0]["id"],
-      name: name,
-      item_id: id,
-    })
-    .select();
+  const payload = {
+    name: name,
+    item_id: id,
+  };
+
+  if (get_data[0]) {
+    payload.id = get_data[0]["id"];
+  }
+  const { data, error } = await supabase.from("ids").upsert(payload).select();
 
   if (error) console.error("An error occured", error.message);
 

@@ -41,7 +41,10 @@
     "addugc",
     "editugc",
     "toggleugc",
-    "groupugc"
+    "groupugc",
+    "delugc",
+    "stockugc",
+    "payugc"
   ],
   "PublicCommands": ["exchange"]
 }
