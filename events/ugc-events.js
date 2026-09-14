@@ -241,7 +241,9 @@ async function handleStockGroup(interaction) {
     .getTextInputValue("entries-input")
     .split("\n")
     .filter((line) => line.trim() !== "")
-    .filter((line) => line.split("/").length == 2 && line.split("/")[1].trim() !== "")
+    .filter(
+      (line) => line.split("/").length == 2 && line.split("/")[1].trim() !== "",
+    )
     .map((item) => {
       const [gr, amount] = item.split("/");
       return {
@@ -304,6 +306,8 @@ async function handlePayUGC(interaction) {
   const entries = interaction.fields
     .getTextInputValue("entries-input")
     .split("\n")
+    .filter((line) => line.trim() !== "")
+    .filter((line) => line.split("/").length >= 2)
     .map((item) => {
       const [position, amount] = item.split("/");
       return {
@@ -392,11 +396,11 @@ async function handleUpdatedSpreadsheet(interaction) {
   await interaction.deferReply({
     flags: MessageFlags.Ephemeral,
   });
-  const entries = (await getItems())
-    .filter((item) => item.reminder_message == String(interaction.message.id))
-    .map((item) => item.id);
+  const entries = (await getItems()).filter(
+    (item) => item.reminder_message == String(interaction.message.id),
+  );
   const data = await removeItems({
-    ids: entries,
+    ids: entries.map((item) => item.id),
   });
   console.log(entries);
   await interaction.editReply({

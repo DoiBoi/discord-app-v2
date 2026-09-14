@@ -167,8 +167,31 @@ async function subtractEntries(entries, reminder_message = "") {
 
   const { data, error } = await supabase.from(TABLE).upsert(payload).select();
 
+  const groupSubtraction = entries.reduce((acc, curr) => {
+    if (!(curr.entry.group in acc)) {
+      acc[curr.entry.group] = curr.amount;
+    } else {
+      acc[curr.entry.group] += amount;
+    }
+    return acc;
+  }, {});
+
   if (error) {
     throw new Error(error.message);
+  }
+  const groupPayload = (await fetchGroups()).map((item) => {
+    const { [TABLE]: _, ...group } = item;
+    return {
+      ...group,
+      amount: group.amount - (groupSubtraction[group.id] ?? 0),
+    };
+  });
+
+  const { data: _, error: payError } = await supabase
+    .from(GROUPS)
+    .upsert(groupPayload);
+  if (payError) {
+    throw new Error(payError.message);
   }
 
   return data;
