@@ -42,7 +42,8 @@ module.exports = {
           .setTextInputComponent(
             new TextInputBuilder()
               .setCustomId("entries-input")
-              .setStyle(TextInputStyle.Paragraph),
+              .setStyle(TextInputStyle.Paragraph)
+              .setValue("A/\nB/\nC/\nD/\nE/\nF/\nG/\nH/"),
           ),
       );
     await interaction.showModal(modal);

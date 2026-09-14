@@ -27,13 +27,15 @@ async function handleEntriesAdd(interaction) {
   const entries = interaction.fields
     .getTextInputValue("entries-input")
     .split("\n")
+    .filter((line) => line.trim() !== "")
+    .filter((line) => line.split("/").length >= 2)
     .map((entry) => {
-      const fields = entry.split("/");
+      const [username, amount, group] = entry.split("/");
       return {
-        username: fields[0],
-        amount: fields[1],
-        group: fields[2] ? groups[fields[2]] : "To Be Decided",
-        rate: rate,
+        username: username,
+        amount: Number(amount.replace(/,/g, "").trim()),
+        group: group ? group.toUpperCase().trim() : "To Be Decided",
+        rate: Number(rate),
         channel_id: String(interaction.channelId),
         date: new Date().toISOString(),
       };
@@ -152,11 +154,13 @@ async function handleAssignGroup(interaction) {
   const entries = interaction.fields
     .getTextInputValue("entries-input")
     .split("\n")
+    .filter((line) => line.trim() !== "")
+    .filter((line) => line.split("/").length == 2)
     .map((item) => {
-      const text_split = item.split("/");
+      const [group, ids] = item.split("/");
       return {
-        group: groups[text_split[0]],
-        ids: text_split[1]
+        group: groups[group.toUpperCase().trim()],
+        ids: ids
           .split(" ")
           .map((item) =>
             fetchEntries[Number(item) - 1]
@@ -236,11 +240,13 @@ async function handleStockGroup(interaction) {
   const entries = interaction.fields
     .getTextInputValue("entries-input")
     .split("\n")
+    .filter((line) => line.trim() !== "")
+    .filter((line) => line.split("/").length == 2 && line.split("/")[1].trim() !== "")
     .map((item) => {
       const [gr, amount] = item.split("/");
       return {
-        group: groups[gr],
-        amount: Number(amount),
+        group: groups[gr.toUpperCase().trim()],
+        amount: Number(amount.replace(/,/g, "").trim()),
       };
     });
 
@@ -302,7 +308,7 @@ async function handlePayUGC(interaction) {
       const [position, amount] = item.split("/");
       return {
         entry: fetchEntries[Number(position) - 1],
-        amount: Number(amount),
+        amount: Number(amount.replace(/,/g, "").trim()),
       };
     });
   const response = await interaction.editReply({
