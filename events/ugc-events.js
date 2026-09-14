@@ -392,10 +392,10 @@ async function handlePayUGC(interaction) {
 }
 
 async function handleUpdatedSpreadsheet(interaction) {
-  await disableButtonRow(interaction);
   await interaction.deferReply({
     flags: MessageFlags.Ephemeral,
   });
+  await disableButtonRow(interaction);
   const entries = (await getItems()).filter(
     (item) => item.reminder_message == String(interaction.message.id),
   );
