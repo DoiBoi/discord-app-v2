@@ -12,7 +12,6 @@ const { TextInputBuilder } = require("discord.js");
 const { ids } = require("../../utils/config");
 const TABLE = ids.ugc_queue;
 
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("payugc")
@@ -38,7 +37,9 @@ module.exports = {
         }, {}),
       };
     });
-    let index = 0
+    const [item] = entries.splice(entries.length - 1, 1);
+    entries.unshift(item);
+    let index = 0;
     const content = entries.reduce((acc, curr) => {
       let sum = 0;
       const usersText = Object.entries(curr.users)
@@ -47,17 +48,17 @@ module.exports = {
             .map((row) => {
               sum += row.amount;
               index++;
-              return `- ${index}. \`${row.username}\` ${row.amount.toLocaleString()} ${row.log ? `:green_circle:` : `:red_circle:`}`;
+              return `- ${index}. \`${row.username}\` ${row.amount.toLocaleString()} (${row.rate}) ${row.log ? `:green_circle:` : `:red_circle:`}`;
             })
             .join("\n");
-          return `<#${channelId}> (${rows[0].rate})\n${rowsText}\n`;
+          return `<#${channelId}>: \n${rowsText}\n`;
         })
         .join("\n");
       const remainingText =
         curr.amount - sum > 0
           ? `${curr.amount - sum} remaining`
           : `${Math.abs(curr.amount - sum)} pre-ordered`;
-      acc += `# ${curr.name} (${curr.order}) ${curr.amount.toLocaleString()}\n${usersText}= ${remainingText}\n`;
+      acc += `# ${curr.name} ${curr.name !== "To Be Decided" ? `(${curr.order}) ` : ""}${curr.name !== "To Be Decided" ? curr.amount.toLocaleString() : ""}\n${usersText}= ${remainingText}\n`;
       return acc;
     }, ``);
 
@@ -68,7 +69,9 @@ module.exports = {
       .addLabelComponents(
         new LabelBuilder()
           .setLabel("Insert entries:")
-          .setDescription("Separate groups by new line and format as [POSITION]/[AMOUNT]")
+          .setDescription(
+            "Separate groups by new line and format as [POSITION]/[AMOUNT]",
+          )
           .setTextInputComponent(
             new TextInputBuilder()
               .setCustomId("entries-input")

@@ -238,6 +238,8 @@ async function updateUGCPublicBoard(interaction) {
       queue: curr[TABLE].length,
     };
   });
+  const [item] = entries.splice(entries.length - 1, 1);
+  entries.unshift(item);
   try {
     const channel = await interaction.client.channels.fetch(String(channel_id));
     const components = [
@@ -248,11 +250,11 @@ async function updateUGCPublicBoard(interaction) {
           .setStyle(ButtonStyle.Primary),
       ),
     ];
-    const content = entries.reduce((acc, curr, idx, arr) => {
-      if (idx % 3 == 0 || idx == arr.length - 1) {
+    const content = entries.reduce((acc, curr, idx) => {
+      if (idx == 0 || (idx - 1) % 3 == 0) {
         acc += `# ${EMOJIS[Math.ceil(idx / 3)]}\n`;
       }
-      acc += `**${curr.name}** ${emojis.heart} ${curr.amount >= 0 ? curr.amount.toLocaleString() : "PRE-ORDERED"}${curr.queue > 0 ? `\nQueue: ${curr.queue} ${curr.queue == 1 ? "person" : "people"}` : ""}\n`;
+      acc += `**${curr.name}**${curr.name !== "To Be Decided" ? ` ${emojis.heart} ${(curr.amount >= 0 ? curr.amount.toLocaleString() : "PRE-ORDERED")}` : ""}${curr.queue > 0 ? `\nQueue: ${curr.queue} ${curr.queue == 1 ? "person" : "people"}` : ""}\n`;
       return acc;
     }, "");
     try {
@@ -270,7 +272,7 @@ async function updateUGCPublicBoard(interaction) {
       await upsertId(ids.ugc_public_message, message.id);
     }
   } catch (error) {
-    console.error("Error" + error.message)
+    console.error("Error" + error.message);
   }
 }
 
@@ -291,7 +293,8 @@ async function updateUGCPrivateBoard(interaction) {
       chunks.push(fetchEntries.slice(i, i + 3));
     }
     const last = chunks.pop();
-    chunks.push(last.slice(0, 2), last.slice(2));
+    chunks.push(last.slice(0, 2));
+    chunks.unshift(last.slice(2));
     for (const [i, chunk] of chunks.entries()) {
       const message_id = await getId(`${ids.ugc_private_message}_${i + 1}`);
       const entries = chunk.map((item) => {
@@ -316,17 +319,17 @@ async function updateUGCPrivateBoard(interaction) {
               .map((row) => {
                 sum += row.amount;
                 index++;
-                return `- ${index}. \`${row.username}\` ${row.amount.toLocaleString()} ${row.log ? `:green_circle:` : `:red_circle:`}`;
+                return `- ${index}. \`${row.username}\` ${row.amount.toLocaleString()} (${row.rate}) ${row.log ? `:green_circle:` : `:red_circle:`}`;
               })
               .join("\n");
-            return `<#${channelId}> (${rows[0].rate})\n${rowsText}\n`;
+            return `<#${channelId}>: \n${rowsText}\n`;
           })
           .join("\n");
         const remainingText =
           curr.amount - sum > 0
             ? `${curr.amount - sum} remaining`
             : `${Math.abs(curr.amount - sum)} pre-ordered`;
-        acc += `# ${curr.name} (${curr.order}) ${curr.amount.toLocaleString()}\n${usersText}= ${remainingText}\n`;
+        acc += `# ${curr.name} ${curr.name !== "To Be Decided" ? `(${curr.order}) ` : ""}${curr.name !== "To Be Decided" ? curr.amount.toLocaleString() : ""}\n${usersText}= ${remainingText}\n`;
         return acc;
       }, ``);
       try {
