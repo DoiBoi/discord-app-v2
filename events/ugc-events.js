@@ -34,7 +34,7 @@ async function handleEntriesAdd(interaction) {
       return {
         username: username,
         amount: Number(amount.replace(/,/g, "").trim()),
-        group: group ? group.toUpperCase().trim() : "To Be Decided",
+        group: group ? group.toUpperCase().trim() : "LUV$OSA",
         rate: Number(rate),
         channel_id: String(interaction.channelId),
         date: new Date().toISOString(),
