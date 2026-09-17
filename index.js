@@ -282,7 +282,7 @@ async function handleSendComplete(
               confirm_msg.url,
               forwarded.url,
             );
-            const confirmed = await forward_channel.send({
+            const confirmed = await forwarded.reply({
               content: `Do you confirm receiving this payment of \$${Number(input).toFixed(2)}? <@${item["user_id"]}>\n- <:yes:${emojis.yes}> Click "Yes" if you received it\n- <:no:${emojis.no}> Do not click the button if you did not get this payment, simply notify Mal\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}\n-# **Note:** If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.`,
               // content: `<@${item["user_id"]}>, Do you confirm receiving this payment of \$${Number(input).toFixed(2)}?\n-# Note: If this image/video is unrelated to your exchange, notify mal asap as someone may be abusing the system.\n\nYour remaining balance would be \$${(item["amount"] - item["pending"] - Number(input)).toFixed(2)}`,
               components: [
@@ -876,7 +876,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             const c_msg = await c_channel.messages.fetch(String(c_mid));
             await disableButtonRow(interaction, c_msg);
             await disableButtonRow(interaction, urlMessage);
-            await confirmed_channel.send({
+            await urlMessage.reply({
               embeds: [
                 new EmbedBuilder()
                   .setDescription(
