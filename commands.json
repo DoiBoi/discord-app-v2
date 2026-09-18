@@ -44,7 +44,8 @@
     "groupugc",
     "delugc",
     "stockugc",
-    "payugc"
+    "payugc",
+    "getactivetemp"
   ],
   "PublicCommands": ["exchange"]
 }
