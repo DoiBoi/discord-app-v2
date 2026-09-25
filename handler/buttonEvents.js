@@ -7,15 +7,19 @@ const {
   handleLastPage,
   handleFirstPage,
 } = require("../events/rbx-queue");
-const { handleCheckStatus, handleUpdatedSpreadsheet } = require("../events/ugc-events")
+const {
+  handleCheckStatus,
+  handleUpdatedSpreadsheet,
+} = require("../events/ugc-events");
 const {
   handlePaymentCancel,
   handlePaymentPaid,
+  handleRejectConfirm,
 } = require("../events/temp-events");
 const { auth } = require("../utils/supabase/supabase_client");
 
 async function handleButtonInput(interaction) {
-  console.log(interaction.customId)
+  console.log(interaction.customId);
   if (await auth(interaction.user.id)) {
     if (interaction.customId.includes("cy")) {
       await handlePendingYes(interaction);
@@ -54,12 +58,15 @@ async function handleButtonInput(interaction) {
       return;
     }
     if (interaction.customId == "spreadsheet-u") {
-      return await handleUpdatedSpreadsheet(interaction)
+      return await handleUpdatedSpreadsheet(interaction);
+    }
+    if (interaction.customId.includes("temp-refund")) {
+      return await handleRejectConfirm(interaction);
     }
   }
   if (interaction.customId == "check-status") {
     await handleCheckStatus(interaction);
-    return
+    return;
   }
 }
 
