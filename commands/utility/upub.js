@@ -33,7 +33,7 @@ module.exports = {
         const totaluploads = interaction.options.getNumber("totaluploads")
         const recolors = interaction.options.getNumber("recolors")
         const upload_usd = ((totaluploads - recolors) * 3.3) + (recolors * 2.9)
-        const publish_usd = (hatorface * 6.7) + (other * 4.5)
+        const publish_usd = (hatorface * 7.8) + (other * 5.2)
         const upload_rbx = (totaluploads * 0.85) * 1000
         const publish_rbx = ((hatorface * 1.8) + (other * 1.4)) * 1000
 
@@ -49,7 +49,7 @@ module.exports = {
         } else if (hatorface >= 1 || other >= 1) {
             return interaction.reply({content: base + "\n" + "\n" + USD_header + "\n" + USD_uploading + "\n" + USD_publishing + "\n" + "\n" + RBX_header + "\n" + RBX_uploading + "\n" + RBX_publishing});
         } else {
-            return  interaction.reply({content: base + "\n" + "\n" + USD_header + "\n" + USD_uploading + "\n" + "\n" + RBX_header + "\n" + RBX_uploading});    
-        }    
+            return  interaction.reply({content: base + "\n" + "\n" + USD_header + "\n" + USD_uploading + "\n" + "\n" + RBX_header + "\n" + RBX_uploading});
+        }
     }
 }
