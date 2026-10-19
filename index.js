@@ -381,7 +381,7 @@ async function handleSendComplete(
         //   ),
         // ],
         content:
-          'Image/Video has not been detected, please submit proof of payment before clicking "Complete"',
+          'Image/Video has not been detected, please submit proof of payment before clicking "Complete"\n> Remember to ping <@1471335455621386445> when sending your proof!',
         flags: MessageFlags.Ephemeral,
       });
     }
