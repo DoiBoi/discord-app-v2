@@ -68,7 +68,7 @@ function buildTOSMessage(currency, amount, user) {
       embeds.push(
         new EmbedBuilder().setDescription(`\`\`\`Disclaimer\`\`\`
         **📌 Make sure you are ready to send.**
-        You must send the money within 5 minutes (after pressing "I agree") because if you send outside of reserved duration, you risk losing your funds.
+        You must send the money within 10 minutes (after pressing "I agree") because if you send outside of reserved duration, you risk losing your funds.
 
         \`\`\`Sending Instructions\`\`\`
         **<:paypal:${emojis.paypal}> Follow this when you send:**
@@ -91,7 +91,7 @@ function buildTOSMessage(currency, amount, user) {
       );
       embeds.push(
         new EmbedBuilder().setDescription(
-          `\`\$${amount.toFixed(2)}\` of the Paypal exchange will be reserved for you for 5 minutes after you agree to following the instructions.`,
+          `\`\$${amount.toFixed(2)}\` of the Paypal exchange will be reserved for you for 10 minutes after you agree to following the instructions.`,
         ),
       );
       return embeds;
@@ -104,7 +104,7 @@ function buildTOSMessage(currency, amount, user) {
       embeds.push(
         new EmbedBuilder().setDescription(`\`\`\`Disclaimer\`\`\`
         **📌 Make sure you are ready to send.**
-        You must send the money within 5 minutes (after pressing "I agree") because if you send outside of reserved duration, you risk losing your funds.
+        You must send the money within 10 minutes (after pressing "I agree") because if you send outside of reserved duration, you risk losing your funds.
 
         \`\`\`Sending Instructions\`\`\`
         **<:cashapp:${emojis.cashapp}> Follow this when you send:**
@@ -126,7 +126,7 @@ function buildTOSMessage(currency, amount, user) {
       );
       embeds.push(
         new EmbedBuilder().setDescription(
-          `\`\$${amount.toFixed(2)}\` of the Cashapp exchange will be reserved for you for 5 minutes after you agree to following the instructions.`,
+          `\`\$${amount.toFixed(2)}\` of the Cashapp exchange will be reserved for you for 10 minutes after you agree to following the instructions.`,
         ),
       );
       return embeds;
@@ -135,7 +135,7 @@ function buildTOSMessage(currency, amount, user) {
         new EmbedBuilder()
           .setTitle(`📌  Make sure you are ready to send!`)
           .setDescription(
-            `You must send the money within 5 minutes (after pressing "I agree") because if you send outside of reserved duration, you risk losing your funds.`,
+            `You must send the money within 10 minutes (after pressing "I agree") because if you send outside of reserved duration, you risk losing your funds.`,
           )
           .setThumbnail(
             `https://cdn.discordapp.com/attachments/853109872698982451/1530417765310009344/output-onlinegiftools.gif?ex=6a65801d&is=6a642e9d&hm=41ef422911140f64a330216239aef9ecbad107a51ed51f4db9b1d588986f07ee&`,
@@ -143,7 +143,7 @@ function buildTOSMessage(currency, amount, user) {
       );
       embeds.push(
         new EmbedBuilder().setDescription(
-          `\`\$${amount.toFixed(2)}\` of the Zelle exchange will be reserved for you for 5 minutes after pressing "I agree"`,
+          `\`\$${amount.toFixed(2)}\` of the Zelle exchange will be reserved for you for 10 minutes after pressing "I agree"`,
         ),
       );
       return embeds;
@@ -152,7 +152,7 @@ function buildTOSMessage(currency, amount, user) {
         new EmbedBuilder()
           .setTitle(`📌  Make sure you are ready to send!`)
           .setDescription(
-            `You must send the money within 5 minutes (after pressing "I agree") because if you send outside of reserved duration, you risk losing your funds.`,
+            `You must send the money within 10 minutes (after pressing "I agree") because if you send outside of reserved duration, you risk losing your funds.`,
           )
           .setThumbnail(
             `https://cdn.discordapp.com/attachments/853109872698982451/1530417765310009344/output-onlinegiftools.gif?ex=6a65801d&is=6a642e9d&hm=41ef422911140f64a330216239aef9ecbad107a51ed51f4db9b1d588986f07ee&`,
@@ -160,7 +160,7 @@ function buildTOSMessage(currency, amount, user) {
       );
       embeds.push(
         new EmbedBuilder().setDescription(
-          `\`\$${amount.toFixed(2)}\` of the Venmo exchange will be reserved for you for 5 minutes after pressing "I agree"`,
+          `\`\$${amount.toFixed(2)}\` of the Venmo exchange will be reserved for you for 10 minutes after pressing "I agree"`,
         ),
       );
       return embeds;
@@ -490,7 +490,7 @@ async function handleTOS(interaction, row, item, input) {
     const response = await interaction.channel.send({
       // embeds: [embed],
       // content: `## <a:loading:${emojis.loading}> The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>! \n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds.\n-# **${ORDER[item["currency"]]} ${item["currency"]}: \$${calculatedAmount.toFixed(2)}${item["currency"] == "PayPal" ? (item["fnf"] == true ? " (cover fnf)" : " (minus fnf)") : ""} for \$${amountMinusFee.toFixed(2)}, ${item["fee"]}\% fee, min \$${item["min"]}** \n\nPlease send $${input} to \`${item["info"]}\`. \n- Once paid, send proof of payment below, then click "Complete"`,
-      content: `## <a:loading:${emojis.loading}> The exchange reservation will expire <t:${calculateTimeStamp(60 * 5)}:R>!\n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds.`,
+      content: `## <a:loading:${emojis.loading}> The exchange reservation will expire <t:${calculateTimeStamp(60 * 10)}:R>!\n-# ⚠️ Do not send if the reservation time has passed, otherwise you risk losing your funds.`,
       embeds: [embed],
       components: [actionRow],
     });
