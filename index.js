@@ -503,7 +503,7 @@ async function handleTOS(interaction, row, item, input) {
 
     const collector = response.createMessageComponentCollector({
       filter,
-      time: 300_000,
+      time: 600_000,
     });
 
     collector.on("collect", async (i) => {
