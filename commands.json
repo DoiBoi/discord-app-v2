@@ -45,7 +45,8 @@
     "delugc",
     "stockugc",
     "payugc",
-    "getactivetemp"
+    "getactivetemp",
+    "newplayers"
   ],
   "PublicCommands": ["exchange"]
 }

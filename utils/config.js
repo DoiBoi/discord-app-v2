@@ -1,4 +1,5 @@
 const configJSON = require("../config.json");
+const names = require("../users.json");
 
 // Get the current environment from .env, default to 'staging'
 const env = process.env.NODE_ENV;
@@ -12,4 +13,5 @@ module.exports = {
   env,
   emojis: configJSON[env]["emojis"],
   ids: configJSON[env]["ids"],
+  names: names["users"]
 };
