@@ -21,7 +21,7 @@ module.exports = {
       InteractionContextType.PrivateChannel,
     ),
   async execute(interaction) {
-    let names = interaction.options.getString("names");
+    let names = interaction.options.getString("names").split("\n");
     const result = await getNewUsers(names);
 
     await interaction.reply({
